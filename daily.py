@@ -4,14 +4,27 @@ import pandas as pd
 from db import updateDBWithAPI, update_status, find_and_update_upper_trendline, \
     find_and_update_under_trendline, check_and_update_upper_trendline, update_daily_move
 import time
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from the .env file
+load_dotenv()
+
+# Get the database credentials from the environment variables
+db_username = os.getenv('DB_USERNAME')
+db_password = os.getenv('DB_PASSWORD')
+db_host = os.getenv('DB_HOST')
+db_port = os.getenv('DB_PORT')
+db_name = os.getenv('DB_NAME')
+
+# Now you can use these variables to connect to the database
 
 db_config = {
-    'dbname': 'stock_data',      # Name of your database
-    'user': 'shimonyannay',          # Your PostgreSQL username
-    'password': 'Apple2020', # Your PostgreSQL password
-    'host': 'localhost',         # Hostname (localhost for local)
-    'port': 5432                 # Default PostgreSQL port
+    'dbname': db_name,      # Name of your database
+    'user': db_username,          # Your PostgreSQL username
+    'password': db_password, # Your PostgreSQL password
+    'host': db_host,         # Hostname (localhost for local)
+    'port': db_port                 # Default PostgreSQL port
 }
 
 connection = psycopg2.connect(**db_config)
