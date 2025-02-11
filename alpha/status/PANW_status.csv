@@ -1,0 +1,2 @@
+index,time,open,high,low,close,Volume,volume,rsi,ema20,ma50,ma100,ma200,trendline,duration_from_date1,duration_from_date2,distance,breakthrough
+3130,2024-12-30,183.81,185.61,181.9,184.2,,2728131.0,39.3148,191.8176,191.8066,182.6269,167.624,185.61,8,0,0.77,False
