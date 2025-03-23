@@ -1,8 +1,9 @@
 import numpy as np
 import psycopg2
 import pandas as pd
-from db import updateDBWithAPI, update_status, find_and_update_upper_trendline, \
-    find_and_update_under_trendline, check_and_update_upper_trendline, update_daily_move
+from db import updateDBWithAPI, update_upper_status, find_and_update_upper_trendline, \
+    find_and_update_under_trendline, check_and_update_upper_trendline, update_daily_move, update_under_status, \
+    check_and_update_under_trendline, update_upper_portfolio, update_under_portfolio
 import time
 from dotenv import load_dotenv
 import os
@@ -48,16 +49,23 @@ def daily_update():
     for ticker in tickers:
         print(f"UPDATE {ticker}")
         try:
-            updated_dates = updateDBWithAPI(ticker)
-            update_status(ticker)
-            if len(updated_dates) > 0:
-                check_and_update_upper_trendline(ticker, updated_dates)
-            update_daily_move(ticker)
-            # find_and_update_upper_trendline(ticker)
-            # find_and_update_under_trendline(ticker)
+            # updated_dates = updateDBWithAPI(ticker)
+            # update_upper_status(ticker)
+            # update_under_status(ticker)
+            # if len(updated_dates) > 0:
+            #     check_and_update_upper_trendline(ticker, updated_dates)
+            #     check_and_update_under_trendline(ticker, updated_dates)
+            find_and_update_upper_trendline(ticker)
+            find_and_update_under_trendline(ticker)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
             continue
+
+    for ticker in tickers:
+        update_daily_move(ticker)
+
+    # update_upper_portfolio()
+    # update_under_portfolio()
 
     if connection:
         cursor.close()
