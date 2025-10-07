@@ -3,7 +3,9 @@ import psycopg2
 import pandas as pd
 from db import updateDBWithAPI, update_upper_status, find_and_update_upper_trendline, \
     find_and_update_under_trendline, check_and_update_upper_trendline, update_daily_move, update_under_status, \
-    check_and_update_under_trendline, update_upper_portfolio, update_under_portfolio
+    check_and_update_under_trendline, update_upper_portfolio, update_under_portfolio, \
+    find_closest_trendline, update_closest_status, update_all_upper_trendlines, check_and_update_closest_trendline, \
+    _add_profile_row
 import time
 from dotenv import load_dotenv
 import os
@@ -39,31 +41,49 @@ def daily_update():
     start_time = time.time()
 
     # Fetch all tickers from the `tickers` table
-    cursor.execute("SELECT ticker FROM tickers;")
+    # cursor.execute("SELECT ticker FROM tickers;")
+    cursor.execute("SELECT ticker FROM tickers_russell;")
     rows = cursor.fetchall()
 
     # Extract tickers into a list
     tickers = [row[0] for row in rows]
 
+    cursor.execute("SELECT MAX(date) FROM stock_prices;")
+    # latest_date = cursor.fetchone()[0]
+    latest_date = pd.Timestamp("2025-07-25")
+
+    # if latest_date is None:
+    #     print("⚠️ No data in stock_prices table.")
+    #     return
+
+    # latest_date = pd.Timestamp(latest_date)
+
     # Process each ticker
     for ticker in tickers:
-        print(f"UPDATE {ticker}")
+        print(f"\n🟡 Updating {ticker}")
         try:
-            # updated_dates = updateDBWithAPI(ticker)
-            # update_upper_status(ticker)
+            t0 = time.perf_counter()
+            updated_dates = updateDBWithAPI(ticker)
+            update_upper_status(ticker)
             # update_under_status(ticker)
-            # if len(updated_dates) > 0:
-            #     check_and_update_upper_trendline(ticker, updated_dates)
+            # update_all_upper_trendlines(ticker)
+            # find_closest_trendline(ticker, latest_date)
+            # update_closest_status(ticker)
+            if len(updated_dates) > 0:
+                check_and_update_upper_trendline(ticker, updated_dates)
             #     check_and_update_under_trendline(ticker, updated_dates)
-            find_and_update_upper_trendline(ticker)
-            find_and_update_under_trendline(ticker)
+                # check_and_update_closest_trendline(ticker, updated_dates)
+            # find_and_update_upper_trendline(ticker)
+            # find_and_update_under_trendline(ticker)
+            _add_profile_row("ticker", "full_pipeline", time.perf_counter() - t0, ticker=ticker)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
             continue
+    #
+    # for ticker in tickers:
+    #     update_daily_move(ticker)
 
-    for ticker in tickers:
-        update_daily_move(ticker)
-
+    # update_upper_portfolio()
     # update_upper_portfolio()
     # update_under_portfolio()
 
