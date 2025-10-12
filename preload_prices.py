@@ -60,10 +60,10 @@ def fetch_daily_adjusted(symbol: str, outputsize: str = "compact") -> dict:
 # -----------------------------
 def get_all_tickers(conn) -> list[str]:
     """
-    מחזיר את כל הטיקרים מהטבלה tickers (עמודה בשם 'ticker').
+    מחזיר את כל הטיקרים מהטבלה tickers_russell (עמודה בשם 'ticker').
     """
     with conn.cursor() as cur:
-        cur.execute("SELECT ticker FROM tickers;")
+        cur.execute("SELECT ticker FROM tickers_russell;")
         return [row[0] for row in cur.fetchall()]
 
 

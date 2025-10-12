@@ -313,10 +313,6 @@ def update_upper_status(stock):
     data['trendline'] = calculate_upper_trendline(data, date1, date2)
     data['distance'] = ((data['trendline'].astype(float) - data['close']) / data['close']) * 100
     data['breakthrough'] = data['close'] > data['trendline']
-
-    # Check if breakthrough condition is met
-    data['breakthrough'] = data['close'] > data['trendline']
-
     # Calculate durations in trading days
     data['duration_from_date1'] = data['date'].apply(lambda x: trading_days_map[x] - index1)
     data['duration_from_date2'] = data['date'].apply(lambda x: trading_days_map[x] - index2)
@@ -671,6 +667,110 @@ def find_and_update_upper_trendline(stock):
         print(f"Updated upper_trendlines for {stock}: Date1: {date1}, Date2: {best_date2}, Slope: {largest_negative_slope}, Date_diff: {date_diff}, Index2: {index2}")
     else:
         print(f"No valid trendline found for {stock}.")
+
+@timed()
+def find_and_update_upper_trendline_historical(stock, last_date):
+    """
+    Find the highest price and validate the trendline for a given stock up to a specific date.
+    Similar to find_and_update_upper_trendline but with a last_date parameter that ensures
+    date2 cannot be higher than this date. Used for historical trendline simulation.
+    Inserts the result into upper_trendlines_historical table.
+    """
+
+    # Convert last_date to datetime for comparison
+    if isinstance(last_date, str):
+        last_date = pd.to_datetime(last_date)
+
+    # Fetch stock prices from the database up to last_date
+    cursor.execute("""
+        SELECT date, high
+        FROM stock_prices
+        WHERE ticker = %s AND date <= %s
+        ORDER BY date;
+    """, (stock, last_date))
+    rows = cursor.fetchall()
+
+    if not rows:
+        print(f"No data found for {stock} up to {last_date}.")
+        return
+
+    # Convert the data into a DataFrame
+    df = pd.DataFrame(rows, columns=['time', 'high'])
+    df['time'] = pd.to_datetime(df['time'])
+    df['high'] = df['high'].astype(float)
+
+    # Extract unique trading dates and sort them
+    trading_days = sorted(df['time'].unique())
+
+    # Find the highest price and its date
+    highest_row = df.loc[df['high'].idxmax()]
+    date1 = highest_row['time']
+    price1 = highest_row['high']
+
+    # Initialize variables for the second point
+    largest_negative_slope = float('-inf')
+    best_date2 = None
+
+    # Sort rows by 'high' in descending order for faster iteration
+    # Only consider dates after date1 and up to last_date
+    sorted_df = df[df['time'] > date1].sort_values(by='high', ascending=False)
+
+    # Iterate through sorted rows
+    for index, row in sorted_df.iterrows():
+        date2 = row['time']
+        price2 = row['high']
+
+        # Check if the high price of date2 equals the high price of date1
+        if price2 == price1:
+            slope = 0
+            index1 = trading_days.index(date1)
+            index2 = trading_days.index(date2)
+            date_diff = index2 - index1
+
+            # Insert into upper_trendlines_historical table
+            cursor.execute("""
+                INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """, (stock, last_date, date1, date2, slope, date_diff, index2))
+            connection.commit()
+
+            print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}): Date1: {date1}, Date2: {date2}, Slope: {slope}, Date_diff: {date_diff}, Index2: {index2}")
+            return
+
+        # Calculate the number of trading days between date1 and date2
+        index1 = trading_days.index(date1)
+        index2 = trading_days.index(date2)
+        date_diff = index2 - index1
+        if date_diff == 0:
+            continue  # Avoid division by zero
+
+        # Calculate the slope in log scale
+        log_price1 = np.log(price1)
+        log_price2 = np.log(price2)
+        slope = (log_price2 - log_price1) / date_diff
+
+        # If valid and the slope is the largest negative slope, update the best point
+        if slope > largest_negative_slope:
+            largest_negative_slope = slope
+            best_date2 = date2
+
+    largest_negative_slope = float(largest_negative_slope)
+
+    # Insert the trendline data if a valid trendline is found
+    if best_date2:
+        index1 = trading_days.index(date1)
+        index2 = trading_days.index(best_date2)
+        date_diff = index2 - index1
+
+        cursor.execute("""
+            INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """, (stock, last_date, date1, best_date2, largest_negative_slope, date_diff, index2))
+        connection.commit()
+
+        print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}): Date1: {date1}, Date2: {best_date2}, Slope: {largest_negative_slope}, Date_diff: {date_diff}, Index2: {index2}")
+    else:
+        print(f"No valid trendline found for {stock} up to {last_date}.")
 
 @timed()
 def check_and_update_upper_trendline(stock, updated_dates):
