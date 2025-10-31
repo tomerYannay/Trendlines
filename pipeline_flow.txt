@@ -1,0 +1,72 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                   HISTORICAL ANALYSIS PIPELINE FLOW                       ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+                          ┌──────────────────┐
+                          │  START PIPELINE  │
+                          └────────┬─────────┘
+                                   │
+                                   ▼
+        ╔══════════════════════════════════════════════════════════╗
+        ║  STEP 1: Update Tickers with API Data                   ║
+        ║  - Fetch latest prices from Alpha Vantage               ║
+        ║  - Track successful_api_updates list                    ║
+        ║  - Track new_tickers list (tickers with no prior data)  ║
+        ╚══════════════════════════╦═══════════════════════════════╝
+                                   │
+                                   ▼
+        ╔══════════════════════════════════════════════════════════╗
+        ║  STEP 1.5: Update Ticker Extremes (NEW!)                ║
+        ║  - Process only successful_api_updates                  ║
+        ║  - Calculate MAX(high) and MIN(low)                     ║
+        ║  - Store in ticker_extremes table                       ║
+        ║  - Track with profiling                                 ║
+        ╚══════════════════════════╦═══════════════════════════════╝
+                                   │
+                                   ▼
+        ╔══════════════════════════════════════════════════════════╗
+        ║  STEP 2: Create Historical Trendlines (2024-01-01)      ║
+        ║  - Process ONLY new_tickers from Step 1                 ║
+        ║  - Insert into upper_trendlines_historical              ║
+        ╚══════════════════════════╦═══════════════════════════════╝
+                                   │
+                                   ▼
+        ╔══════════════════════════════════════════════════════════╗
+        ║  STEP 3: Update Historical Upper Status                 ║
+        ║  - Process ALL tickers                                  ║
+        ║  - Update upper_status_historical table                 ║
+        ╚══════════════════════════╦═══════════════════════════════╝
+                                   │
+                                   ▼
+                          ┌──────────────────┐
+                          │  FINAL SUMMARY   │
+                          │  - Extremes: X   │
+                          │  - Trendlines: Y │
+                          │  - Status: Z     │
+                          │  - Profiling CSV │
+                          └──────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+KEY FEATURES OF STEP 1.5:
+
+  ✓ Efficient Processing
+    - Only processes tickers successfully updated in Step 1
+    - Skips if no successful API updates
+
+  ✓ Error Handling
+    - Graceful error handling per ticker
+    - Continues processing if one ticker fails
+    - Tracks failed_extremes_updates list
+
+  ✓ Performance Tracking
+    - Uses @timed() decorator
+    - Logs to profile_times.csv via _add_profile_row()
+    - Reports execution time per ticker
+
+  ✓ Clear Output
+    - Progress counter [X/Y]
+    - Individual ticker status (✅/❌)
+    - Summary statistics at end
+
+═══════════════════════════════════════════════════════════════════════════

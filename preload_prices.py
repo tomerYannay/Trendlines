@@ -4,6 +4,7 @@ import time
 import psycopg2
 import requests
 import pandas as pd
+from typing import Optional, List, Set, Tuple
 from psycopg2.extras import execute_values, DictCursor
 from dotenv import load_dotenv
 
@@ -58,16 +59,16 @@ def fetch_daily_adjusted(symbol: str, outputsize: str = "compact") -> dict:
 # -----------------------------
 # DB helpers
 # -----------------------------
-def get_all_tickers(conn) -> list[str]:
+def get_all_tickers(conn) -> List[str]:
     """
-    מחזיר את כל הטיקרים מהטבלה tickers_russell (עמודה בשם 'ticker').
+    מחזיר את כל הטיקרים מהטבלה tickers (עמודה בשם 'ticker').
     """
     with conn.cursor() as cur:
-        cur.execute("SELECT ticker FROM tickers_russell;")
+        cur.execute("SELECT ticker FROM tickers;")
         return [row[0] for row in cur.fetchall()]
 
 
-def get_existing_dates_for_ticker(conn, symbol: str) -> set[str]:
+def get_existing_dates_for_ticker(conn, symbol: str) -> Set[str]:
     """
     מחזיר סט של תאריכים שכבר קיימים בטבלת stock_prices לטיקר.
     (כדי להימנע מהכנסות כפולות)
@@ -80,7 +81,7 @@ def get_existing_dates_for_ticker(conn, symbol: str) -> set[str]:
         return {r[0] for r in cur.fetchall()}
 
 
-def get_latest_db_date(conn, symbol: str) -> str | None:
+def get_latest_db_date(conn, symbol: str) -> Optional[str]:
     """
     מחזיר את התאריך המקסימלי שקיים ב-DB לטיקר או None אם אין כלל.
     """
@@ -93,7 +94,7 @@ def get_latest_db_date(conn, symbol: str) -> str | None:
         return row[0].strftime("%Y-%m-%d") if row and row[0] else None
 
 
-def rows_from_series(symbol: str, series: dict, skip_dates: set[str]) -> list[tuple]:
+def rows_from_series(symbol: str, series: dict, skip_dates: Set[str]) -> List[Tuple]:
     """
     ממיר את ה־dict של Alpha Vantage לרשימת שורות להכנסה ל-DB.
     מדלג על תאריכים שכבר קיימים.
@@ -120,7 +121,7 @@ def rows_from_series(symbol: str, series: dict, skip_dates: set[str]) -> list[tu
     return rows
 
 
-def upsert_prices(conn, rows: list[tuple]):
+def upsert_prices(conn, rows: List[Tuple]):
     """
     מכניס באצווה לטבלת stock_prices.
     סכימה: (ticker, date, open, high, low, close, volume)

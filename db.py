@@ -140,33 +140,51 @@ def http_get_timed(url, scope="api", name=None, ticker=None):
     return resp
 
 @timed()
-def fetch_latest_global_quote(symbol, prem_key='8LLD101ZZ48BBVC8'):
+def fetch_latest_global_quote(symbol, prem_key='8LLD101ZZ48BBVC8', retry_delay=31):
     """
     Fetch only the latest day's OHLCV using Alpha Vantage GLOBAL_QUOTE.
+    Implements rate limit detection and automatic retry with configurable delay.
     """
     url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={prem_key}'
-    # 🔥 no sleep
-    r = http_get_timed(url, scope="api", name="GLOBAL_QUOTE", ticker=symbol)
-    if r.status_code != 200:
-        raise ConnectionError(f"Failed to fetch GLOBAL_QUOTE for {symbol}: {r.status_code}")
 
-    data = r.json()
-    if "Global Quote" not in data or not data["Global Quote"]:
-        raise ValueError(f"Invalid GLOBAL_QUOTE response for {symbol}: {data}")
+    max_retries = 3
+    for attempt in range(max_retries):
+        r = http_get_timed(url, scope="api", name="GLOBAL_QUOTE", ticker=symbol)
 
-    g = data["Global Quote"]
-    latest_date = g.get("07. latest trading day")
-    if not latest_date:
-        raise ValueError(f"No 'latest trading day' in GLOBAL_QUOTE for {symbol}: {data}")
+        if r.status_code != 200:
+            raise ConnectionError(f"Failed to fetch GLOBAL_QUOTE for {symbol}: {r.status_code}")
 
-    return {
-        "date": latest_date,
-        "open": float(g["02. open"]),
-        "high": float(g["03. high"]),
-        "low": float(g["04. low"]),
-        "close": float(g["05. price"]),
-        "volume": int(g["06. volume"]) if g.get("06. volume") not in (None, "") else None
-    }
+        data = r.json()
+
+        # Check for rate limit message
+        if "Information" in data:
+            if "higher API call volume" in data["Information"] or "call frequency" in data["Information"]:
+                if attempt < max_retries - 1:
+                    print(f"⚠️ Rate limit hit for {symbol}. Waiting {retry_delay} seconds before retry (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    raise ValueError(f"Rate limit exceeded for {symbol} after {max_retries} attempts: {data}")
+
+        # Check for valid response
+        if "Global Quote" not in data or not data["Global Quote"]:
+            raise ValueError(f"Invalid GLOBAL_QUOTE response for {symbol}: {data}")
+
+        g = data["Global Quote"]
+        latest_date = g.get("07. latest trading day")
+        if not latest_date:
+            raise ValueError(f"No 'latest trading day' in GLOBAL_QUOTE for {symbol}: {data}")
+
+        return {
+            "date": latest_date,
+            "open": float(g["02. open"]),
+            "high": float(g["03. high"]),
+            "low": float(g["04. low"]),
+            "close": float(g["05. price"]),
+            "volume": int(g["06. volume"]) if g.get("06. volume") not in (None, "") else None
+        }
+
+    raise ValueError(f"Failed to fetch data for {symbol} after {max_retries} attempts")
 
 
 
@@ -227,26 +245,91 @@ def add_close_high_low_open(symbol, prem_key='8LLD101ZZ48BBVC8'):
 
 
 @timed()
+def fetch_full_historical_data(symbol, prem_key='8LLD101ZZ48BBVC8'):
+    """
+    Fetch full historical data using TIME_SERIES_DAILY_ADJUSTED with outputsize=full.
+    Returns raw OHLC prices (NOT adjusted/normalized) as (date, open, high, low, close, volume) tuples.
+    Uses actual market prices: close = "4. close" (not adjusted close).
+    """
+    api_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&outputsize=full&apikey={prem_key}'
+    time.sleep(1)  # Rate limiting
+
+    response = http_get_timed(api_url, scope="api", name="TIME_SERIES_DAILY_ADJUSTED", ticker=symbol)
+
+    if response.status_code != 200:
+        raise ConnectionError(f"Failed to fetch full data for {symbol}: {response.status_code}")
+
+    data = response.json()
+
+    if "Time Series (Daily)" not in data:
+        raise ValueError(f"Error in API response for {symbol}: {data}")
+
+    time_series = data["Time Series (Daily)"]
+    rows = []
+
+    for date_str, values in time_series.items():
+        open_price = float(values["1. open"])
+        high_price = float(values["2. high"])
+        low_price = float(values["3. low"])
+        close_price = float(values["4. close"])
+        volume = int(values["6. volume"]) if values["6. volume"] not in (None, "") else 0
+
+        # Use actual prices without normalization
+        rows.append((symbol, date_str, round(open_price, 2), round(high_price, 2), round(low_price, 2), round(close_price, 2), volume))
+
+    return rows
+
+
+@timed()
 def updateDBWithAPI(symbol, prem_key='8LLD101ZZ48BBVC8'):
     """
-    Fast path: use GLOBAL_QUOTE to insert only the latest day.
-    No indicators are fetched (for speed testing).
+    Update database with stock prices from last date in DB to today.
+    If ticker has no data in DB, fetch and insert full historical data.
+    Returns (inserted_dates_list, is_new_ticker_boolean).
     """
     cursor.execute("SELECT MAX(date) FROM stock_prices WHERE ticker = %s;", (symbol,))
     latest_date_in_db = cursor.fetchone()[0]  # date or None
 
-    try:
-        # No sleep here
-        latest = fetch_latest_global_quote(symbol, prem_key=prem_key)
-    except Exception as e:
-        print(f"GLOBAL_QUOTE failed for {symbol}: {e}")
-        return []
+    # If no data exists for this ticker, fetch full historical data
+    if latest_date_in_db is None:
+        print(f"{symbol}: No existing data found. Fetching full historical data...")
+        try:
+            rows = fetch_full_historical_data(symbol, prem_key=prem_key)
+            if rows:
+                execute_values(
+                    cursor,
+                    """
+                    INSERT INTO stock_prices (ticker, date, open, high, low, close, volume)
+                    VALUES %s
+                    ON CONFLICT (ticker, date) DO NOTHING;
+                    """,
+                    rows
+                )
+                connection.commit()
+                inserted_dates = [row[1] for row in rows]
+                print(f"Inserted {len(rows)} historical records for {symbol}")
+                return inserted_dates, True  # True indicates this is a new ticker
+            else:
+                print(f"{symbol}: No historical data available.")
+                return [], True
+        except Exception as e:
+            print(f"Failed to fetch full historical data for {symbol}: {e}")
+            return [], True
 
-    inserted_dates = []
-    if latest:
-        latest_date = latest["date"]
-        if (latest_date_in_db is None) or (latest_date > latest_date_in_db.strftime('%Y-%m-%d')):
-            vol = latest["volume"] if latest["volume"] is not None else 0
+    # Ticker exists - fetch data from latest date to today
+    try:
+        # Fetch full data and filter dates after latest_date_in_db
+        rows = fetch_full_historical_data(symbol, prem_key=prem_key)
+
+        if not rows:
+            print(f"{symbol}: No data available from API.")
+            return [], False
+
+        # Filter to only dates after the latest date in DB
+        latest_date_str = latest_date_in_db.strftime('%Y-%m-%d')
+        new_rows = [row for row in rows if row[1] > latest_date_str]
+
+        if new_rows:
             execute_values(
                 cursor,
                 """
@@ -254,17 +337,19 @@ def updateDBWithAPI(symbol, prem_key='8LLD101ZZ48BBVC8'):
                 VALUES %s
                 ON CONFLICT (ticker, date) DO NOTHING;
                 """,
-                [(symbol, latest_date, latest["open"], latest["high"], latest["low"], latest["close"], vol)]
+                new_rows
             )
             connection.commit()
-            inserted_dates.append(latest_date)
-            print(f"Inserted latest day for {symbol}: {latest_date}")
+            inserted_dates = [row[1] for row in new_rows]
+            print(f"Inserted {len(new_rows)} new records for {symbol} (from {latest_date_str} to today)")
+            return inserted_dates, False
         else:
             print(f"{symbol}: DB already up-to-date through {latest_date_in_db}.")
-    else:
-        print(f"{symbol}: Skipping fast insert (GLOBAL_QUOTE unavailable).")
+            return [], False
 
-    return inserted_dates
+    except Exception as e:
+        print(f"Failed to update {symbol}: {e}")
+        return [], False
 
 
 

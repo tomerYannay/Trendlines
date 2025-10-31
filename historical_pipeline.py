@@ -8,8 +8,9 @@ import os
 # Import from our existing modules
 from db import updateDBWithAPI, _add_profile_row, dump_profile_csv
 from historical_analysis import (
-    find_and_update_upper_trendline_historical, 
-    update_upper_status_historical
+    find_and_update_upper_trendline_historical,
+    update_upper_status_historical,
+    update_ticker_extremes
 )
 
 # Load environment variables from the .env file
@@ -37,90 +38,139 @@ cursor = connection.cursor()
 def historical_analysis_pipeline():
     """
     Historical analysis pipeline that:
-    1. Updates all tickers with latest API data
-    2. Creates historical trendlines for 2024-01-01
-    3. Updates historical upper status for all tickers
+    1. Updates all tickers with API data (from last DB date to today, or full history for new tickers)
+    1.5. Updates ticker extremes (max/min prices) for successfully updated tickers
+    2. Creates historical trendlines for 2024-01-01 (ONLY for new tickers from step 1)
+    3. Updates historical upper status for ALL tickers
     """
     start_time = time.time()
     print("🚀 Starting Historical Analysis Pipeline")
     print("=" * 60)
 
     # Fetch all tickers from the Russell table
-    cursor.execute("SELECT ticker FROM tickers_russell;")
+    cursor.execute("SELECT ticker FROM tickers;")
     rows = cursor.fetchall()
     tickers = [row[0] for row in rows]
     
     total_tickers = len(tickers)
     print(f"📊 Processing {total_tickers} tickers")
     
-    # # Step 1: Update all tickers with latest API data
-    # print("\n🔄 Step 1: Updating all tickers with latest API data")
-    # print("-" * 50)
-    
-    # failed_api_updates = []
-    # successful_api_updates = []
-    
-    # for i, ticker in enumerate(tickers, 1):
-    #     print(f"[{i:3d}/{total_tickers}] 🔄 Updating API data for {ticker}")
-    #     try:
-    #         t0 = time.perf_counter()
-    #         updated_dates = updateDBWithAPI(ticker)
-    #         elapsed = time.perf_counter() - t0
-            
-    #         _add_profile_row("api_update", ticker, elapsed, ticker=ticker)
-    #         successful_api_updates.append(ticker)
-            
-    #         if updated_dates:
-    #             print(f"              ✅ Updated {len(updated_dates)} new dates")
-    #         else:
-    #             print(f"              ℹ️  No new data")
-                
-    #     except Exception as e:
-    #         print(f"              ❌ Error: {e}")
-    #         failed_api_updates.append(ticker)
-    #         continue
-    
-    # print(f"\n📈 API Update Summary:")
-    # print(f"   ✅ Successful: {len(successful_api_updates)}")
-    # print(f"   ❌ Failed: {len(failed_api_updates)}")
-    
-    # if failed_api_updates:
-    #     print(f"   Failed tickers: {', '.join(failed_api_updates[:10])}{'...' if len(failed_api_updates) > 10 else ''}")
+    # # Step 1: Update all tickers with API data (full history for new tickers, incremental for existing)
+    print("\n🔄 Step 1: Updating tickers with API data (from last DB date to today)")
+    print("-" * 50)
 
-    # # Step 2: Create historical trendlines for 2024-01-01
-    # print("\n📊 Step 2: Creating historical trendlines for 2024-01-01")
-    # print("-" * 50)
-    
-    # analysis_date = "2024-01-01"
-    
-    # failed_trendline_updates = []
-    # successful_trendline_updates = []
-    
-    # for i, ticker in enumerate(tickers, 1):
-    #     print(f"[{i:3d}/{len(tickers)}] 📈 Creating historical trendline for {ticker}")
-    #     try:
-    #         t0 = time.perf_counter()
-    #         find_and_update_upper_trendline_historical(ticker, analysis_date)
-    #         elapsed = time.perf_counter() - t0
-            
-    #         _add_profile_row("historical_trendlines", ticker, elapsed, ticker=ticker)
-    #         successful_trendline_updates.append(ticker)
-    #         print(f"                   ✅ Completed in {elapsed:.2f}s")
-            
-    #     except Exception as e:
-    #         print(f"                   ❌ Error: {e}")
-    #         failed_trendline_updates.append(ticker)
-    #         continue
-    
-    # print(f"\n📊 Historical Trendlines Summary:")
-    # print(f"   ✅ Successful: {len(successful_trendline_updates)}")
-    # print(f"   ❌ Failed: {len(failed_trendline_updates)}")
-    
-    # if failed_trendline_updates:
-    #     print(f"   Failed tickers: {', '.join(failed_trendline_updates[:10])}{'...' if len(failed_trendline_updates) > 10 else ''}")
+    failed_api_updates = []
+    successful_api_updates = []
+    new_tickers = []  # Track tickers that had no previous data
 
-    # Step 3: Update historical upper status for all tickers
-    print("\n🔍 Step 3: Updating historical upper status")
+    for i, ticker in enumerate(tickers, 1):
+        print(f"[{i:3d}/{total_tickers}] 🔄 Updating API data for {ticker}")
+        try:
+            t0 = time.perf_counter()
+            updated_dates, is_new = updateDBWithAPI(ticker)
+            elapsed = time.perf_counter() - t0
+
+            _add_profile_row("api_update", ticker, elapsed, ticker=ticker)
+            successful_api_updates.append(ticker)
+
+            if is_new:
+                new_tickers.append(ticker)
+                print(f"              ✨ New ticker: Inserted {len(updated_dates)} historical records")
+            elif updated_dates:
+                print(f"              ✅ Updated {len(updated_dates)} new dates")
+            else:
+                print(f"              ℹ️  No new data")
+
+        except Exception as e:
+            print(f"              ❌ Error: {e}")
+            failed_api_updates.append(ticker)
+            continue
+
+    print(f"\n📈 API Update Summary:")
+    print(f"   ✅ Successful: {len(successful_api_updates)}")
+    print(f"   ✨ New tickers: {len(new_tickers)}")
+    print(f"   ❌ Failed: {len(failed_api_updates)}")
+
+    if new_tickers:
+        print(f"   New tickers: {', '.join(new_tickers[:10])}{'...' if len(new_tickers) > 10 else ''}")
+
+    if failed_api_updates:
+        print(f"   Failed tickers: {', '.join(failed_api_updates[:10])}{'...' if len(failed_api_updates) > 10 else ''}")
+
+    # Step 1.5: Update ticker extremes for successfully updated tickers
+    print("\n🎯 Step 1.5: Updating ticker extremes (max/min prices)")
+    print("-" * 50)
+
+    failed_extremes_updates = []
+    successful_extremes_updates = []
+
+    if not successful_api_updates:
+        print("   ℹ️  No successful API updates. Skipping extremes update.")
+    else:
+        print(f"   Processing {len(successful_api_updates)} ticker(s)")
+
+        for i, ticker in enumerate(successful_api_updates, 1):
+            print(f"[{i:3d}/{len(successful_api_updates)}] 🎯 Updating extremes for {ticker}")
+            try:
+                t0 = time.perf_counter()
+                update_ticker_extremes(ticker)
+                elapsed = time.perf_counter() - t0
+
+                _add_profile_row("ticker_extremes", ticker, elapsed, ticker=ticker)
+                successful_extremes_updates.append(ticker)
+                print(f"                   ✅ Completed in {elapsed:.2f}s")
+
+            except Exception as e:
+                print(f"                   ❌ Error: {e}")
+                failed_extremes_updates.append(ticker)
+                continue
+
+        print(f"\n🎯 Ticker Extremes Summary:")
+        print(f"   ✅ Successful: {len(successful_extremes_updates)}")
+        print(f"   ❌ Failed: {len(failed_extremes_updates)}")
+
+        if failed_extremes_updates:
+            print(f"   Failed tickers: {', '.join(failed_extremes_updates[:10])}{'...' if len(failed_extremes_updates) > 10 else ''}")
+
+    # Step 2: Create historical trendlines for 2024-01-01 (ONLY for new tickers)
+    print("\n📊 Step 2: Creating historical trendlines for 2024-01-01 (new tickers only)")
+    print("-" * 50)
+
+    analysis_date = "2024-01-01"
+
+    failed_trendline_updates = []
+    successful_trendline_updates = []
+
+    if not new_tickers:
+        print("   ℹ️  No new tickers to process. Skipping Step 2.")
+    else:
+        print(f"   Processing {len(new_tickers)} new ticker(s)")
+
+        for i, ticker in enumerate(new_tickers, 1):
+            print(f"[{i:3d}/{len(new_tickers)}] 📈 Creating historical trendline for {ticker}")
+            try:
+                t0 = time.perf_counter()
+                find_and_update_upper_trendline_historical(ticker, analysis_date)
+                elapsed = time.perf_counter() - t0
+
+                _add_profile_row("historical_trendlines", ticker, elapsed, ticker=ticker)
+                successful_trendline_updates.append(ticker)
+                print(f"                   ✅ Completed in {elapsed:.2f}s")
+
+            except Exception as e:
+                print(f"                   ❌ Error: {e}")
+                failed_trendline_updates.append(ticker)
+                continue
+
+        print(f"\n📊 Historical Trendlines Summary:")
+        print(f"   ✅ Successful: {len(successful_trendline_updates)}")
+        print(f"   ❌ Failed: {len(failed_trendline_updates)}")
+
+        if failed_trendline_updates:
+            print(f"   Failed tickers: {', '.join(failed_trendline_updates[:10])}{'...' if len(failed_trendline_updates) > 10 else ''}")
+
+    # Step 3: Update historical upper status for ALL tickers
+    print("\n🔍 Step 3: Updating historical upper status (all tickers)")
     print("-" * 50)
     
     failed_status_updates = []
@@ -157,7 +207,8 @@ def historical_analysis_pipeline():
     print("🎯 PIPELINE COMPLETED")
     print("=" * 60)
     print(f"📊 Total tickers processed: {total_tickers}")
-    print(f"✅ API updates successful: {len(successful_api_updates)}")
+    # print(f"✅ API updates successful: {len(successful_api_updates)}")
+    print(f"🎯 Extremes updated: {len(successful_extremes_updates)}")
     print(f"📈 Trendlines created: {len(successful_trendline_updates)}")
     print(f"🔍 Status updates completed: {len(successful_status_updates)}")
     

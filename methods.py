@@ -31,7 +31,7 @@ def fetchDailyJson(symbol, prem_key='8LLD101ZZ48BBVC8'):
 def updateCSVWithAPI(symbol, existing_csv_path, prem_key='8LLD101ZZ48BBVC8'):
     """
     Update an existing CSV file with new trading data fetched from the API.
-    Normalize open, high, and low prices using the adjusted close price.
+    Uses raw market prices (NOT adjusted/normalized).
     """
     if os.path.exists(existing_csv_path):
         existing_df = pd.read_csv(existing_csv_path)
@@ -49,33 +49,20 @@ def updateCSVWithAPI(symbol, existing_csv_path, prem_key='8LLD101ZZ48BBVC8'):
     new_data = []
     for date, values in time_series.items():
         if latest_date_in_csv is None or date > latest_date_in_csv:
-            # Extract the raw and adjusted values
+            # Extract the raw values (use actual market prices, not adjusted)
             open_price = float(values["1. open"])
             high_price = float(values["2. high"])
             low_price = float(values["3. low"])
             close_price = float(values["4. close"])
-            adjusted_close = float(values["5. adjusted close"])
             volume = int(values["6. volume"])
 
-            # Calculate the normalization factor
-            if close_price != 0:  # Avoid division by zero
-                normalization_factor = adjusted_close / close_price
-            else:
-                normalization_factor = 1.0  # Default to no adjustment
-
-            # Normalize the prices
-            normalized_open = round(open_price * normalization_factor, 2)
-            normalized_high = round(high_price * normalization_factor, 2)
-            normalized_low = round(low_price * normalization_factor, 2)
-            normalized_close = round(adjusted_close, 2)  # Use the adjusted close directly
-
-            # Append the normalized data
+            # Use actual market prices without normalization
             new_data.append({
                 "time": date,
-                "open": normalized_open,
-                "high": normalized_high,
-                "low": normalized_low,
-                "close": normalized_close,
+                "open": round(open_price, 2),
+                "high": round(high_price, 2),
+                "low": round(low_price, 2),
+                "close": round(close_price, 2),
                 "volume": volume
             })
 
