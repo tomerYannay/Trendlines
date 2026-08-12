@@ -20,7 +20,7 @@ DB_CONFIG = {
     "host": os.getenv("DB_HOST"),
     "port": os.getenv("DB_PORT"),
 }
-ALPHA_KEY = os.getenv("ALPHAVANTAGE_KEY", "8LLD101ZZ48BBVC8")  # שנה אם צריך
+ALPHA_KEY = os.getenv("ALPHA_VANTAGE_KEY")
 API_BASE = "https://www.alphavantage.co/query"
 
 # בין קריאות API – כדי לעמוד ברייט-לימיט

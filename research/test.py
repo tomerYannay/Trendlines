@@ -7,7 +7,10 @@ import csv
 INITIAL_INVESTMENT = 10000
 START_DATE = "2022-01-01"
 END_DATE = "2026-01-01"
-API_URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=TQQQ&outputsize=full&apikey=8LLD101ZZ48BBVC8"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+API_URL = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=TQQQ&outputsize=full&apikey={os.getenv('ALPHA_VANTAGE_KEY')}"
 
 def fetch_tqqq_data():
     """Fetch TQQQ historical data from Alpha Vantage"""
@@ -83,7 +86,7 @@ def simulate_investment(price_data):
     print(f"Max Drawdown: {((min_value - INITIAL_INVESTMENT) / INITIAL_INVESTMENT * 100):.2f}%")
 
     # Save to CSV
-    csv_filename = 'tqqq_portfolio_daily.csv'
+    csv_filename = 'research/output/tqqq_portfolio_daily.csv'
     with open(csv_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Date', 'Portfolio Value'])
@@ -113,8 +116,8 @@ def plot_portfolio(dates, values):
     plt.xticks(rotation=45, ha='right')
 
     plt.tight_layout()
-    plt.savefig('tqqq_portfolio.png', dpi=300, bbox_inches='tight')
-    print("\nPlot saved as 'tqqq_portfolio.png'")
+    plt.savefig('research/output/tqqq_portfolio.png', dpi=300, bbox_inches='tight')
+    print("\nPlot saved as 'research/output/tqqq_portfolio.png'")
     # plt.show()  # Commented out to prevent blocking
 
 def main():

@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # Load tickers from the CSV file
-df = pd.read_csv("russell_tickers_extracted.csv")  # ודא שהקובץ באותה תיקייה או שים נתיב מלא
+df = pd.read_csv("data/russell_tickers_extracted.csv")  # ודא שהקובץ באותה תיקייה או שים נתיב מלא
 tickers = df['Ticker'].dropna().unique().tolist()
 
 # Prepare DB connection

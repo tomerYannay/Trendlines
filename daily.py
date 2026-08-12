@@ -1,109 +1,81 @@
-import numpy as np
-import psycopg2
-import pandas as pd
-from db import updateDBWithAPI, update_upper_status, find_and_update_upper_trendline, \
-    find_and_update_under_trendline, check_and_update_upper_trendline, update_daily_move, update_under_status, \
-    check_and_update_under_trendline, update_upper_portfolio, update_under_portfolio, \
-    find_closest_trendline, update_closest_status, update_all_upper_trendlines, check_and_update_closest_trendline, \
-    _add_profile_row
 import time
+
+import psycopg2
 from dotenv import load_dotenv
 import os
+
+from db import (
+    updateDBWithAPI, update_upper_status, find_and_update_upper_trendline,
+    check_and_update_upper_trendline, prefetch_daily_data, _add_profile_row,
+)
 
 # Load environment variables from the .env file
 load_dotenv()
 
-# Get the database credentials from the environment variables
-db_username = os.getenv('DB_USERNAME')
-db_password = os.getenv('DB_PASSWORD')
-db_host = os.getenv('DB_HOST')
-db_port = os.getenv('DB_PORT')
-db_name = os.getenv('DB_NAME')
-
-# Now you can use these variables to connect to the database
-
 db_config = {
-    'dbname': db_name,      # Name of your database
-    'user': db_username,          # Your PostgreSQL username
-    'password': db_password, # Your PostgreSQL password
-    'host': db_host,         # Hostname (localhost for local)
-    'port': db_port                 # Default PostgreSQL port
+    'dbname': os.getenv('DB_NAME'),
+    'user': os.getenv('DB_USERNAME'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'),
+    'port': os.getenv('DB_PORT'),
 }
 
 connection = psycopg2.connect(**db_config)
 cursor = connection.cursor()
 
 
-def daily_update():
+def daily_update(prefetch=True, max_workers=8, prefetch_outputsize='compact', tickers=None):
     """
-    Update stock data for all tickers stored in the `tickers` table.
+    Update stock data for all tickers stored in the `tickers_russell` table.
+
+    prefetch: fetch all API data in parallel up-front (rate-limited by
+    ALPHA_VANTAGE_RPM), then run the DB pipeline per ticker on the
+    already-downloaded data.
+    prefetch_outputsize: 'compact' for routine daily runs; use 'full' for a
+    catch-up run when the DB is more than ~100 trading days behind (avoids a
+    second full fetch per ticker).
+    tickers: optional explicit list (used for testing on a subset).
     """
     start_time = time.time()
 
-    # Fetch all tickers from the `tickers` table
-    # cursor.execute("SELECT ticker FROM tickers;")
-    cursor.execute("SELECT ticker FROM tickers_russell;")
-    rows = cursor.fetchall()
+    if tickers is None:
+        cursor.execute("SELECT ticker FROM tickers_russell;")
+        tickers = [row[0] for row in cursor.fetchall()]
 
-    # Extract tickers into a list
-    tickers = [row[0] for row in rows]
-
-    cursor.execute("SELECT MAX(date) FROM stock_prices;")
-    # latest_date = cursor.fetchone()[0]
-    latest_date = pd.Timestamp("2025-07-25")
-
-    # if latest_date is None:
-    #     print("⚠️ No data in stock_prices table.")
-    #     return
-
-    # latest_date = pd.Timestamp(latest_date)
+    prefetched = prefetch_daily_data(tickers, outputsize=prefetch_outputsize, max_workers=max_workers) if prefetch else {}
 
     # Process each ticker
     for ticker in tickers:
         print(f"\n🟡 Updating {ticker}")
         try:
             t0 = time.perf_counter()
-            updated_dates = updateDBWithAPI(ticker)
+            updated_dates, is_new = updateDBWithAPI(ticker, prefetched_df=prefetched.get(ticker))
+            if is_new:
+                # A brand-new ticker has no anchored trendline yet
+                find_and_update_upper_trendline(ticker)
             update_upper_status(ticker)
-            # update_under_status(ticker)
-            # update_all_upper_trendlines(ticker)
-            # find_closest_trendline(ticker, latest_date)
-            # update_closest_status(ticker)
-            if len(updated_dates) > 0:
+            if updated_dates:
                 check_and_update_upper_trendline(ticker, updated_dates)
-            #     check_and_update_under_trendline(ticker, updated_dates)
-                # check_and_update_closest_trendline(ticker, updated_dates)
-            # find_and_update_upper_trendline(ticker)
-            # find_and_update_under_trendline(ticker)
             _add_profile_row("ticker", "full_pipeline", time.perf_counter() - t0, ticker=ticker)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
             continue
-    #
-    # for ticker in tickers:
-    #     update_daily_move(ticker)
-
-    # update_upper_portfolio()
-    # update_upper_portfolio()
-    # update_under_portfolio()
 
     if connection:
         cursor.close()
         connection.close()
 
-    end_time = time.time()
-    execution_time = end_time - start_time
+    execution_time = time.time() - start_time
 
     # Print the execution time in MM:SS or HH:MM:SS format
     if execution_time < 60:
-        # For times under 1 minute, print seconds
         print(f"Execution time: {execution_time:.2f} seconds")
-    elif execution_time < 3600:  # For times less than 1 hour
-        minutes = int(execution_time // 60)  # Whole minutes
-        seconds = int(execution_time % 60)  # Remaining seconds
-        print(f"Execution time: {minutes:02}:{seconds:02}")  # Format as MM:SS
+    elif execution_time < 3600:
+        minutes = int(execution_time // 60)
+        seconds = int(execution_time % 60)
+        print(f"Execution time: {minutes:02}:{seconds:02}")
     else:
-        hours = int(execution_time // 3600)  # Whole hours
-        minutes = int((execution_time % 3600) // 60)  # Remaining minutes
-        seconds = int(execution_time % 60)  # Remaining seconds
+        hours = int(execution_time // 3600)
+        minutes = int((execution_time % 3600) // 60)
+        seconds = int(execution_time % 60)
         print(f"Execution time: {hours:02}:{minutes:02}:{seconds:02}")

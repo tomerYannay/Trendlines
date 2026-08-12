@@ -6,10 +6,11 @@ from dotenv import load_dotenv
 import os
 
 # Import from our existing modules
-from db import updateDBWithAPI, _add_profile_row, dump_profile_csv
+from db import updateDBWithAPI, _add_profile_row, dump_profile_csv, find_and_update_under_trendline_historical
 from historical_analysis import (
     find_and_update_upper_trendline_historical,
     update_upper_status_historical,
+    update_under_status_historical,
     update_ticker_extremes
 )
 
@@ -41,7 +42,11 @@ def historical_analysis_pipeline():
     1. Updates all tickers with API data (from last DB date to today, or full history for new tickers)
     1.5. Updates ticker extremes (max/min prices) for successfully updated tickers
     2. Creates historical trendlines for 2024-01-01 (ONLY for new tickers from step 1)
-    3. Updates historical upper status for ALL tickers
+       2a. Creates UPPER (resistance) trendlines
+       2b. Creates LOWER (support) trendlines
+    3. Updates historical status for ALL tickers
+       3a. Updates UPPER (resistance) status
+       3b. Updates LOWER (support) status
     """
     start_time = time.time()
     print("🚀 Starting Historical Analysis Pipeline")
@@ -55,13 +60,15 @@ def historical_analysis_pipeline():
     total_tickers = len(tickers)
     print(f"📊 Processing {total_tickers} tickers")
     
-    # # Step 1: Update all tickers with API data (full history for new tickers, incremental for existing)
+    # Step 1: Update all tickers with API data (full history for new tickers, incremental for existing)
     print("\n🔄 Step 1: Updating tickers with API data (from last DB date to today)")
     print("-" * 50)
 
     failed_api_updates = []
-    successful_api_updates = []
+    successful_api_updates = []  # Initialize as empty list
     new_tickers = []  # Track tickers that had no previous data
+
+    # print("\n⏩ Step 1: SKIPPED (running only Step 1.5 and Step 3)")
 
     for i, ticker in enumerate(tickers, 1):
         print(f"[{i:3d}/{total_tickers}] 🔄 Updating API data for {ticker}")
@@ -83,6 +90,7 @@ def historical_analysis_pipeline():
 
         except Exception as e:
             print(f"              ❌ Error: {e}")
+            connection.rollback()  # Rollback the failed transaction
             failed_api_updates.append(ticker)
             continue
 
@@ -122,6 +130,7 @@ def historical_analysis_pipeline():
 
             except Exception as e:
                 print(f"                   ❌ Error: {e}")
+                connection.rollback()  # Rollback the failed transaction
                 failed_extremes_updates.append(ticker)
                 continue
 
@@ -136,81 +145,145 @@ def historical_analysis_pipeline():
     print("\n📊 Step 2: Creating historical trendlines for 2024-01-01 (new tickers only)")
     print("-" * 50)
 
+    print("\n⏩ Step 2: SKIPPED (running only Step 1.5 and Step 3)")
+
     analysis_date = "2024-01-01"
 
-    failed_trendline_updates = []
-    successful_trendline_updates = []
+    failed_upper_trendline_updates = []
+    successful_upper_trendline_updates = []
+    failed_under_trendline_updates = []
+    successful_under_trendline_updates = []
 
     if not new_tickers:
         print("   ℹ️  No new tickers to process. Skipping Step 2.")
     else:
         print(f"   Processing {len(new_tickers)} new ticker(s)")
 
+        # Step 2a: Create UPPER trendlines
+        print(f"\n   📈 Step 2a: Creating UPPER (resistance) trendlines")
         for i, ticker in enumerate(new_tickers, 1):
-            print(f"[{i:3d}/{len(new_tickers)}] 📈 Creating historical trendline for {ticker}")
+            print(f"   [{i:3d}/{len(new_tickers)}] 📈 Creating upper trendline for {ticker}")
             try:
                 t0 = time.perf_counter()
                 find_and_update_upper_trendline_historical(ticker, analysis_date)
                 elapsed = time.perf_counter() - t0
 
-                _add_profile_row("historical_trendlines", ticker, elapsed, ticker=ticker)
-                successful_trendline_updates.append(ticker)
-                print(f"                   ✅ Completed in {elapsed:.2f}s")
+                _add_profile_row("historical_upper_trendlines", ticker, elapsed, ticker=ticker)
+                successful_upper_trendline_updates.append(ticker)
+                print(f"                      ✅ Completed in {elapsed:.2f}s")
 
             except Exception as e:
-                print(f"                   ❌ Error: {e}")
-                failed_trendline_updates.append(ticker)
+                print(f"                      ❌ Error: {e}")
+                connection.rollback()  # Rollback the failed transaction
+                failed_upper_trendline_updates.append(ticker)
+                continue
+
+        # Step 2b: Create LOWER trendlines
+        print(f"\n   📉 Step 2b: Creating LOWER (support) trendlines")
+        for i, ticker in enumerate(new_tickers, 1):
+            print(f"   [{i:3d}/{len(new_tickers)}] 📉 Creating lower trendline for {ticker}")
+            try:
+                t0 = time.perf_counter()
+                find_and_update_under_trendline_historical(ticker, analysis_date)
+                elapsed = time.perf_counter() - t0
+
+                _add_profile_row("historical_under_trendlines", ticker, elapsed, ticker=ticker)
+                successful_under_trendline_updates.append(ticker)
+                print(f"                      ✅ Completed in {elapsed:.2f}s")
+
+            except Exception as e:
+                print(f"                      ❌ Error: {e}")
+                connection.rollback()  # Rollback the failed transaction
+                failed_under_trendline_updates.append(ticker)
                 continue
 
         print(f"\n📊 Historical Trendlines Summary:")
-        print(f"   ✅ Successful: {len(successful_trendline_updates)}")
-        print(f"   ❌ Failed: {len(failed_trendline_updates)}")
+        print(f"   📈 Upper (resistance):")
+        print(f"      ✅ Successful: {len(successful_upper_trendline_updates)}")
+        print(f"      ❌ Failed: {len(failed_upper_trendline_updates)}")
+        print(f"   📉 Lower (support):")
+        print(f"      ✅ Successful: {len(successful_under_trendline_updates)}")
+        print(f"      ❌ Failed: {len(failed_under_trendline_updates)}")
 
-        if failed_trendline_updates:
-            print(f"   Failed tickers: {', '.join(failed_trendline_updates[:10])}{'...' if len(failed_trendline_updates) > 10 else ''}")
+        if failed_upper_trendline_updates:
+            print(f"   Failed upper tickers: {', '.join(failed_upper_trendline_updates[:10])}{'...' if len(failed_upper_trendline_updates) > 10 else ''}")
+        if failed_under_trendline_updates:
+            print(f"   Failed lower tickers: {', '.join(failed_under_trendline_updates[:10])}{'...' if len(failed_under_trendline_updates) > 10 else ''}")
 
-    # Step 3: Update historical upper status for ALL tickers
-    print("\n🔍 Step 3: Updating historical upper status (all tickers)")
+    # Step 3: Update historical status for ALL tickers (both upper and lower)
+    print("\n🔍 Step 3: Updating historical status (all tickers)")
     print("-" * 50)
-    
-    failed_status_updates = []
-    successful_status_updates = []
-    
+
+    failed_upper_status_updates = []
+    successful_upper_status_updates = []
+    failed_under_status_updates = []
+    successful_under_status_updates = []
+
+    # Step 3a: Update UPPER status
+    print(f"\n   📈 Step 3a: Updating UPPER (resistance) status")
     for i, ticker in enumerate(tickers, 1):
-        print(f"[{i:3d}/{len(tickers)}] 🔍 Updating historical status for {ticker}")
+        print(f"   [{i:3d}/{len(tickers)}] 📈 Updating upper status for {ticker}")
         try:
             t0 = time.perf_counter()
             update_upper_status_historical(ticker)
             elapsed = time.perf_counter() - t0
-            
-            _add_profile_row("historical_status", ticker, elapsed, ticker=ticker)
-            successful_status_updates.append(ticker)
-            print(f"                 ✅ Completed in {elapsed:.2f}s")
-            
+
+            _add_profile_row("historical_upper_status", ticker, elapsed, ticker=ticker)
+            successful_upper_status_updates.append(ticker)
+            print(f"                    ✅ Completed in {elapsed:.2f}s")
+
         except Exception as e:
-            print(f"                 ❌ Error: {e}")
-            failed_status_updates.append(ticker)
+            print(f"                    ❌ Error: {e}")
+            connection.rollback()  # Rollback the failed transaction
+            failed_upper_status_updates.append(ticker)
+            continue
+
+    # Step 3b: Update LOWER status
+    print(f"\n   📉 Step 3b: Updating LOWER (support) status")
+    for i, ticker in enumerate(tickers, 1):
+        print(f"   [{i:3d}/{len(tickers)}] 📉 Updating lower status for {ticker}")
+        try:
+            t0 = time.perf_counter()
+            update_under_status_historical(ticker)
+            elapsed = time.perf_counter() - t0
+
+            _add_profile_row("historical_under_status", ticker, elapsed, ticker=ticker)
+            successful_under_status_updates.append(ticker)
+            print(f"                    ✅ Completed in {elapsed:.2f}s")
+
+        except Exception as e:
+            print(f"                    ❌ Error: {e}")
+            connection.rollback()  # Rollback the failed transaction
+            failed_under_status_updates.append(ticker)
             continue
 
     print(f"\n🔍 Historical Status Summary:")
-    print(f"   ✅ Successful: {len(successful_status_updates)}")
-    print(f"   ❌ Failed: {len(failed_status_updates)}")
-    
-    if failed_status_updates:
-        print(f"   Failed tickers: {', '.join(failed_status_updates[:10])}{'...' if len(failed_status_updates) > 10 else ''}")
+    print(f"   📈 Upper (resistance):")
+    print(f"      ✅ Successful: {len(successful_upper_status_updates)}")
+    print(f"      ❌ Failed: {len(failed_upper_status_updates)}")
+    print(f"   📉 Lower (support):")
+    print(f"      ✅ Successful: {len(successful_under_status_updates)}")
+    print(f"      ❌ Failed: {len(failed_under_status_updates)}")
+
+    if failed_upper_status_updates:
+        print(f"   Failed upper tickers: {', '.join(failed_upper_status_updates[:10])}{'...' if len(failed_upper_status_updates) > 10 else ''}")
+    if failed_under_status_updates:
+        print(f"   Failed lower tickers: {', '.join(failed_under_status_updates[:10])}{'...' if len(failed_under_status_updates) > 10 else ''}")
 
     # Final Summary
     end_time = time.time()
     execution_time = end_time - start_time
-    
+
     print("\n" + "=" * 60)
     print("🎯 PIPELINE COMPLETED")
     print("=" * 60)
     print(f"📊 Total tickers processed: {total_tickers}")
     # print(f"✅ API updates successful: {len(successful_api_updates)}")
     print(f"🎯 Extremes updated: {len(successful_extremes_updates)}")
-    print(f"📈 Trendlines created: {len(successful_trendline_updates)}")
-    print(f"🔍 Status updates completed: {len(successful_status_updates)}")
+    print(f"📈 Upper trendlines created: {len(successful_upper_trendline_updates)}")
+    print(f"📉 Lower trendlines created: {len(successful_under_trendline_updates)}")
+    print(f"📈 Upper status updates completed: {len(successful_upper_status_updates)}")
+    print(f"📉 Lower status updates completed: {len(successful_under_status_updates)}")
     
     # Print execution time
     if execution_time < 60:

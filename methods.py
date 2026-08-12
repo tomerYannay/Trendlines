@@ -9,12 +9,28 @@ from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
 from datetime import datetime, timedelta
 import psycopg2
+from dotenv import load_dotenv
+
+import trendline_core as core
+
+load_dotenv()
+
+# API key lives in .env — never hardcode it
+ALPHA_VANTAGE_KEY = os.getenv('ALPHA_VANTAGE_KEY')
 
 
-def fetchDailyJson(symbol, prem_key='8LLD101ZZ48BBVC8'):
+def _api_key(prem_key=None):
+    key = prem_key or ALPHA_VANTAGE_KEY
+    if not key:
+        raise ValueError("Alpha Vantage API key missing. Set ALPHA_VANTAGE_KEY in .env")
+    return key
+
+
+def fetchDailyJson(symbol, prem_key=None):
     """
     Fetch daily stock data for the given symbol using Alpha Vantage API.
     """
+    prem_key = _api_key(prem_key)
     api_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&outputsize=full&apikey={prem_key}'
     time.sleep(1)  # To prevent exceeding API rate limits
     response = requests.get(api_url)
@@ -28,7 +44,7 @@ def fetchDailyJson(symbol, prem_key='8LLD101ZZ48BBVC8'):
         raise ConnectionError(f"Failed to fetch data for {symbol}: {response.status_code}")
 
 
-def updateCSVWithAPI(symbol, existing_csv_path, prem_key='8LLD101ZZ48BBVC8'):
+def updateCSVWithAPI(symbol, existing_csv_path, prem_key=None):
     """
     Update an existing CSV file with new trading data fetched from the API.
     Uses raw market prices (NOT adjusted/normalized).
@@ -471,7 +487,7 @@ def find_largest_negative_slope(data, nth_highest=1):
 
 def get_rsi_from_date(stock, start_date):
     # Alpha Vantage API URL
-    api_key = "8LLD101ZZ48BBVC8"
+    api_key = _api_key()
     url = f"https://www.alphavantage.co/query?function=RSI&symbol={stock}&interval=daily&time_period=14&series_type=close&apikey={api_key}"
 
     # Request the data
@@ -503,7 +519,7 @@ def get_rsi_from_date(stock, start_date):
 
 def get_ema20_from_date(stock, start_date):
     # Alpha Vantage API URL
-    api_key = "8LLD101ZZ48BBVC8"
+    api_key = _api_key()
     ema = 20
     url = f"https://www.alphavantage.co/query?function=EMA&symbol={stock}&interval=daily&time_period={ema}&series_type=close&apikey={api_key}"
 
@@ -536,7 +552,7 @@ def get_ema20_from_date(stock, start_date):
 
 def get_ma50_from_date(stock, start_date):
     # Alpha Vantage API URL
-    api_key = "8LLD101ZZ48BBVC8"
+    api_key = _api_key()
     ma = 50
     url = f"https://www.alphavantage.co/query?function=SMA&symbol={stock}&interval=daily&time_period={ma}&series_type=close&apikey={api_key}"
 
@@ -569,7 +585,7 @@ def get_ma50_from_date(stock, start_date):
 
 def get_ma100_from_date(stock, start_date):
     # Alpha Vantage API URL
-    api_key = "8LLD101ZZ48BBVC8"
+    api_key = _api_key()
     ma = 100
     url = f"https://www.alphavantage.co/query?function=SMA&symbol={stock}&interval=daily&time_period={ma}&series_type=close&apikey={api_key}"
 
@@ -602,7 +618,7 @@ def get_ma100_from_date(stock, start_date):
 
 def get_ma200_from_date(stock, start_date):
     # Alpha Vantage API URL
-    api_key = "8LLD101ZZ48BBVC8"
+    api_key = _api_key()
     ma = 200
     url = f"https://www.alphavantage.co/query?function=SMA&symbol={stock}&interval=daily&time_period={ma}&series_type=close&apikey={api_key}"
 
@@ -1015,68 +1031,20 @@ def create_trendline(stock):
 
 
 def find_highest_price_and_validate_trendline(stock_file):
-    # Load the CSV
+    """
+    Vectorized (via trendline_core): the trendline from the all-time-high to the
+    later high with the largest log-scale slope. Because the anchor is the
+    global maximum, the max-slope line can never be breached by an intermediate
+    high, so no validation pass is needed.
+    Returns (date1, date2, slope) or None.
+    """
     df = pd.read_csv(stock_file)
-
-    # Ensure 'time' is in datetime format
     df['time'] = pd.to_datetime(df['time'])
+    df = df.sort_values('time').reset_index(drop=True)
 
-    # Find the highest price and its date
-    highest_row = df.loc[df['high'].idxmax()]
-    date1 = highest_row['time']
-    price1 = highest_row['high']
-
-    # Initialize variables for the second point
-    largest_negative_slope = float('-inf')
-    best_date2 = None
-    best_price2 = None
-    min_slope = -100
-
-    # Sort rows by 'high' in descending order for faster iteration
-    sorted_df = df[df['time'] > date1].sort_values(by='high', ascending=False)
-
-    # Iterate through all rows after the highest point
-    for index, row in sorted_df.iterrows():
-        date2 = row['time']
-        price2 = row['high']
-
-        # Calculate the number of trading days between date1 and date2
-        trading_days_between = len(df[(df['time'] >= date1) & (df['time'] <= date2)]) - 1
-        if trading_days_between == 0:
-            continue  # Avoid division by zero
-
-        # Calculate the slope in log scale
-        log_price1 = np.log(price1)
-        log_price2 = np.log(price2)
-        slope = (log_price2 - log_price1) / trading_days_between
-
-        # Only consider negative slopes
-        if slope >= 0 or round(slope, 7) < round(min_slope, 7):
-            continue
-
-        # Check that no high price between date1 and date2 is above the trendline
-        is_valid = True
-        for i, mid_row in df[(df['time'] > date1) & (df['time'] < date2)].iterrows():
-            # Calculate the trendline price at mid_row using the trading day index
-            trading_days_to_mid_row = len(df[(df['time'] >= date1) & (df['time'] <= mid_row['time'])]) - 1
-            log_trend_price = log_price1 + slope * trading_days_to_mid_row
-            trend_price = np.exp(log_trend_price)
-
-            # Check if the high price exceeds the trendline
-            if mid_row['high'] > trend_price:
-                is_valid = False
-                min_slope = slope
-                break
-
-        # If valid and the slope is the largest negative slope, update the best point
-        if is_valid and slope > largest_negative_slope:
-            largest_negative_slope = slope
-            best_date2 = date2
-            best_price2 = price2
-
-    # Return the result if a valid pair is found
-    if best_date2:
-        return date1, best_date2, largest_negative_slope
-    else:
+    result = core.best_upper_trendline(df['high'].values)
+    if result is None:
         return None
-    
+
+    index1, index2, slope = result
+    return df['time'].iloc[index1], df['time'].iloc[index2], slope

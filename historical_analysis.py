@@ -10,6 +10,8 @@ from datetime import datetime
 from functools import wraps
 from contextlib import contextmanager
 
+import trendline_core as core
+
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -98,84 +100,26 @@ def find_and_update_upper_trendline_historical(stock, last_date):
             print(f"No data found for {stock} up to {last_date}.")
             return
 
-        # Convert the data into a DataFrame
-        df = pd.DataFrame(rows, columns=['time', 'high'])
-        df['time'] = pd.to_datetime(df['time'])
-        df['high'] = df['high'].astype(float)
+        dates = [r[0] for r in rows]
+        highs = np.array([float(r[1]) for r in rows])
 
-        # Extract unique trading dates and sort them
-        trading_days = sorted(df['time'].unique())
-
-        # Find the highest price and its date
-        highest_row = df.loc[df['high'].idxmax()]
-        date1 = highest_row['time']
-        price1 = highest_row['high']
-
-        # Initialize variables for the second point
-        largest_negative_slope = float('-inf')
-        best_date2 = None
-
-        # Sort rows by 'high' in descending order for faster iteration
-        # Only consider dates after date1 and up to last_date
-        sorted_df = df[df['time'] > date1].sort_values(by='high', ascending=False)
-
-        # Iterate through sorted rows
-        for _, row in sorted_df.iterrows():
-            date2 = row['time']
-            price2 = row['high']
-
-            # Check if the high price of date2 equals the high price of date1
-            if price2 == price1:
-                slope = 0
-                index1 = trading_days.index(date1)
-                index2 = trading_days.index(date2)
-                date_diff = index2 - index1
-
-                # Insert into upper_trendlines_historical table
-                cursor.execute("""
-                    INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s);
-                """, (stock, last_date, date1, date2, slope, date_diff, index2))
-                connection.commit()
-
-                print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}): Date1: {date1}, Date2: {date2}, Slope: {slope}, Date_diff: {date_diff}, Index2: {index2}")
-                return
-
-            # Calculate the number of trading days between date1 and date2
-            index1 = trading_days.index(date1)
-            index2 = trading_days.index(date2)
-            date_diff = index2 - index1
-            if date_diff == 0:
-                continue  # Avoid division by zero
-
-            # Calculate the slope in log scale
-            log_price1 = np.log(price1)
-            log_price2 = np.log(price2)
-            slope = (log_price2 - log_price1) / date_diff
-
-            # If valid and the slope is the largest negative slope, update the best point
-            if slope > largest_negative_slope:
-                largest_negative_slope = slope
-                best_date2 = date2
-
-        largest_negative_slope = float(largest_negative_slope)
-
-        # Insert the trendline data if a valid trendline is found
-        if best_date2:
-            index1 = trading_days.index(date1)
-            index2 = trading_days.index(best_date2)
-            date_diff = index2 - index1
-
-            cursor.execute("""
-                INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """, (stock, last_date, date1, best_date2, largest_negative_slope, date_diff, index2))
-            connection.commit()
-
-            print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}): Date1: {date1}, Date2: {best_date2}, Slope: {largest_negative_slope}, Date_diff: {date_diff}, Index2: {index2}")
-        else:
+        result = core.best_upper_trendline(highs)
+        if result is None:
             print(f"No valid trendline found for {stock} up to {last_date}.")
-            
+            return
+
+        index1, index2, slope = result
+        date1, date2 = dates[index1], dates[index2]
+        date_diff = index2 - index1
+
+        cursor.execute("""
+            INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """, (stock, last_date, date1, date2, slope, date_diff, index2))
+        connection.commit()
+
+        print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}): Date1: {date1}, Date2: {date2}, Slope: {slope}, Date_diff: {date_diff}, Index2: {index2}")
+
     except Exception as e:
         connection.rollback()
         raise e
@@ -215,83 +159,25 @@ def find_and_update_upper_trendline_historical_with_first_date(stock, first_date
             print(f"No data found for {stock} between {first_date} and {last_date}.")
             return
 
-        # Convert the data into a DataFrame
-        df = pd.DataFrame(rows, columns=['time', 'high'])
-        df['time'] = pd.to_datetime(df['time'])
-        df['high'] = df['high'].astype(float)
+        dates = [r[0] for r in rows]
+        highs = np.array([float(r[1]) for r in rows])
 
-        # Extract unique trading dates and sort them
-        trading_days = sorted(df['time'].unique())
-
-        # Find the highest price and its date (date1 must be >= first_date)
-        highest_row = df.loc[df['high'].idxmax()]
-        date1 = highest_row['time']
-        price1 = highest_row['high']
-
-        # Initialize variables for the second point
-        largest_negative_slope = float('-inf')
-        best_date2 = None
-
-        # Sort rows by 'high' in descending order for faster iteration
-        # Only consider dates after date1 and up to last_date
-        sorted_df = df[df['time'] > date1].sort_values(by='high', ascending=False)
-
-        # Iterate through sorted rows
-        for _, row in sorted_df.iterrows():
-            date2 = row['time']
-            price2 = row['high']
-
-            # Check if the high price of date2 equals the high price of date1
-            if price2 == price1:
-                slope = 0
-                index1 = trading_days.index(date1)
-                index2 = trading_days.index(date2)
-                date_diff = index2 - index1
-
-                # Insert into upper_trendlines_historical table
-                cursor.execute("""
-                    INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s);
-                """, (stock, last_date, date1, date2, slope, date_diff, index2))
-                connection.commit()
-
-                print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}, first_date: {first_date}): Date1: {date1}, Date2: {date2}, Slope: {slope}, Date_diff: {date_diff}, Index2: {index2}")
-                return
-
-            # Calculate the number of trading days between date1 and date2
-            index1 = trading_days.index(date1)
-            index2 = trading_days.index(date2)
-            date_diff = index2 - index1
-            if date_diff == 0:
-                continue  # Avoid division by zero
-
-            # Calculate the slope in log scale
-            log_price1 = np.log(price1)
-            log_price2 = np.log(price2)
-            slope = (log_price2 - log_price1) / date_diff
-
-            # If valid and the slope is the largest negative slope, update the best point
-            if slope > largest_negative_slope:
-                largest_negative_slope = slope
-                best_date2 = date2
-
-        largest_negative_slope = float(largest_negative_slope)
-
-        # Insert the trendline data if a valid trendline is found
-        if best_date2:
-            index1 = trading_days.index(date1)
-            index2 = trading_days.index(best_date2)
-            date_diff = index2 - index1
-
-            cursor.execute("""
-                INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """, (stock, last_date, date1, best_date2, largest_negative_slope, date_diff, index2))
-            connection.commit()
-
-            print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}, first_date: {first_date}): Date1: {date1}, Date2: {best_date2}, Slope: {largest_negative_slope}, Date_diff: {date_diff}, Index2: {index2}")
-        else:
+        result = core.best_upper_trendline(highs)
+        if result is None:
             print(f"No valid trendline found for {stock} between {first_date} and {last_date}.")
+            return
+
+        index1, index2, slope = result
+        date1, date2 = dates[index1], dates[index2]
+        date_diff = index2 - index1
+
+        cursor.execute("""
+            INSERT INTO upper_trendlines_historical (ticker, analysis_date, date1, date2, slope, date_diff, index2)
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """, (stock, last_date, date1, date2, slope, date_diff, index2))
+        connection.commit()
+
+        print(f"Inserted historical upper trendline for {stock} (analysis_date: {last_date}, first_date: {first_date}): Date1: {date1}, Date2: {date2}, Slope: {slope}, Date_diff: {date_diff}, Index2: {index2}")
 
     except Exception as e:
         connection.rollback()
@@ -306,7 +192,7 @@ def calculate_upper_trendline_historical(data, date1, date2, target_date):
     Calculate trendline prices using logarithmic scale for a specific target date.
     Returns only the trendline price for the target date.
     """
-    trading_days = sorted(data['date'].unique())
+    index_map = {d: i for i, d in enumerate(data['date'])}
 
     # Convert inputs to pandas Timestamps for consistent comparison
     date1 = pd.to_datetime(date1)
@@ -314,51 +200,103 @@ def calculate_upper_trendline_historical(data, date1, date2, target_date):
     target_date = pd.to_datetime(target_date)
 
     try:
-        index1 = trading_days.index(date1)
-        index2 = trading_days.index(date2)
-        target_index = trading_days.index(target_date)
-    except ValueError as e:
+        index1 = index_map[date1]
+        index2 = index_map[date2]
+        target_index = index_map[target_date]
+    except KeyError as e:
         print(f"Date not found in trading days: {e}")
         return None
 
-    # Get high prices for date1 and date2
-    price1 = float(data.loc[data['date'] == date1, 'high'].values[0])
-    price2 = float(data.loc[data['date'] == date2, 'high'].values[0])
+    price1 = float(data['high'].iloc[index1])
+    price2 = float(data['high'].iloc[index2])
 
-    # Calculate log prices and slope in logarithmic scale
-    log_price1 = np.log(price1)
-    log_price2 = np.log(price2)
-    log_slope = (log_price2 - log_price1) / (index2 - index1)
-
-    # Calculate trendline price for target date
-    additional_trading_days = target_index - index2
-    log_trend_price = log_price2 + log_slope * additional_trading_days
-    trend_price = np.exp(log_trend_price)
-
-    return round(trend_price, 2)
+    log_slope = (np.log(price2) - np.log(price1)) / (index2 - index1)
+    return core.trendline_price_at(target_index, index2, price2, log_slope)
 
 @timed()
 def calculate_sequence(breakthrough_series):
-    """Calculate sequence of TRUE values in breakthrough column."""
-    sequence = []
-    count = 0
-    for value in breakthrough_series:
-        if value:
-            count += 1
+    """Calculate sequence of TRUE values in breakthrough column (vectorized)."""
+    return core.calculate_sequence(breakthrough_series)
+
+@timed()
+def calculate_under_trendline_historical(data, date1, date2, target_date):
+    """
+    Calculate lower trendline prices using logarithmic scale for a specific target date.
+    Returns only the trendline price for the target date.
+    Uses LOW prices instead of HIGH for support line calculation.
+    """
+    index_map = {d: i for i, d in enumerate(data['date'])}
+
+    # Convert inputs to pandas Timestamps for consistent comparison
+    date1 = pd.to_datetime(date1)
+    date2 = pd.to_datetime(date2)
+    target_date = pd.to_datetime(target_date)
+
+    try:
+        index1 = index_map[date1]
+        index2 = index_map[date2]
+        target_index = index_map[target_date]
+    except KeyError as e:
+        print(f"Date not found in trading days: {e}")
+        return None
+
+    price1 = float(data['low'].iloc[index1])
+    price2 = float(data['low'].iloc[index2])
+
+    log_slope = (np.log(price2) - np.log(price1)) / (index2 - index1)
+    return core.trendline_price_at(target_index, index2, price2, log_slope)
+
+def _trendline_params(price_data, trading_days_map, date1, date2, price_col):
+    """
+    Resolve (index2, anchor_price, log_slope) for a stored trendline.
+    Returns None when either anchor date is missing from the price series.
+    """
+    try:
+        index1 = trading_days_map[pd.Timestamp(date1)]
+        index2 = trading_days_map[pd.Timestamp(date2)]
+    except KeyError:
+        return None
+    price1 = float(price_data[price_col].iloc[index1])
+    price2 = float(price_data[price_col].iloc[index2])
+    log_slope = (np.log(price2) - np.log(price1)) / (index2 - index1)
+    return index1, index2, price2, log_slope
+
+
+def _load_status_streak(cursor, table, stock):
+    """
+    Resume state for the running breakthrough streak: walk the tail of existing
+    status rows. Returns (streak, previous_breakthrough).
+    """
+    cursor.execute(f"""
+        SELECT breakthrough
+        FROM {table}
+        WHERE ticker = %s
+        ORDER BY date;
+    """, (stock,))
+    flags = [row[0] for row in cursor.fetchall()]
+    streak = 0
+    for flag in reversed(flags):
+        if flag:
+            streak += 1
         else:
-            count = 0
-        sequence.append(count)
-    return sequence
+            break
+    prev_bt = flags[-1] if flags else False
+    return streak, prev_bt
+
 
 @timed()
 def update_upper_status_historical(stock):
     """
     Update upper_status_historical table using the correct historical trendline for each date.
     When update_trendline=True, calculates a new trendline and inserts into upper_trendlines_historical.
+
+    Optimized: trendlines are cached in memory, the breakthrough streak is
+    maintained as a running counter (no per-day queries), and status rows are
+    inserted in a single batch.
     """
     connection = get_db_connection()
     cursor = connection.cursor()
-    
+
     try:
         # Fetch all stock prices for this ticker
         cursor.execute("""
@@ -378,8 +316,9 @@ def update_upper_status_historical(stock):
         price_data['high'] = price_data['high'].astype(float)
         price_data['close'] = price_data['close'].astype(float)
 
-        trading_days = sorted(price_data['date'].unique())
+        trading_days = list(price_data['date'])
         trading_days_map = {day: idx for idx, day in enumerate(trading_days)}
+        closes = price_data['close'].values
 
         # Fetch existing entries to avoid duplicates
         cursor.execute("""
@@ -389,163 +328,270 @@ def update_upper_status_historical(stock):
         """, (stock,))
         existing_dates = {row[0] for row in cursor.fetchall()}
 
-        # Get the initial trendline (from 2024-01-01 or earliest available)
+        # Cache all historical trendlines for this ticker, ordered by analysis_date
         cursor.execute("""
-            SELECT date1, date2, slope, analysis_date
+            SELECT analysis_date, date1, date2
             FROM upper_trendlines_historical
             WHERE ticker = %s
-            ORDER BY analysis_date
-            LIMIT 1;
+            ORDER BY analysis_date;
         """, (stock,))
-        initial_trendline = cursor.fetchone()
-        
-        if not initial_trendline:
+        trendlines = [(pd.Timestamp(r[0]), r[1], r[2]) for r in cursor.fetchall()]
+
+        if not trendlines:
             print(f"No initial trendline data found for {stock}")
             return
-            
-        current_date1, current_date2, current_slope, _ = initial_trendline
-        
+
+        # Resume the running breakthrough streak from existing rows
+        streak, prev_breakthrough = _load_status_streak(cursor, "upper_status_historical", stock)
+
         # Filter trading days to start from 2024-01-01
         start_date = pd.Timestamp('2024-01-01')
         filtered_trading_days = [d for d in trading_days if d >= start_date]
-        
-        # Process each trading day starting from 2024-01-01
+
+        tl_pointer = -1          # index into `trendlines` of the current line
+        current_tl = None        # (analysis_date, date1, date2)
+        tl_params = None         # (index1, index2, anchor_price, log_slope)
+        insert_rows = []
+
         for current_date in filtered_trading_days:
+            # Advance to the most recent trendline with analysis_date <= current_date
+            while tl_pointer + 1 < len(trendlines) and trendlines[tl_pointer + 1][0] <= current_date:
+                tl_pointer += 1
+                current_tl = trendlines[tl_pointer]
+                tl_params = _trendline_params(price_data, trading_days_map, current_tl[1], current_tl[2], 'high')
+
             if current_date.date() in existing_dates:
                 continue  # Skip if already processed
 
-            # Get the most recent trendline that would be valid for this date
-            cursor.execute("""
-                SELECT date1, date2, slope, analysis_date
-                FROM upper_trendlines_historical
-                WHERE ticker = %s AND analysis_date <= %s
-                ORDER BY analysis_date DESC
-                LIMIT 1;
-            """, (stock, current_date))
-            
-            trendline_data = cursor.fetchone()
-            
-            if not trendline_data:
+            if current_tl is None or tl_params is None:
                 continue
-                
-            date1, date2, slope, _ = trendline_data
-            
-            # Calculate trendline price for current date
-            trendline_price = calculate_upper_trendline_historical(price_data, date1, date2, current_date)
-            
-            if trendline_price is None:
-                continue
-                
-            # Get current price data
-            current_row = price_data[price_data['date'] == current_date].iloc[0]
-            close_price = current_row['close']
-            
+
+            index1, index2, anchor_price, log_slope = tl_params
+            current_index = trading_days_map[current_date]
+
+            trendline_price = core.trendline_price_at(current_index, index2, anchor_price, log_slope)
+            close_price = float(closes[current_index])
+
             # Calculate metrics
             distance = ((trendline_price - close_price) / close_price) * 100
             breakthrough = close_price > trendline_price
-            
-            # Calculate durations
-            try:
-                index1 = trading_days_map[pd.Timestamp(date1)]
-                index2 = trading_days_map[pd.Timestamp(date2)]
-                current_index = trading_days_map[current_date]
-                
-                duration_from_date1 = current_index - index1
-                duration_from_date2 = current_index - index2
-            except KeyError:
-                continue
-                
-            # For sequence calculation, we need to look at previous breakthroughs
-            previous_dates = [d for d in filtered_trading_days if d < current_date]
-            sequence_count = 0
-            
-            # Count consecutive breakthroughs leading up to current date
-            for prev_date in reversed(previous_dates):
-                cursor.execute("""
-                    SELECT breakthrough
-                    FROM upper_status_historical
-                    WHERE ticker = %s AND date = %s;
-                """, (stock, prev_date))
-                prev_result = cursor.fetchone()
-                
-                if prev_result and prev_result[0]:  # If breakthrough was true
-                    sequence_count += 1
-                else:
-                    break
-                    
-            # Add current breakthrough to sequence if true
-            if breakthrough:
-                sequence_count += 1
-            else:
-                sequence_count = 0
-                
-            # Calculate update_trendline condition
-            previous_breakthrough = False
-            if previous_dates:
-                prev_date = previous_dates[-1]
-                cursor.execute("""
-                    SELECT breakthrough
-                    FROM upper_status_historical
-                    WHERE ticker = %s AND date = %s;
-                """, (stock, prev_date))
-                prev_result = cursor.fetchone()
-                if prev_result:
-                    previous_breakthrough = prev_result[0]
-            
+            duration_from_date1 = current_index - index1
+            duration_from_date2 = current_index - index2
+
+            # Sequence: running streak of consecutive breakthroughs
+            sequence_count = streak + 1 if breakthrough else 0
+
             update_trendline = (
                 (sequence_count > 50) or
-                ((distance > 0) and previous_breakthrough) or
+                ((distance > 0) and prev_breakthrough) or
                 (distance < -20)
             )
-            
-            # If update_trendline is True, calculate and insert new trendline
+
+            # If update_trendline is True, calculate and insert a new trendline
             if update_trendline:
-                # Calculate new trendline using data up to current_date
                 find_and_update_upper_trendline_historical(stock, current_date)
-                
-                # Get the newly calculated trendline
+
                 cursor.execute("""
-                    SELECT date1, date2, slope
+                    SELECT date1, date2
                     FROM upper_trendlines_historical
                     WHERE ticker = %s AND analysis_date = %s;
                 """, (stock, current_date))
                 new_trendline = cursor.fetchone()
-                
+
                 if new_trendline:
-                    new_date1, new_date2, new_slope = new_trendline
-                    # Recalculate trendline price with new trendline
-                    trendline_price = calculate_upper_trendline_historical(price_data, new_date1, new_date2, current_date)
-                    
-                    if trendline_price is not None:
-                        # Recalculate metrics with new trendline
+                    new_params = _trendline_params(price_data, trading_days_map, new_trendline[0], new_trendline[1], 'high')
+                    if new_params is not None:
+                        current_tl = (current_date, new_trendline[0], new_trendline[1])
+                        tl_params = new_params
+                        index1, index2, anchor_price, log_slope = tl_params
+                        trendline_price = core.trendline_price_at(current_index, index2, anchor_price, log_slope)
                         distance = ((trendline_price - close_price) / close_price) * 100
                         breakthrough = close_price > trendline_price
-                        
-                        # Recalculate durations
-                        try:
-                            index1 = trading_days_map[pd.Timestamp(new_date1)]
-                            index2 = trading_days_map[pd.Timestamp(new_date2)]
-                            duration_from_date1 = current_index - index1
-                            duration_from_date2 = current_index - index2
-                        except KeyError:
-                            pass
-            
-            # Insert into upper_status_historical
-            # Convert numpy/pandas types to Python native types
-            cursor.execute("""
-                INSERT INTO upper_status_historical (
-                    ticker, date, trendline, distance, breakthrough,
-                    duration_from_date1, duration_from_date2, sequence, update_trendline
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
-            """, (
+                        duration_from_date1 = current_index - index1
+                        duration_from_date2 = current_index - index2
+
+            insert_rows.append((
                 stock, current_date, float(trendline_price), float(distance), bool(breakthrough),
                 int(duration_from_date1), int(duration_from_date2), int(sequence_count), bool(update_trendline)
             ))
 
+            # Advance running state using the FINAL breakthrough value
+            streak = streak + 1 if breakthrough else 0
+            prev_breakthrough = breakthrough
+
+        if insert_rows:
+            execute_values(
+                cursor,
+                """
+                INSERT INTO upper_status_historical (
+                    ticker, date, trendline, distance, breakthrough,
+                    duration_from_date1, duration_from_date2, sequence, update_trendline
+                )
+                VALUES %s;
+                """,
+                insert_rows
+            )
+
         connection.commit()
-        print(f"Updated upper_status_historical for {stock}")
-        
+        print(f"Updated upper_status_historical for {stock} ({len(insert_rows)} new rows)")
+
+    except Exception as e:
+        connection.rollback()
+        raise e
+    finally:
+        cursor.close()
+        connection.close()
+
+@timed()
+def update_under_status_historical(stock):
+    """
+    Update under_status_historical table using the correct historical trendline for each date.
+    When update_trendline=True, calculates a new trendline and inserts into under_trendlines_historical.
+    Uses LOW prices and support line logic (breakthrough when close < trendline).
+    """
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Fetch all stock prices for this ticker
+        cursor.execute("""
+            SELECT date, low, close
+            FROM stock_prices
+            WHERE ticker = %s
+            ORDER BY date;
+        """, (stock,))
+        price_rows = cursor.fetchall()
+
+        if not price_rows:
+            print(f"No price data found for {stock}.")
+            return
+
+        price_data = pd.DataFrame(price_rows, columns=['date', 'low', 'close'])
+        price_data['date'] = pd.to_datetime(price_data['date'])
+        price_data['low'] = price_data['low'].astype(float)
+        price_data['close'] = price_data['close'].astype(float)
+
+        trading_days = list(price_data['date'])
+        trading_days_map = {day: idx for idx, day in enumerate(trading_days)}
+        closes = price_data['close'].values
+
+        # Fetch existing entries to avoid duplicates
+        cursor.execute("""
+            SELECT date
+            FROM under_status_historical
+            WHERE ticker = %s;
+        """, (stock,))
+        existing_dates = {row[0] for row in cursor.fetchall()}
+
+        # Cache all historical trendlines for this ticker, ordered by analysis_date
+        cursor.execute("""
+            SELECT analysis_date, date1, date2
+            FROM under_trendlines_historical
+            WHERE ticker = %s
+            ORDER BY analysis_date;
+        """, (stock,))
+        trendlines = [(pd.Timestamp(r[0]), r[1], r[2]) for r in cursor.fetchall()]
+
+        if not trendlines:
+            print(f"No initial trendline data found for {stock}")
+            return
+
+        # Resume the running breakthrough streak from existing rows
+        streak, prev_breakthrough = _load_status_streak(cursor, "under_status_historical", stock)
+
+        # Filter trading days to start from 2024-01-01
+        start_date = pd.Timestamp('2024-01-01')
+        filtered_trading_days = [d for d in trading_days if d >= start_date]
+
+        tl_pointer = -1
+        current_tl = None
+        tl_params = None
+        insert_rows = []
+
+        for current_date in filtered_trading_days:
+            # Advance to the most recent trendline with analysis_date <= current_date
+            while tl_pointer + 1 < len(trendlines) and trendlines[tl_pointer + 1][0] <= current_date:
+                tl_pointer += 1
+                current_tl = trendlines[tl_pointer]
+                tl_params = _trendline_params(price_data, trading_days_map, current_tl[1], current_tl[2], 'low')
+
+            if current_date.date() in existing_dates:
+                continue  # Skip if already processed
+
+            if current_tl is None or tl_params is None:
+                continue
+
+            index1, index2, anchor_price, log_slope = tl_params
+            current_index = trading_days_map[current_date]
+
+            trendline_price = core.trendline_price_at(current_index, index2, anchor_price, log_slope)
+            close_price = float(closes[current_index])
+
+            # Calculate metrics (OPPOSITE logic: breakthrough when close < trendline)
+            distance = ((trendline_price - close_price) / close_price) * 100
+            breakthrough = close_price < trendline_price
+            duration_from_date1 = current_index - index1
+            duration_from_date2 = current_index - index2
+
+            # Sequence: running streak of consecutive breakthroughs
+            sequence_count = streak + 1 if breakthrough else 0
+
+            # Update condition adjusted for lower trendlines
+            update_trendline = (
+                (sequence_count > 50) or
+                ((distance > 0) and prev_breakthrough) or
+                (distance > 20)  # Changed from < -20 to > 20 for support lines
+            )
+
+            # If update_trendline is True, calculate and insert a new trendline
+            if update_trendline:
+                from db import find_and_update_under_trendline_historical
+                find_and_update_under_trendline_historical(stock, current_date)
+
+                cursor.execute("""
+                    SELECT date1, date2
+                    FROM under_trendlines_historical
+                    WHERE ticker = %s AND analysis_date = %s;
+                """, (stock, current_date))
+                new_trendline = cursor.fetchone()
+
+                if new_trendline:
+                    new_params = _trendline_params(price_data, trading_days_map, new_trendline[0], new_trendline[1], 'low')
+                    if new_params is not None:
+                        current_tl = (current_date, new_trendline[0], new_trendline[1])
+                        tl_params = new_params
+                        index1, index2, anchor_price, log_slope = tl_params
+                        trendline_price = core.trendline_price_at(current_index, index2, anchor_price, log_slope)
+                        distance = ((trendline_price - close_price) / close_price) * 100
+                        breakthrough = close_price < trendline_price
+                        duration_from_date1 = current_index - index1
+                        duration_from_date2 = current_index - index2
+
+            insert_rows.append((
+                stock, current_date, float(trendline_price), float(distance), bool(breakthrough),
+                int(duration_from_date1), int(duration_from_date2), int(sequence_count), bool(update_trendline)
+            ))
+
+            # Advance running state using the FINAL breakthrough value
+            streak = streak + 1 if breakthrough else 0
+            prev_breakthrough = breakthrough
+
+        if insert_rows:
+            execute_values(
+                cursor,
+                """
+                INSERT INTO under_status_historical (
+                    ticker, date, trendline, distance, breakthrough,
+                    duration_from_date1, duration_from_date2, sequence, update_trendline
+                )
+                VALUES %s;
+                """,
+                insert_rows
+            )
+
+        connection.commit()
+        print(f"Updated under_status_historical for {stock} ({len(insert_rows)} new rows)")
+
     except Exception as e:
         connection.rollback()
         raise e

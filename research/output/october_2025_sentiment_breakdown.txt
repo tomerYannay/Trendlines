@@ -1,0 +1,600 @@
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-01):
+Total filtered tickers: 0
+
+Sequence Breakdown on 2025-09-02:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-02):
+Total filtered tickers: 1
+
+Sequence Breakdown on 2025-09-03:
+  - Tickers with sequence > 1: 1
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-03):
+Total filtered tickers: 3
+
+Sequence Breakdown on 2025-09-04:
+  - Tickers with sequence > 1: 2
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 1 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-04):
+Total filtered tickers: 7
+
+Sequence Breakdown on 2025-09-05:
+  - Tickers with sequence > 1: 6
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 1 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-05):
+Total filtered tickers: 11
+
+Sequence Breakdown on 2025-09-06:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-06):
+Total filtered tickers: 11
+
+Sequence Breakdown on 2025-09-07:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-07):
+Total filtered tickers: 11
+
+Sequence Breakdown on 2025-09-08:
+  - Tickers with sequence > 1: 6
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 5 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-08):
+Total filtered tickers: 13
+
+Sequence Breakdown on 2025-09-09:
+  - Tickers with sequence > 1: 7
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 5 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-09):
+Total filtered tickers: 13
+
+Sequence Breakdown on 2025-09-10:
+  - Tickers with sequence > 1: 7
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 5 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-10):
+Total filtered tickers: 14
+
+Sequence Breakdown on 2025-09-11:
+  - Tickers with sequence > 1: 8
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 6 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-11):
+Total filtered tickers: 17
+
+Sequence Breakdown on 2025-09-12:
+  - Tickers with sequence > 1: 10
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 7 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-12):
+Total filtered tickers: 18
+
+Sequence Breakdown on 2025-09-13:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-13):
+Total filtered tickers: 18
+
+Sequence Breakdown on 2025-09-14:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-14):
+Total filtered tickers: 18
+
+Sequence Breakdown on 2025-09-15:
+  - Tickers with sequence > 1: 11
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 6 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-15):
+Total filtered tickers: 21
+
+Sequence Breakdown on 2025-09-16:
+  - Tickers with sequence > 1: 11
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 10 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-16):
+Total filtered tickers: 21
+
+Sequence Breakdown on 2025-09-17:
+  - Tickers with sequence > 1: 8
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 11 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-17):
+Total filtered tickers: 21
+
+Sequence Breakdown on 2025-09-18:
+  - Tickers with sequence > 1: 10
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 10 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-18):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-19:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 11 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-19):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-20:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-20):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-21:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-21):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-22:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 12 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-22):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-23:
+  - Tickers with sequence > 1: 14
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 12 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-23):
+Total filtered tickers: 27
+
+Sequence Breakdown on 2025-09-24:
+  - Tickers with sequence > 1: 13
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 14 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-24):
+Total filtered tickers: 29
+
+Sequence Breakdown on 2025-09-25:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 13 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-25):
+Total filtered tickers: 30
+
+Sequence Breakdown on 2025-09-26:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 11 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-26):
+Total filtered tickers: 31
+
+Sequence Breakdown on 2025-09-27:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-27):
+Total filtered tickers: 31
+
+Sequence Breakdown on 2025-09-28:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-28):
+Total filtered tickers: 31
+
+Sequence Breakdown on 2025-09-29:
+  - Tickers with sequence > 1: 16
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 14 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-29):
+Total filtered tickers: 32
+
+Sequence Breakdown on 2025-09-30:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 15 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-09-30):
+Total filtered tickers: 32
+
+Sequence Breakdown on 2025-10-01:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 16 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-01):
+Total filtered tickers: 33
+
+Sequence Breakdown on 2025-10-02:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 16 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-02):
+Total filtered tickers: 37
+
+Sequence Breakdown on 2025-10-03:
+  - Tickers with sequence > 1: 16
+  - Tickers with sequence = 1: 4
+  - Tickers with sequence = 0: 17 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-03):
+Total filtered tickers: 40
+
+Sequence Breakdown on 2025-10-04:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-04):
+Total filtered tickers: 40
+
+Sequence Breakdown on 2025-10-05:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-05):
+Total filtered tickers: 40
+
+Sequence Breakdown on 2025-10-06:
+  - Tickers with sequence > 1: 22
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 18 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-06):
+Total filtered tickers: 42
+
+Sequence Breakdown on 2025-10-07:
+  - Tickers with sequence > 1: 21
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 21 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-07):
+Total filtered tickers: 42
+
+Sequence Breakdown on 2025-10-08:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 3
+  - Tickers with sequence = 0: 21 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-08):
+Total filtered tickers: 45
+
+Sequence Breakdown on 2025-10-09:
+  - Tickers with sequence > 1: 20
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 23 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-09):
+Total filtered tickers: 48
+
+Sequence Breakdown on 2025-10-10:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 31 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-10):
+Total filtered tickers: 48
+
+Sequence Breakdown on 2025-10-11:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-11):
+Total filtered tickers: 48
+
+Sequence Breakdown on 2025-10-12:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-12):
+Total filtered tickers: 48
+
+Sequence Breakdown on 2025-10-13:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 29 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-13):
+Total filtered tickers: 49
+
+Sequence Breakdown on 2025-10-14:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 29 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-14):
+Total filtered tickers: 51
+
+Sequence Breakdown on 2025-10-15:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 4
+  - Tickers with sequence = 0: 29 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-15):
+Total filtered tickers: 57
+
+Sequence Breakdown on 2025-10-16:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 39 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-16):
+Total filtered tickers: 58
+
+Sequence Breakdown on 2025-10-17:
+  - Tickers with sequence > 1: 14
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 44 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-17):
+Total filtered tickers: 59
+
+Sequence Breakdown on 2025-10-18:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-18):
+Total filtered tickers: 59
+
+Sequence Breakdown on 2025-10-19:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-19):
+Total filtered tickers: 59
+
+Sequence Breakdown on 2025-10-20:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 8
+  - Tickers with sequence = 0: 36 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-20):
+Total filtered tickers: 60
+
+Sequence Breakdown on 2025-10-21:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 42 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-21):
+Total filtered tickers: 60
+
+Sequence Breakdown on 2025-10-22:
+  - Tickers with sequence > 1: 13
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 47 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-22):
+Total filtered tickers: 62
+
+Sequence Breakdown on 2025-10-23:
+  - Tickers with sequence > 1: 14
+  - Tickers with sequence = 1: 2
+  - Tickers with sequence = 0: 46 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-23):
+Total filtered tickers: 63
+
+Sequence Breakdown on 2025-10-24:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 3
+  - Tickers with sequence = 0: 43 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-24):
+Total filtered tickers: 65
+
+Sequence Breakdown on 2025-10-25:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-25):
+Total filtered tickers: 65
+
+Sequence Breakdown on 2025-10-26:
+  - Tickers with sequence > 1: 0
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 0 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-26):
+Total filtered tickers: 65
+
+Sequence Breakdown on 2025-10-27:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 46 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-27):
+Total filtered tickers: 65
+
+Sequence Breakdown on 2025-10-28:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 3
+  - Tickers with sequence = 0: 45 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-28):
+Total filtered tickers: 66
+
+Sequence Breakdown on 2025-10-29:
+  - Tickers with sequence > 1: 17
+  - Tickers with sequence = 1: 1
+  - Tickers with sequence = 0: 48 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-29):
+Total filtered tickers: 69
+
+Sequence Breakdown on 2025-10-30:
+  - Tickers with sequence > 1: 18
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 51 (fell back below trendline)
+============================================================
+
+============================================================
+Upper Breakthrough Query Results (between 2025-09-01 and 2025-10-30):
+Total filtered tickers: 69
+
+Sequence Breakdown on 2025-10-31:
+  - Tickers with sequence > 1: 15
+  - Tickers with sequence = 1: 0
+  - Tickers with sequence = 0: 53 (fell back below trendline)
+============================================================
+

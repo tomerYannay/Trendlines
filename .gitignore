@@ -169,3 +169,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# Profiling outputs (may contain API URLs)
+profile_times.csv
+*_profile.csv
+
+# macOS
+.DS_Store
