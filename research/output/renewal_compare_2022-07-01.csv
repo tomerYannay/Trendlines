@@ -1,0 +1,4 @@
+ruleset,as_of,events,reanchors,avg20_all,win20_all,n_att2plus,avg20_att2plus,win20_att2plus
+original_50/20/instant,2022-07-01,4118,3889,0.03,48.6,28,6.04,60.7
+research_200/100/5,2022-07-01,3173,425,0.53,49.4,2084,0.47,48.7
+recommended_60/25/5+peak,2022-07-01,5565,4931,-0.23,47.0,1267,-0.64,44.7

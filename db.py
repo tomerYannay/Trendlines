@@ -620,12 +620,14 @@ def update_upper_status(stock):
     data['duration_from_date2'] = np.arange(n) - index2
     data['sequence'] = calculate_sequence(data['breakthrough'])
 
-    # Add a column for `update_trendline` based on the conditions
+    # Renewal rules — validated head-to-head over 2022-2026 (research/compare_renewal_rules.py):
+    # persistent lines (200d / 100% / deep-failure-only) preserve the repeat-attempt
+    # edge; the old 50/20/instant rules destroyed it (re-anchored on every shallow dip).
     previous_breakthrough = data['breakthrough'].shift(1, fill_value=False)
     data['update_trendline'] = (
-            (data['sequence'] > 50) |
-            ((data['distance'] > 0) & previous_breakthrough) |
-            (data['distance'] < -20)
+            (data['sequence'] > 200) |
+            ((data['distance'] > 5) & previous_breakthrough) |
+            (data['distance'] < -100)
     )
 
     # Fetch existing entries in the upper_status table for the given ticker

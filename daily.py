@@ -6,7 +6,8 @@ import os
 
 from db import (
     updateDBWithAPI, update_upper_status, find_and_update_upper_trendline,
-    check_and_update_upper_trendline, prefetch_daily_data, _add_profile_row,
+    check_and_update_upper_trendline, update_under_status,
+    check_and_update_under_trendline, prefetch_daily_data, _add_profile_row,
 )
 
 # Load environment variables from the .env file
@@ -54,8 +55,10 @@ def daily_update(prefetch=True, max_workers=8, prefetch_outputsize='compact', ti
                 # A brand-new ticker has no anchored trendline yet
                 find_and_update_upper_trendline(ticker)
             update_upper_status(ticker)
+            update_under_status(ticker)
             if updated_dates:
                 check_and_update_upper_trendline(ticker, updated_dates)
+                check_and_update_under_trendline(ticker, updated_dates)
             _add_profile_row("ticker", "full_pipeline", time.perf_counter() - t0, ticker=ticker)
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
