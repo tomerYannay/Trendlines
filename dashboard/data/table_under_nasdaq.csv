@@ -1,0 +1,1 @@
+ticker,side,event_date,close,line,gap_vs_line_pct,slope_yr_pct,days_since_anchor,vol_ratio20,atr_pct,runup_20d,dist_from_ath_pct,dollar_vol_m,attempt_no,anchor1,anchor2,touch_no,pierce_depth_pct,closed_above,q_rule,q_status,q_reason,q_ret,q_days,q_exit_date,q_stop_today,event_date_ts,status,spy_ret_20d,spy_above_ma200,confidence,expected_ret_20d,drivers,is_event

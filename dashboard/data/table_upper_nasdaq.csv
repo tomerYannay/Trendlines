@@ -1,0 +1,4 @@
+ticker,side,event_date,close,line,gap_vs_line_pct,slope_yr_pct,days_since_anchor,vol_ratio20,atr_pct,runup_20d,dist_from_ath_pct,dollar_vol_m,attempt_no,anchor1,anchor2,touch_no,pierce_depth_pct,closed_above,q_rule,q_status,q_reason,q_ret,q_days,q_exit_date,q_stop_today,event_date_ts,status,spy_ret_20d,spy_above_ma200,confidence,expected_ret_20d,drivers,is_event
+MDB,upper_breakout,2026-08-11,439.16,432.77,1.48,-6.4,625,1.25,4.54,27.41,-25.57,620.34,1.0,2021-11-17,2024-02-12,,,0.0,,,,,,,,2026-08-11,BREAKOUT,2.491254671933807,1.0,43.2,-1.46,ראן-אפ 20 יום ↓ · מגמת השוק (SPY 20י) ↓,True
+BKR,upper_breakout,2026-08-10,64.07,63.38,1.08,-30.8,68,0.58,3.26,11.12,-9.0,579.81,1.0,2026-04-27,2026-05-01,,,0.0,,,,,,,,2026-08-10,BREAKOUT,3.184857909419758,1.0,41.8,0.11,ראן-אפ 20 יום ↓ · מגמת השוק (SPY 20י) ↓,True
+LIN,upper_breakout,2026-08-14,482.74,485.07,-0.48,-0.3,247,0.64,2.32,-5.94,-11.94,1029.1,5.0,2024-10-17,2025-08-20,,,,,,,,,,,,APPROACHING,,,,,,False

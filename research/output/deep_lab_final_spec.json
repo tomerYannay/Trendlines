@@ -1,0 +1,11 @@
+{
+ "stop": "line - 1x ATR14(entry), trailing along the line",
+ "horizon_days": 90,
+ "stall_cut": "upper only: exit at day 60 if ret<=0",
+ "rules": {
+  "U1": "side=='upper' & ma200_gap_pct>10 & days_since_anchor>150 & slope_yr_pct<-15 & attempt<=4 & gap_vs_line_pct<=3",
+  "N1": "side=='under' & touch_no<=5 & days_since_anchor>750",
+  "N2": "side=='under' & 2<=touch_no<=8 & 2<=slope_yr_pct<=14 & days_since_anchor>=128",
+  "N3": "side=='under' & touch_no<=10 & slope_yr_pct<13.4 & days_since_anchor>128 & dollar_vol_m<21 & atr_pct>4"
+ }
+}

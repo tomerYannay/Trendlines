@@ -1,0 +1,336 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content=""><title>Watchlist — Trendlines</title><style>
+  :root {
+    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0F1726; --ink2:#49556A; --ink3:#8A94A6;
+    --line:#E4E8EF; --navy:#0D1B2E; --navy2:#13253D;
+    --accent:#0E9382; --accent-ink:#0A6E62; --accent-soft:#E4F3F0;
+    --rust:#C05C1D; --rust-soft:#F8ECE1; --danger:#A8323C;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(13,27,46,.05), 0 10px 28px -14px rgba(13,27,46,.14);
+  }
+  * { box-sizing:border-box; margin:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--ink); line-height:1.6;
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color:inherit; text-decoration:none; }
+  .num { font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+  header.nav { position:sticky; top:0; z-index:50; background:rgba(246,247,249,.85);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .nav-in { display:flex; align-items:center; gap:26px; height:64px; }
+  .logo { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .nav-links { display:flex; gap:4px; font-size:14px; font-weight:600; color:var(--ink2); }
+  .nav-links a { padding:8px 13px; border-radius:8px; }
+  .nav-links a:hover { background:var(--surface); color:var(--ink); }
+  .nav-links a.on { background:var(--navy); color:#fff; }
+  .nav-cta { margin-inline-start:auto; display:flex; gap:10px; align-items:center; }
+  .btn { display:inline-block; font-weight:700; font-size:14.5px; border-radius:10px;
+         padding:10px 20px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary:hover { background:var(--accent-ink); }
+  .btn.ghost { border-color:var(--line); background:var(--surface); color:var(--ink); }
+  .btn.ghost:hover { border-color:var(--ink3); }
+  .btn.big { padding:14px 30px; font-size:16px; }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .sub-badge { font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft);
+               padding:4px 10px; border-radius:99px; display:none; }
+  body.subbed .sub-badge { display:inline-block; }
+  body.subbed .hide-when-subbed { display:none; }
+
+  .hero { background:var(--navy); color:#EAF0F7; position:relative; overflow:hidden; }
+  .hero.warm { background:linear-gradient(118deg, #0D1B2E 0%, #241A1B 42%, #3C2212 76%, #59300F 100%); }
+  .hero.warm .eyebrow { color:#F0A868; }
+  .hero.warm h1 em { background:linear-gradient(90deg, #F0A868, #E07B2B);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero.warm .btn.primary { background:linear-gradient(90deg, #C05C1D, #E08A3C); border:none; }
+  .hero.warm .btn.primary:hover { filter:brightness(1.08); }
+  .hero.warm .btn.ghost { border-color:#5A4232; color:#E3CDB8; }
+  .stats.warm { background:linear-gradient(90deg, #16233A, #3A2415); }
+  .stats.warm .v.up { color:#F0A868; }
+  .stats.warm .stat { border-inline-start:1px solid rgba(240,168,104,.14); }
+  .kicker.warm { color:var(--rust); }
+  .steps.warm .step::before { background:linear-gradient(135deg, #C05C1D, #E08A3C); }
+  .block.warm-wash { background:linear-gradient(180deg, #FCF2E7, #FFFFFF);
+    border-block:1px solid #F2E2D2; }
+  .cta-banner.warm { background:linear-gradient(120deg, #2A1508, #7A3D14 62%, #C05C1D 125%); }
+  .cta-banner.warm p { color:#E3C8AE; }
+  .cta-banner.warm .btn.primary { background:#fff; color:#9A4A16; }
+  .cta-banner.warm .btn.primary:hover { background:#FDEFE2; }
+  .hero-in { padding:88px 0 96px; position:relative; z-index:1; max-width:680px; }
+  .hero .eyebrow { color:#7FD6C9; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+  .hero h1 { font-size:clamp(34px, 5.4vw, 56px); line-height:1.1; font-weight:800;
+             letter-spacing:-.028em; margin:14px 0 18px; text-wrap:balance; }
+  .hero h1 em { font-style:normal; color:#5BC8B8; }
+  .hero p.sub { font-size:18px; color:#A9B7C9; max-width:56ch; margin-bottom:30px; }
+  .hero-cta { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hero .fine { font-size:12.5px; color:#7788A0; margin-top:14px; }
+  .hero-lines { position:absolute; inset:0; opacity:.5; pointer-events:none; }
+
+  .stats { background:var(--navy2); color:#fff; border-top:1px solid rgba(255,255,255,.06); }
+  .stats-in { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+  .stat { padding:22px 26px; border-inline-start:1px solid rgba(255,255,255,.07); }
+  .stat .v { font-size:27px; font-weight:800; letter-spacing:-.02em; }
+  .stat .v.up { color:#5BC8B8; }
+  .stat .t { font-size:12.5px; color:#8FA0B5; margin-top:2px; }
+
+  section.block { padding:76px 0; }
+  .kicker { color:var(--accent-ink); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+  h2.title { font-size:clamp(26px,3.4vw,36px); font-weight:800; letter-spacing:-.022em;
+             margin:10px 0 12px; text-wrap:balance; }
+  p.lede { color:var(--ink2); font-size:16.5px; max-width:64ch; }
+  .cols3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+          padding:26px; box-shadow:var(--shadow); }
+  .card .ic { width:44px; height:44px; border-radius:10px; display:flex; align-items:center;
+              justify-content:center; margin-bottom:16px; font-size:20px; }
+  .card h3 { font-size:17.5px; margin-bottom:8px; }
+  .card p { font-size:14.5px; color:var(--ink2); }
+
+  .tablecard { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+               box-shadow:var(--shadow); overflow:hidden; margin-top:30px; }
+  .tablecard .thead { display:flex; align-items:center; gap:12px; padding:18px 22px;
+                      border-bottom:1px solid var(--line); }
+  .tablecard .thead h3 { font-size:16.5px; }
+  .tablecard .thead .cnt { font-size:12.5px; font-weight:700; color:var(--accent-ink);
+                           background:var(--accent-soft); border-radius:99px; padding:3px 11px; }
+  .twrap { overflow-x:auto; }
+  table.sig { border-collapse:collapse; width:100%; font-size:13.6px; min-width:840px; }
+  table.sig th { text-align:left; font-size:11.5px; color:var(--ink3); font-weight:650;
+                 letter-spacing:.04em; text-transform:uppercase; padding:10px 16px;
+                 border-bottom:1px solid var(--line); background:var(--bg); white-space:nowrap; }
+  table.sig td { padding:11px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.sig tr:last-child td { border-bottom:none; }
+  table.sig.side-brk thead th { background:#FBF2E9; color:#8A5A32; }
+  table.sig.side-sup thead th { background:#E7F4F1; color:#256A5F; }
+  td.tick { font-weight:800; font-size:14.5px; }
+  .pill { font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; display:inline-block; }
+  .pill.brk { background:var(--rust-soft); color:var(--rust); }
+  .pill.sup { background:var(--accent-soft); color:var(--accent-ink); }
+  .pill.q { background:var(--navy); color:#7FD6C9; }
+  .conf-b { display:flex; align-items:center; gap:8px; }
+  .conf-b i { display:block; height:6px; border-radius:3px; background:var(--accent); }
+  .conf-b b { font-size:13px; }
+
+  tr.locked td { filter:blur(7px); user-select:none; pointer-events:none; }
+  body.subbed tr.locked td { filter:none; user-select:auto; pointer-events:auto; }
+  .paywall { position:relative; }
+  .paywall-overlay { position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(246,247,249,0) 0%, rgba(246,247,249,.88) 34%, rgba(246,247,249,.97) 100%); }
+  body.subbed .paywall-overlay { display:none; }
+  .paywall-overlay h4 { font-size:19px; font-weight:800; }
+  .paywall-overlay p { font-size:14px; color:var(--ink2); max-width:44ch; }
+
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:20px; margin-top:40px; }
+  .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:30px;
+          box-shadow:var(--shadow); position:relative; display:flex; flex-direction:column; text-align:left; }
+  .plan.hot { border:2px solid var(--accent); }
+  .plan .flag { position:absolute; top:-13px; inset-inline-start:24px; background:var(--accent);
+                color:#fff; font-size:12px; font-weight:800; padding:3px 13px; border-radius:99px; }
+  .plan h3 { font-size:17px; }
+  .plan .price { font-size:42px; font-weight:800; letter-spacing:-.03em; margin:10px 0 2px; }
+  .plan .price span { font-size:15px; font-weight:600; color:var(--ink2); }
+  .plan .per { color:var(--ink3); font-size:13px; margin-bottom:20px; }
+  .plan ul { list-style:none; padding:0; margin:0 0 26px; display:grid; gap:10px; font-size:14.5px; }
+  .plan li { padding-inline-start:26px; position:relative; }
+  .plan li::before { content:'✓'; position:absolute; inset-inline-start:0; color:var(--accent); font-weight:800; }
+  .plan li.soon { color:var(--ink3); }
+  .plan li.soon::before { content:'◷'; color:var(--ink3); }
+  .plan .btn { margin-top:auto; text-align:center; }
+
+  .steps { counter-reset:s; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+           gap:18px; margin-top:38px; }
+  .step { counter-increment:s; background:var(--surface); border:1px solid var(--line);
+          border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); }
+  .step::before { content:counter(s); display:flex; width:38px; height:38px; align-items:center;
+    justify-content:center; background:var(--navy); color:#fff; font-weight:800; border-radius:10px;
+    margin-bottom:14px; font-size:16px; }
+  details.faq { background:var(--surface); border:1px solid var(--line); border-radius:10px;
+                padding:16px 20px; margin-top:10px; text-align:left; }
+  details.faq summary { font-weight:700; cursor:pointer; font-size:15px; }
+  details.faq p { margin-top:10px; color:var(--ink2); font-size:14.5px; }
+  footer { background:var(--navy); color:#8FA0B5; padding:46px 0 40px; margin-top:80px; font-size:13px; }
+  footer .flinks { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:18px; color:#C6D2E0; font-weight:600; }
+  footer .disc { max-width:92ch; line-height:1.7; font-size:12px; border-top:1px solid rgba(255,255,255,.08);
+                 padding-top:18px; margin-top:18px; }
+  .notice { background:var(--rust-soft); border:1px solid var(--rust); color:var(--rust);
+            border-radius:10px; padding:12px 18px; font-size:13.5px; font-weight:600; margin-top:26px; }
+  .diago { color:var(--accent); font-weight:800; }
+  .hero .diago { color:#5BC8B8; }
+  .mark { display:inline-block; transform:translateY(-1px); }
+  .cta-banner { background:var(--navy); color:#EAF0F7; border-radius:18px; padding:44px 40px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    box-shadow:var(--shadow); }
+  .cta-banner h2 { font-size:clamp(22px,3vw,30px); font-weight:800; letter-spacing:-.02em; max-width:34ch; }
+  .cta-banner p { color:#A9B7C9; font-size:14.5px; margin-top:6px; }
+  .pain { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .pain .card b.no { color:var(--danger); }
+  .view-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+    border-radius:9px; padding:3px; margin-bottom:10px; }
+  .view-toggle button { font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+    background:transparent; border:none; border-radius:7px; padding:6px 16px; cursor:pointer; }
+  .view-toggle button.on { background:var(--surface); color:var(--ink);
+    box-shadow:0 1px 3px rgba(13,27,46,.12); }
+  .chart-view { display:none; }
+  .chart-view.on { display:block; }
+  .cap .chart-view.on { display:contents; }
+  .chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .chart-head .view-toggle { margin-bottom:0; }
+  .price-block { margin-left:auto; text-align:right; }
+  .pb-price { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+  .chg-pill { font-size:15px; font-weight:800; padding:4px 12px; border-radius:99px; }
+  .chg-pill.up { background:var(--accent-soft); color:var(--accent-ink); }
+  .chg-pill.dn { background:#FBE9E9; color:var(--danger); }
+  .pb-cap { font-size:11.5px; color:var(--ink3); font-weight:600; }
+  .pb-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+               border-radius:8px; padding:2px; }
+  .pb-toggle button { font:inherit; font-size:11px; font-weight:800; color:var(--ink2);
+    background:transparent; border:none; border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .pb-toggle button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(13,27,46,.12); }
+  .tf-badge { font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--navy); background:var(--bg); border:1.5px solid var(--line); border-radius:9px;
+    padding:7px 16px; }
+  .tlink { border-bottom:1.5px dashed var(--accent); }
+  .tlink:hover { color:var(--accent-ink); }
+
+  .heart { font:inherit; background:none; border:none; cursor:pointer; font-size:17px; line-height:1;
+           color:var(--ink3); padding:2px 4px; border-radius:6px; transition:transform .12s, color .12s; }
+  .heart:hover { transform:scale(1.25); color:#D33A52; }
+  .heart.on { color:#D33A52; }
+  .heart.big { font-size:27px; padding:4px 8px; align-self:center; }
+  td.hcell { width:34px; padding-inline:10px 0 !important; }
+  .date-strip { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 12px; margin-top:24px;
+                scrollbar-width:thin; }
+  .dchip { flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+           background:var(--surface); border:1px solid var(--line); border-radius:99px;
+           padding:6px 14px; cursor:pointer; transition:all .12s; }
+  .dchip:hover { border-color:var(--ink3); }
+  .dchip.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .dchip .dow { font-weight:600; color:inherit; opacity:.6; font-size:11px; margin-inline-start:4px; }
+  .filter-bar { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px 18px; margin-bottom:16px; display:flex; flex-wrap:wrap;
+    gap:14px 18px; align-items:flex-end; }
+  .filter-bar[hidden] { display:none; }
+  .filter-bar label { display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:700;
+    color:var(--ink3); text-transform:uppercase; letter-spacing:.05em; }
+  .filter-bar input, .filter-bar select { font:inherit; font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); width:118px; }
+  .filter-bar input:focus, .filter-bar select:focus { outline:2px solid var(--accent); border-color:transparent; }
+  .filter-bar .fpair { display:flex; gap:6px; align-items:center; }
+  .filter-bar .fpair input { width:84px; }
+  .filter-bar .btn { padding:8px 16px; font-size:13px; }
+
+  /* ---------- stock detail ---------- */
+  .stock-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:44px 0 6px; }
+  .stock-head h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .stock-head .co { color:var(--ink2); font-size:16px; }
+  .stock-grid { display:grid; grid-template-columns:320px 1fr; gap:22px; margin-top:22px; align-items:start; }
+  @media (max-width:900px) { .stock-grid { grid-template-columns:1fr; } }
+  .info-panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:22px; }
+  .info-panel h3 { font-size:13px; color:var(--ink3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line);
+        font-size:13.8px; }
+  .kv:last-child { border-bottom:none; }
+  .kv b { font-weight:700; }
+  .kv span { color:var(--ink2); }
+  .about { font-size:13.5px; color:var(--ink2); line-height:1.65; margin-top:14px; }
+  .conf-card { border-radius:var(--radius); padding:22px 26px; display:flex; align-items:center; gap:22px;
+               box-shadow:var(--shadow); margin-bottom:18px; }
+  .conf-card .score { font-size:52px; font-weight:800; letter-spacing:-.03em; line-height:1; white-space:nowrap; flex:none; }
+  .conf-card .score small { font-size:20px; font-weight:700; opacity:.75; }
+  .conf-card .lbl { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+  .conf-card .sub2 { font-size:13px; opacity:.85; margin-top:3px; }
+  .chart-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:20px; }
+  .chart-card .cap { display:flex; gap:12px; align-items:center; font-size:12.5px; color:var(--ink3);
+                     margin-top:10px; flex-wrap:wrap; }
+  .legend-dot { display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:-1px; }
+  @media (max-width:720px) { .nav-links { display:none; } }
+</style></head><body><header class="nav"><div class="wrap nav-in"><a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+<rect width="26" height="26" rx="6" fill="#0D1B2E"/>
+<path d="M4 19 L13 8 L17 12 L22 5" stroke="#5BC8B8" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="22" cy="5" r="2" fill="#5BC8B8"/></svg>Trendlines</a><nav class="nav-links"><a href="index.html" class="">Home</a><a href="breakouts.html" class="">Breakout Signals</a><a href="supports.html" class="">Support Signals</a><a href="watchlist.html" class="on">Watchlist</a><a href="pricing.html" class="">Pricing</a></nav><div class="nav-cta"><span class="sub-badge">Subscriber · demo</span><a class="btn ghost hide-when-subbed" href="pricing.html">Sign in</a><a class="btn primary hide-when-subbed" href="pricing.html">Start free trial</a></div></div></header>
+<section class="block"><div class="wrap">
+  <div class="kicker">2026-08-14</div>
+  <h2 class="title">Watchlist — closest to the line</h2>
+  <p class="lede">Your saved tickers, plus the stocks within 3% of their trendline — the most likely
+  candidates to print a signal in the coming sessions. Subscribers get notified the moment it happens.</p>
+  
+  <div class="tablecard" style="margin-top:26px"><div class="thead"><h3>♥ My watchlist</h3>
+    <span class="cnt num" id="mywl-cnt"></span></div>
+  <div class="twrap"><table class="sig" style="min-width:520px"><thead>
+  <tr><th></th><th>Ticker</th><th>Latest signal</th><th>Last price</th></tr>
+  </thead><tbody id="mywl-body"></tbody></table></div></div>
+<script>
+const TICKMAP = {"TDG": {"p": 1348.49, "k": "B", "d": "2026-07-02"}, "WAFD": {"p": 37.94, "k": "AB", "d": "2026-08-14"}, "SBAC": {"p": 176.46, "k": "S", "d": "2026-06-30"}, "PEBO": {"p": 38.29, "k": "B", "d": "2026-07-10"}, "ALHC": {"p": 23.81, "k": "B", "d": "2026-06-30"}, "BRK.B": {"p": 494.93, "k": "B", "d": "2026-07-24"}, "UBSI": {"p": 45.93, "k": "B", "d": "2026-07-09"}, "APD": {"p": 293.18, "k": "B", "d": "2026-06-30"}, "TTWO": {"p": 249.98, "k": "B", "d": "2026-06-30"}, "STGW": {"p": 7.42, "k": "B", "d": "2026-07-24"}, "STEP": {"p": 41.36, "k": "B", "d": "2026-06-30"}, "ULCC": {"p": 7.81, "k": "B", "d": "2026-07-06"}, "RVTY": {"p": 111.51, "k": "B", "d": "2026-07-28"}, "EBC": {"p": 22.68, "k": "B", "d": "2026-07-15"}, "OPFI": {"p": 10.01, "k": "B", "d": "2026-07-01"}, "TRNO": {"p": 66.01, "k": "B", "d": "2026-07-01"}, "RMNI": {"p": 4.41, "k": "B", "d": "2026-07-24"}, "BSVN": {"p": 50.17, "k": "B", "d": "2026-07-28"}, "GD": {"p": 362.86, "k": "B", "d": "2026-07-01"}, "TBBK": {"p": 66.54, "k": "B", "d": "2026-07-09"}, "MQ": {"p": 66.48, "k": "B", "d": "2026-07-01"}, "ONB": {"p": 26.49, "k": "B", "d": "2026-07-24"}, "CNC": {"p": 67.6, "k": "B", "d": "2026-07-09"}, "EQBK": {"p": 50.3, "k": "B", "d": "2026-07-24"}, "CPT": {"p": 115.04, "k": "B", "d": "2026-07-28"}, "FMNB": {"p": 15.0, "k": "B", "d": "2026-07-22"}, "CI": {"p": 277.07, "k": "S", "d": "2026-07-01"}, "IBCP": {"p": 36.65, "k": "B", "d": "2026-07-23"}, "SCHL": {"p": 46.96, "k": "B", "d": "2026-07-17"}, "PFS": {"p": 24.55, "k": "B", "d": "2026-07-16"}, "SFST": {"p": 62.4, "k": "B", "d": "2026-07-31"}, "USB": {"p": 61.96, "k": "B", "d": "2026-07-01"}, "WFC": {"p": 85.94, "k": "B", "d": "2026-07-01"}, "ALIT": {"p": 274.6, "k": "B", "d": "2026-07-01"}, "COFS": {"p": 34.03, "k": "B", "d": "2026-07-31"}, "PINE": {"p": 21.2, "k": "B", "d": "2026-07-16"}, "MPB": {"p": 36.46, "k": "B", "d": "2026-07-23"}, "FTV": {"p": 62.31, "k": "B", "d": "2026-07-24"}, "HTO": {"p": 62.28, "k": "B", "d": "2026-08-14"}, "VRTX": {"p": 528.04, "k": "B", "d": "2026-07-02"}, "MCD": {"p": 264.76, "k": "B", "d": "2026-07-24"}, "EAT": {"p": 177.71, "k": "B", "d": "2026-07-02"}, "KR": {"p": 58.22, "k": "B", "d": "2026-07-02"}, "GRND": {"p": 16.02, "k": "B", "d": "2026-07-08"}, "HCA": {"p": 410.5, "k": "B", "d": "2026-07-02"}, "UE": {"p": 22.76, "k": "B", "d": "2026-07-10"}, "ESS": {"p": 287.52, "k": "AB", "d": "2026-08-14"}, "EOG": {"p": 134.54, "k": "B", "d": "2026-07-07"}, "GRBK": {"p": 79.25, "k": "B", "d": "2026-07-02"}, "MRNA": {"p": 76.56, "k": "B", "d": "2026-07-09"}, "DVN": {"p": 40.47, "k": "S", "d": "2026-07-02"}, "HPK": {"p": 6.7, "k": "S", "d": "2026-07-02"}, "HQY": {"p": 95.31, "k": "B", "d": "2026-07-02"}, "MBUU": {"p": 25.07, "k": "S", "d": "2026-07-02"}, "ADP": {"p": 242.27, "k": "B", "d": "2026-07-02"}, "MAX": {"p": 13.4, "k": "B", "d": "2026-08-07"}, "INSW": {"p": 82.4, "k": "B", "d": "2026-07-02"}, "EPRT": {"p": 30.63, "k": "B", "d": "2026-08-14"}, "NEE": {"p": 86.19, "k": "AB", "d": "2026-08-14"}, "AJG": {"p": 252.44, "k": "B", "d": "2026-07-02"}, "PODD": {"p": 161.28, "k": "B", "d": "2026-07-10"}, "APPF": {"p": 163.95, "k": "B", "d": "2026-07-23"}, "VTOL": {"p": 42.1, "k": "B", "d": "2026-07-06"}, "OXM": {"p": 34.56, "k": "S", "d": "2026-07-06"}, "MGY": {"p": 25.01, "k": "S", "d": "2026-07-06"}, "FSS": {"p": 133.86, "k": "B", "d": "2026-07-06"}, "NYMT": {"p": 7.11, "k": "S", "d": "2026-08-14"}, "RDN": {"p": 37.26, "k": "AB", "d": "2026-08-14"}, "WEST": {"p": 7.21, "k": "B", "d": "2026-07-07"}, "EQR": {"p": 70.0, "k": "B", "d": "2026-07-16"}, "WM": {"p": 236.38, "k": "B", "d": "2026-07-22"}, "BRKL": {"p": 24.84, "k": "B", "d": "2026-07-07"}, "HRMY": {"p": 38.26, "k": "B", "d": "2026-07-07"}, "PLAY": {"p": 10.11, "k": "S", "d": "2026-07-20"}, "ASO": {"p": 44.46, "k": "S", "d": "2026-07-08"}, "PBF": {"p": 52.9, "k": "B", "d": "2026-07-08"}, "CIM": {"p": 13.04, "k": "S", "d": "2026-07-14"}, "FIBK": {"p": 38.53, "k": "B", "d": "2026-08-14"}, "HAS": {"p": 77.39, "k": "B", "d": "2026-07-09"}, "AUB": {"p": 41.56, "k": "B", "d": "2026-07-09"}, "IBOC": {"p": 73.38, "k": "AB", "d": "2026-08-14"}, "RNST": {"p": 42.2, "k": "B", "d": "2026-07-09"}, "SWK": {"p": 87.37, "k": "B", "d": "2026-07-14"}, "CFFI": {"p": 79.38, "k": "B", "d": "2026-07-27"}, "QCRH": {"p": 96.03, "k": "B", "d": "2026-07-09"}, "ALGT": {"p": 114.65, "k": "B", "d": "2026-07-09"}, "RM": {"p": 33.05, "k": "S", "d": "2026-08-06"}, "SFBS": {"p": 84.95, "k": "B", "d": "2026-07-09"}, "AMPL": {"p": 9.36, "k": "B", "d": "2026-07-13"}, "BZH": {"p": 31.41, "k": "B", "d": "2026-07-09"}, "INTT": {"p": 14.97, "k": "B", "d": "2026-07-09"}, "HWKN": {"p": 132.08, "k": "B", "d": "2026-08-03"}, "CHRW": {"p": 193.5, "k": "B", "d": "2026-07-10"}, "GEF": {"p": 73.26, "k": "B", "d": "2026-07-15"}, "MAS": {"p": 78.01, "k": "B", "d": "2026-07-22"}, "REPL": {"p": 10.99, "k": "S", "d": "2026-07-10"}, "SBSI": {"p": 34.87, "k": "B", "d": "2026-07-15"}, "ORGO": {"p": 2.27, "k": "S", "d": "2026-07-13"}, "ICFI": {"p": 76.65, "k": "B", "d": "2026-07-22"}, "TNET": {"p": 57.56, "k": "B", "d": "2026-07-13"}, "TARS": {"p": 59.31, "k": "B", "d": "2026-07-13"}, "MSEX": {"p": 56.98, "k": "B", "d": "2026-07-16"}, "RCEL": {"p": 7.77, "k": "B", "d": "2026-08-07"}, "UVV": {"p": 50.98, "k": "S", "d": "2026-07-13"}, "HCSG": {"p": 24.04, "k": "B", "d": "2026-07-13"}, "TCBK": {"p": 60.07, "k": "B", "d": "2026-07-13"}, "BFST": {"p": 30.46, "k": "B", "d": "2026-07-15"}, "AMLX": {"p": 18.5, "k": "B", "d": "2026-07-21"}, "BANR": {"p": 69.05, "k": "B", "d": "2026-07-14"}, "FA": {"p": 21.15, "k": "B", "d": "2026-07-14"}, "TENB": {"p": 42.65, "k": "B", "d": "2026-07-14"}, "GEHC": {"p": 61.99, "k": "S", "d": "2026-07-23"}, "IDT": {"p": 62.38, "k": "B", "d": "2026-07-14"}, "RF": {"p": 31.48, "k": "B", "d": "2026-08-03"}, "MRK": {"p": 123.61, "k": "B", "d": "2026-07-15"}, "BBY": {"p": 85.43, "k": "B", "d": "2026-07-24"}, "MO": {"p": 70.52, "k": "B", "d": "2026-07-15"}, "BGS": {"p": 3.76, "k": "S", "d": "2026-07-15"}, "NRIX": {"p": 23.48, "k": "B", "d": "2026-07-21"}, "LCNB": {"p": 19.78, "k": "B", "d": "2026-07-16"}, "TCBX": {"p": 42.39, "k": "B", "d": "2026-07-23"}, "IDXX": {"p": 576.07, "k": "B", "d": "2026-07-16"}, "TRC": {"p": 18.66, "k": "B", "d": "2026-07-16"}, "GHC": {"p": 1191.2, "k": "AB", "d": "2026-08-14"}, "HOMB": {"p": 30.69, "k": "B", "d": "2026-07-16"}, "GTY": {"p": 35.98, "k": "B", "d": "2026-07-16"}, "ENVX": {"p": 4.7, "k": "S", "d": "2026-07-16"}, "FRME": {"p": 45.23, "k": "B", "d": "2026-07-16"}, "INDB": {"p": 85.94, "k": "B", "d": "2026-08-14"}, "FG": {"p": 32.38, "k": "B", "d": "2026-07-16"}, "CENTA": {"p": 38.83, "k": "B", "d": "2026-08-14"}, "OMC": {"p": 84.17, "k": "B", "d": "2026-07-16"}, "KFY": {"p": 81.17, "k": "B", "d": "2026-07-27"}, "DGX": {"p": 209.41, "k": "B", "d": "2026-07-16"}, "L": {"p": 113.89, "k": "B", "d": "2026-07-16"}, "VRCA": {"p": 5.59, "k": "S", "d": "2026-07-17"}, "AIN": {"p": 74.12, "k": "B", "d": "2026-07-30"}, "STEM": {"p": 6.26, "k": "S", "d": "2026-07-17"}, "ORCL": {"p": 127.05, "k": "B", "d": "2026-07-21"}, "PGEN": {"p": 4.95, "k": "B", "d": "2026-07-17"}, "AWR": {"p": 88.68, "k": "B", "d": "2026-08-14"}, "EVER": {"p": 27.54, "k": "B", "d": "2026-07-20"}, "BOWL": {"p": 7.25, "k": "S", "d": "2026-07-20"}, "AFCG": {"p": 2.73, "k": "S", "d": "2026-07-20"}, "SB": {"p": 7.45, "k": "B", "d": "2026-07-21"}, "CLFD": {"p": 32.12, "k": "B", "d": "2026-07-27"}, "RNGR": {"p": 15.47, "k": "S", "d": "2026-07-27"}, "SHEN": {"p": 11.53, "k": "B", "d": "2026-07-21"}, "NHI": {"p": 80.54, "k": "B", "d": "2026-07-24"}, "STAA": {"p": 24.27, "k": "B", "d": "2026-07-21"}, "ALVR": {"p": 4.04, "k": "S", "d": "2026-07-21"}, "INBX": {"p": 87.61, "k": "B", "d": "2026-07-21"}, "XNCR": {"p": 19.92, "k": "B", "d": "2026-08-04"}, "CVS": {"p": 110.6, "k": "B", "d": "2026-07-21"}, "BWMN": {"p": 26.4, "k": "B", "d": "2026-07-21"}, "SMTI": {"p": 25.5, "k": "B", "d": "2026-07-21"}, "LXRX": {"p": 2.47, "k": "S", "d": "2026-08-07"}, "SEAT": {"p": 6.6, "k": "S", "d": "2026-07-23"}, "LH": {"p": 291.02, "k": "B", "d": "2026-07-23"}, "THRM": {"p": 45.61, "k": "B", "d": "2026-07-23"}, "BKKT": {"p": 7.68, "k": "S", "d": "2026-07-23"}, "BBAI": {"p": 2.83, "k": "S", "d": "2026-07-30"}, "UAL": {"p": 118.27, "k": "B", "d": "2026-07-24"}, "SAFT": {"p": 103.2, "k": "B", "d": "2026-07-24"}, "KRMD": {"p": 3.83, "k": "B", "d": "2026-07-24"}, "TRN": {"p": 37.41, "k": "B", "d": "2026-07-24"}, "MGM": {"p": 44.1, "k": "AB", "d": "2026-08-14"}, "CASH": {"p": 85.9, "k": "B", "d": "2026-07-24"}, "TRDA": {"p": 5.85, "k": "S", "d": "2026-07-24"}, "JBSS": {"p": 81.19, "k": "B", "d": "2026-07-24"}, "DLR": {"p": 199.08, "k": "B", "d": "2026-07-24"}, "EG": {"p": 389.34, "k": "B", "d": "2026-07-27"}, "AMP": {"p": 538.01, "k": "B", "d": "2026-07-27"}, "AMSF": {"p": 30.06, "k": "S", "d": "2026-07-27"}, "CLMB": {"p": 27.17, "k": "B", "d": "2026-07-27"}, "MMM": {"p": 178.23, "k": "B", "d": "2026-07-27"}, "TOWN": {"p": 37.77, "k": "B", "d": "2026-08-14"}, "SKYW": {"p": 111.38, "k": "B", "d": "2026-08-03"}, "AZN": {"p": 172.48, "k": "B", "d": "2026-07-28"}, "CTAS": {"p": 214.9, "k": "B", "d": "2026-07-28"}, "PSA": {"p": 325.93, "k": "AB", "d": "2026-08-14"}, "VRSK": {"p": 212.26, "k": "B", "d": "2026-07-28"}, "SSB": {"p": 107.85, "k": "B", "d": "2026-08-03"}, "SOLV": {"p": 85.29, "k": "B", "d": "2026-08-14"}, "ABG": {"p": 240.99, "k": "B", "d": "2026-07-28"}, "HOPE": {"p": 14.12, "k": "B", "d": "2026-07-28"}, "CIX": {"p": 28.08, "k": "B", "d": "2026-07-28"}, "MLKN": {"p": 24.12, "k": "B", "d": "2026-08-03"}, "NMRK": {"p": 16.2, "k": "B", "d": "2026-07-28"}, "NNI": {"p": 136.94, "k": "B", "d": "2026-07-28"}, "NVAX": {"p": 7.41, "k": "S", "d": "2026-08-03"}, "ATRC": {"p": 39.34, "k": "B", "d": "2026-08-05"}, "PLUS": {"p": 88.53, "k": "AB", "d": "2026-08-14"}, "HAE": {"p": 82.54, "k": "B", "d": "2026-07-28"}, "CRCT": {"p": 4.69, "k": "B", "d": "2026-07-31"}, "ENPH": {"p": 35.07, "k": "S", "d": "2026-07-29"}, "CBZ": {"p": 54.9, "k": "B", "d": "2026-07-29"}, "WERN": {"p": 37.85, "k": "B", "d": "2026-08-14"}, "TSLA": {"p": 308.85, "k": "B", "d": "2026-07-30"}, "COUR": {"p": 5.27, "k": "S", "d": "2026-07-30"}, "AGM": {"p": 220.3, "k": "B", "d": "2026-07-30"}, "HII": {"p": 319.9, "k": "B", "d": "2026-07-30"}, "OSIS": {"p": 219.92, "k": "B", "d": "2026-07-30"}, "TXT": {"p": 86.39, "k": "B", "d": "2026-08-03"}, "TPR": {"p": 152.58, "k": "B", "d": "2026-07-30"}, "ONTO": {"p": 250.52, "k": "B", "d": "2026-07-30"}, "RMAX": {"p": 9.27, "k": "S", "d": "2026-07-30"}, "SBGI": {"p": 13.67, "k": "S", "d": "2026-08-14"}, "ITGR": {"p": 121.21, "k": "B", "d": "2026-07-31"}, "EPM": {"p": 3.68, "k": "S", "d": "2026-07-31"}, "GOLF": {"p": 101.27, "k": "B", "d": "2026-07-31"}, "GDDY": {"p": 82.74, "k": "S", "d": "2026-07-31"}, "ANIK": {"p": 20.16, "k": "B", "d": "2026-08-06"}, "TGT": {"p": 149.7, "k": "B", "d": "2026-08-07"}, "LYV": {"p": 181.69, "k": "B", "d": "2026-08-03"}, "ESCA": {"p": 21.37, "k": "B", "d": "2026-08-03"}, "BLK": {"p": 1126.63, "k": "B", "d": "2026-08-03"}, "BRSP": {"p": 5.0, "k": "AB", "d": "2026-08-14"}, "VERA": {"p": 32.23, "k": "S", "d": "2026-08-03"}, "VLY": {"p": 14.5, "k": "B", "d": "2026-08-03"}, "GENC": {"p": 14.47, "k": "B", "d": "2026-08-07"}, "ALTI": {"p": 4.62, "k": "B", "d": "2026-08-05"}, "KAI": {"p": 334.92, "k": "B", "d": "2026-08-04"}, "HVT": {"p": 28.28, "k": "B", "d": "2026-08-04"}, "HRI": {"p": 169.76, "k": "B", "d": "2026-08-14"}, "WEYS": {"p": 40.96, "k": "B", "d": "2026-08-04"}, "TDY": {"p": 684.76, "k": "B", "d": "2026-08-04"}, "ULTA": {"p": 510.75, "k": "AB", "d": "2026-08-14"}, "MMSI": {"p": 85.82, "k": "B", "d": "2026-08-04"}, "HSIC": {"p": 89.18, "k": "B", "d": "2026-08-14"}, "HL": {"p": 15.39, "k": "B", "d": "2026-08-04"}, "ZBRA": {"p": 368.83, "k": "B", "d": "2026-08-04"}, "ZWS": {"p": 53.18, "k": "B", "d": "2026-08-04"}, "SGMT": {"p": 8.64, "k": "B", "d": "2026-08-05"}, "INTA": {"p": 36.96, "k": "B", "d": "2026-08-05"}, "SHOO": {"p": 49.07, "k": "B", "d": "2026-08-05"}, "LIN": {"p": 482.74, "k": "AB", "d": "2026-08-14"}, "CENT": {"p": 46.54, "k": "B", "d": "2026-08-06"}, "NWS": {"p": 33.17, "k": "B", "d": "2026-08-14"}, "PAYC": {"p": 215.97, "k": "B", "d": "2026-08-06"}, "SKY": {"p": 91.52, "k": "B", "d": "2026-08-06"}, "PYPL": {"p": 59.78, "k": "B", "d": "2026-08-06"}, "TTD": {"p": 17.67, "k": "S", "d": "2026-08-06"}, "MGNI": {"p": 24.32, "k": "B", "d": "2026-08-06"}, "VNDA": {"p": 5.12, "k": "S", "d": "2026-08-06"}, "LEGH": {"p": 28.94, "k": "B", "d": "2026-08-14"}, "PRVA": {"p": 22.0, "k": "S", "d": "2026-08-06"}, "ABNB": {"p": 178.07, "k": "B", "d": "2026-08-07"}, "ZURA": {"p": 5.96, "k": "B", "d": "2026-08-07"}, "SVV": {"p": 10.66, "k": "AB", "d": "2026-08-14"}, "VCYT": {"p": 47.22, "k": "B", "d": "2026-08-07"}, "SG": {"p": 5.4, "k": "S", "d": "2026-08-07"}, "OOMA": {"p": 21.97, "k": "B", "d": "2026-08-07"}, "AVIR": {"p": 5.12, "k": "AB", "d": "2026-08-14"}, "ASIX": {"p": 16.48, "k": "S", "d": "2026-08-07"}, "ASLE": {"p": 5.72, "k": "S", "d": "2026-08-14"}, "FLR": {"p": 57.0, "k": "B", "d": "2026-08-07"}, "INGN": {"p": 6.05, "k": "S", "d": "2026-08-07"}, "PI": {"p": 183.36, "k": "B", "d": "2026-08-07"}, "ADTN": {"p": 7.56, "k": "S", "d": "2026-08-07"}, "WHD": {"p": 71.07, "k": "B", "d": "2026-08-14"}, "XPER": {"p": 6.81, "k": "S", "d": "2026-08-14"}, "QNST": {"p": 22.02, "k": "B", "d": "2026-08-14"}, "HP": {"p": 41.87, "k": "B", "d": "2026-08-14"}, "APPN": {"p": 37.01, "k": "B", "d": "2026-08-14"}, "ANF": {"p": 118.53, "k": "B", "d": "2026-08-14"}, "QLYS": {"p": 185.8, "k": "B", "d": "2026-08-14"}, "SGHT": {"p": 7.7, "k": "B", "d": "2026-08-14"}, "BKR": {"p": 64.07, "k": "B", "d": "2026-08-14"}, "CVNA": {"p": 74.16, "k": "B", "d": "2026-08-14"}, "CGEM": {"p": 19.63, "k": "B", "d": "2026-08-14"}, "JRVR": {"p": 4.2, "k": "S", "d": "2026-08-11"}, "APO": {"p": 140.28, "k": "B", "d": "2026-08-14"}, "BDX": {"p": 181.41, "k": "B", "d": "2026-08-14"}, "CTKB": {"p": 4.74, "k": "B", "d": "2026-08-11"}, "MDB": {"p": 439.16, "k": "B", "d": "2026-08-14"}, "GDOT": {"p": 13.41, "k": "S", "d": "2026-08-14"}, "CNP": {"p": 40.53, "k": "B", "d": "2026-08-14"}, "NEM": {"p": 117.76, "k": "B", "d": "2026-08-14"}, "DNOW": {"p": 16.84, "k": "B", "d": "2026-08-14"}, "VTRS": {"p": 16.1, "k": "S", "d": "2026-08-14"}, "BGC": {"p": 10.76, "k": "B", "d": "2026-08-14"}, "NXRT": {"p": 24.71, "k": "S", "d": "2026-08-14"}, "KIM": {"p": 24.18, "k": "B", "d": "2026-08-14"}, "FBK": {"p": 62.1, "k": "B", "d": "2026-08-14"}, "PGNY": {"p": 25.89, "k": "B", "d": "2026-08-14"}, "MDRX": {"p": 5.0, "k": "S", "d": "2026-08-14"}, "FRSH": {"p": 12.68, "k": "B", "d": "2026-08-14"}, "FRST": {"p": 16.67, "k": "B", "d": "2026-08-14"}, "COMP": {"p": 13.35, "k": "B", "d": "2026-08-14"}, "LNZA": {"p": 6.21, "k": "B", "d": "2026-08-14"}, "KNTK": {"p": 53.44, "k": "B", "d": "2026-08-14"}, "KMT": {"p": 31.22, "k": "B", "d": "2026-08-14"}, "AVAH": {"p": 12.32, "k": "B", "d": "2026-08-14"}, "NWFL": {"p": 34.49, "k": "AB", "d": "2026-08-14"}, "NGVT": {"p": 76.77, "k": "AB", "d": "2026-08-14"}, "NATR": {"p": 15.12, "k": "AB", "d": "2026-08-14"}, "KWR": {"p": 170.72, "k": "AB", "d": "2026-08-14"}, "JMSB": {"p": 23.25, "k": "AB", "d": "2026-08-14"}, "HTBK": {"p": 13.45, "k": "AB", "d": "2026-08-14"}, "SWX": {"p": 92.6, "k": "AB", "d": "2026-08-14"}, "STHO": {"p": 9.8, "k": "AB", "d": "2026-08-14"}, "CASS": {"p": 58.41, "k": "AB", "d": "2026-08-14"}, "CZNC": {"p": 25.98, "k": "AB", "d": "2026-08-14"}, "FUL": {"p": 62.75, "k": "AB", "d": "2026-08-14"}, "GCMG": {"p": 13.86, "k": "AB", "d": "2026-08-14"}, "BLBD": {"p": 65.33, "k": "S", "d": "2026-08-14"}, "SSTI": {"p": 6.2, "k": "S", "d": "2026-08-14"}, "LZ": {"p": 5.44, "k": "S", "d": "2026-08-14"}, "TWO": {"p": 12.04, "k": "AS", "d": "2026-08-14"}, "WAT": {"p": 412.17, "k": "AB", "d": "2026-08-14"}, "REG": {"p": 76.71, "k": "AB", "d": "2026-08-14"}, "FRT": {"p": 118.39, "k": "AB", "d": "2026-08-14"}, "DIS": {"p": 106.85, "k": "AB", "d": "2026-08-14"}, "BR": {"p": 171.01, "k": "AB", "d": "2026-08-14"}, "OTIS": {"p": 72.63, "k": "AS", "d": "2026-08-14"}};
+function renderMyWL(){
+  const el = document.getElementById('mywl-body'); if(!el) return;
+  const a = getWL();
+  document.getElementById('mywl-cnt').textContent = a.length + ' saved';
+  if(!a.length){
+    el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--ink3);padding:24px">'
+      +'Tap the \u2661 next to any ticker \u2014 on any page \u2014 to save it here. Stored on this device.</td></tr>';
+    return;
+  }
+  const L = {B:'<span class="pill brk">Breakout</span>', S:'<span class="pill sup">Support</span>',
+             AB:'<span class="pill brk">Nearing breakout</span>', AS:'<span class="pill sup">Nearing support</span>'};
+  el.innerHTML = a.map(t=>{
+    const m = TICKMAP[t] || {};
+    return '<tr><td class="hcell"><button class="heart on" data-t="'+t+'" onclick="toggleWatch(\''+t+'\')">\u2665</button></td>'
+      +'<td class="tick"><a class="tlink" href="stock/'+t+'.html">'+t+'</a></td>'
+      +'<td>'+(L[m.k]||'<span style="color:var(--ink3)">\u2014</span>')
+      +(m.d?' <span style="color:var(--ink3);font-size:11px" class="num">'+m.d+'</span>':'')+'</td>'
+      +'<td class="num">'+(m.p!=null?m.p.toFixed(2):'\u2014')+'</td></tr>';
+  }).join('');
+  paintHearts();
+}
+</script>
+  <div class="tablecard" style="margin-top:26px"><div class="thead"><h3>Approaching the line</h3><span class="cnt num">33 stocks</span></div>
+  <div class="paywall"><div class="twrap"><table class="sig"><thead>
+  <tr><th></th><th>Ticker</th><th>Status</th><th>Index</th><th>Price</th><th>Trendline</th><th>Distance</th><th>Line age</th></tr>
+  </thead><tbody><tr style="background:linear-gradient(90deg, rgba(192,92,29,0.130), rgba(192,92,29,0.039) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="NEE" onclick="toggleWatch('NEE')">♡</button></td><td class="tick"><a class="tlink" href="stock/NEE.html">NEE</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">86.19</td><td class="num">86.30</td><td class="num">0.1%</td><td class="num">199d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.126), rgba(192,92,29,0.038) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="BRSP" onclick="toggleWatch('BRSP')">♡</button></td><td class="tick"><a class="tlink" href="stock/BRSP.html">BRSP</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">5.00</td><td class="num">5.01</td><td class="num">0.1%</td><td class="num">232d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.122), rgba(192,92,29,0.037) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="AVIR" onclick="toggleWatch('AVIR')">♡</button></td><td class="tick"><a class="tlink" href="stock/AVIR.html">AVIR</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">5.12</td><td class="num">5.13</td><td class="num">0.1%</td><td class="num">109d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.118), rgba(192,92,29,0.035) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="STHO" onclick="toggleWatch('STHO')">♡</button></td><td class="tick"><a class="tlink" href="stock/STHO.html">STHO</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">9.80</td><td class="num">9.82</td><td class="num">0.2%</td><td class="num">476d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.114), rgba(192,92,29,0.034) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="GHC" onclick="toggleWatch('GHC')">♡</button></td><td class="tick"><a class="tlink" href="stock/GHC.html">GHC</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">1191.20</td><td class="num">1194.92</td><td class="num">0.3%</td><td class="num">220d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.110), rgba(192,92,29,0.033) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="CZNC" onclick="toggleWatch('CZNC')">♡</button></td><td class="tick"><a class="tlink" href="stock/CZNC.html">CZNC</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">25.98</td><td class="num">26.08</td><td class="num">0.4%</td><td class="num">1823d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.106), rgba(192,92,29,0.032) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="LIN" onclick="toggleWatch('LIN')">♡</button></td><td class="tick"><a class="tlink" href="stock/LIN.html">LIN</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Nasdaq 100</td><td class="num">482.74</td><td class="num">485.07</td><td class="num">0.5%</td><td class="num">247d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.102), rgba(192,92,29,0.030) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="FRT" onclick="toggleWatch('FRT')">♡</button></td><td class="tick"><a class="tlink" href="stock/FRT.html">FRT</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">118.39</td><td class="num">118.98</td><td class="num">0.5%</td><td class="num">1156d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.098), rgba(192,92,29,0.029) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="WAFD" onclick="toggleWatch('WAFD')">♡</button></td><td class="tick"><a class="tlink" href="stock/WAFD.html">WAFD</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">37.94</td><td class="num">38.16</td><td class="num">0.6%</td><td class="num">429d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.093), rgba(192,92,29,0.028) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="HTBK" onclick="toggleWatch('HTBK')">♡</button></td><td class="tick"><a class="tlink" href="stock/HTBK.html">HTBK</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">13.45</td><td class="num">13.57</td><td class="num">0.9%</td><td class="num">129d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.089), rgba(192,92,29,0.027) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="FUL" onclick="toggleWatch('FUL')">♡</button></td><td class="tick"><a class="tlink" href="stock/FUL.html">FUL</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">62.75</td><td class="num">63.35</td><td class="num">0.9%</td><td class="num">126d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.085), rgba(192,92,29,0.026) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="PSA" onclick="toggleWatch('PSA')">♡</button></td><td class="tick"><a class="tlink" href="stock/PSA.html">PSA</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">325.93</td><td class="num">329.10</td><td class="num">1.0%</td><td class="num">473d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.081), rgba(192,92,29,0.024) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="REG" onclick="toggleWatch('REG')">♡</button></td><td class="tick"><a class="tlink" href="stock/REG.html">REG</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">76.71</td><td class="num">77.46</td><td class="num">1.0%</td><td class="num">2523d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.077), rgba(192,92,29,0.023) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="RDN" onclick="toggleWatch('RDN')">♡</button></td><td class="tick"><a class="tlink" href="stock/RDN.html">RDN</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">37.26</td><td class="num">37.82</td><td class="num">1.5%</td><td class="num">227d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.073), rgba(192,92,29,0.022) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="NGVT" onclick="toggleWatch('NGVT')">♡</button></td><td class="tick"><a class="tlink" href="stock/NGVT.html">NGVT</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">76.77</td><td class="num">78.03</td><td class="num">1.6%</td><td class="num">69d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(14,147,130,0.069), rgba(14,147,130,0.021) 55%, rgba(14,147,130,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(14,147,130,.55)"><button class="heart" data-t="TWO" onclick="toggleWatch('TWO')">♡</button></td><td class="tick"><a class="tlink" href="stock/TWO.html">TWO</a></td><td><span class="pill sup">Nearing support</span></td><td>Russell 2000</td><td class="num">12.04</td><td class="num">11.84</td><td class="num">1.7%</td><td class="num">105d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.065), rgba(192,92,29,0.019) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="SWX" onclick="toggleWatch('SWX')">♡</button></td><td class="tick"><a class="tlink" href="stock/SWX.html">SWX</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">92.60</td><td class="num">94.34</td><td class="num">1.8%</td><td class="num">72d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.061), rgba(192,92,29,0.018) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="IBOC" onclick="toggleWatch('IBOC')">♡</button></td><td class="tick"><a class="tlink" href="stock/IBOC.html">IBOC</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">73.38</td><td class="num">74.81</td><td class="num">1.9%</td><td class="num">130d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.057), rgba(192,92,29,0.017) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="KWR" onclick="toggleWatch('KWR')">♡</button></td><td class="tick"><a class="tlink" href="stock/KWR.html">KWR</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">170.72</td><td class="num">174.22</td><td class="num">2.0%</td><td class="num">123d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.053), rgba(192,92,29,0.016) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="PLUS" onclick="toggleWatch('PLUS')">♡</button></td><td class="tick"><a class="tlink" href="stock/PLUS.html">PLUS</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">88.53</td><td class="num">90.36</td><td class="num">2.0%</td><td class="num">66d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.049), rgba(192,92,29,0.015) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="NATR" onclick="toggleWatch('NATR')">♡</button></td><td class="tick"><a class="tlink" href="stock/NATR.html">NATR</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">15.12</td><td class="num">15.44</td><td class="num">2.1%</td><td class="num">237d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.045), rgba(192,92,29,0.013) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="WAT" onclick="toggleWatch('WAT')">♡</button></td><td class="tick"><a class="tlink" href="stock/WAT.html">WAT</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">412.17</td><td class="num">421.47</td><td class="num">2.2%</td><td class="num">386d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.041), rgba(192,92,29,0.012) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="GCMG" onclick="toggleWatch('GCMG')">♡</button></td><td class="tick"><a class="tlink" href="stock/GCMG.html">GCMG</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">13.86</td><td class="num">14.18</td><td class="num">2.3%</td><td class="num">372d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.037), rgba(192,92,29,0.011) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="MGM" onclick="toggleWatch('MGM')">♡</button></td><td class="tick"><a class="tlink" href="stock/MGM.html">MGM</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">44.10</td><td class="num">45.14</td><td class="num">2.3%</td><td class="num">763d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.033), rgba(192,92,29,0.010) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="NWFL" onclick="toggleWatch('NWFL')">♡</button></td><td class="tick"><a class="tlink" href="stock/NWFL.html">NWFL</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">34.49</td><td class="num">35.31</td><td class="num">2.3%</td><td class="num">1665d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.028), rgba(192,92,29,0.009) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="CASS" onclick="toggleWatch('CASS')">♡</button></td><td class="tick"><a class="tlink" href="stock/CASS.html">CASS</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">58.41</td><td class="num">59.85</td><td class="num">2.4%</td><td class="num">2001d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.024), rgba(192,92,29,0.007) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="SVV" onclick="toggleWatch('SVV')">♡</button></td><td class="tick"><a class="tlink" href="stock/SVV.html">SVV</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">10.66</td><td class="num">10.93</td><td class="num">2.4%</td><td class="num">198d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.020), rgba(192,92,29,0.006) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="ESS" onclick="toggleWatch('ESS')">♡</button></td><td class="tick"><a class="tlink" href="stock/ESS.html">ESS</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">287.52</td><td class="num">294.81</td><td class="num">2.5%</td><td class="num">364d</td></tr><tr class="locked" style="background:linear-gradient(90deg, rgba(192,92,29,0.016), rgba(192,92,29,0.005) 55%, rgba(192,92,29,0))"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="JMSB" onclick="toggleWatch('JMSB')">♡</button></td><td class="tick"><a class="tlink" href="stock/JMSB.html">JMSB</a></td><td><span class="pill brk">Nearing breakout</span></td><td>Russell 2000</td><td class="num">23.25</td><td class="num">23.91</td><td class="num">2.8%</td><td class="num">439d</td></tr><tr class="locked"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="ULTA" onclick="toggleWatch('ULTA')">♡</button></td><td class="tick"><a class="tlink" href="stock/ULTA.html">ULTA</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">510.75</td><td class="num">525.22</td><td class="num">2.8%</td><td class="num">116d</td></tr><tr class="locked"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="BR" onclick="toggleWatch('BR')">♡</button></td><td class="tick"><a class="tlink" href="stock/BR.html">BR</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">171.01</td><td class="num">175.92</td><td class="num">2.8%</td><td class="num">157d</td></tr><tr class="locked"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(192,92,29,.55)"><button class="heart" data-t="DIS" onclick="toggleWatch('DIS')">♡</button></td><td class="tick"><a class="tlink" href="stock/DIS.html">DIS</a></td><td><span class="pill brk">Nearing breakout</span></td><td>S&P 500</td><td class="num">106.85</td><td class="num">109.94</td><td class="num">2.8%</td><td class="num">279d</td></tr><tr class="locked"><td class="hcell" style="box-shadow:inset 3px 0 0 rgba(14,147,130,.55)"><button class="heart" data-t="OTIS" onclick="toggleWatch('OTIS')">♡</button></td><td class="tick"><a class="tlink" href="stock/OTIS.html">OTIS</a></td><td><span class="pill sup">Nearing support</span></td><td>S&P 500</td><td class="num">72.63</td><td class="num">70.56</td><td class="num">2.9%</td><td class="num">52d</td></tr></tbody></table></div>
+  <div class="paywall-overlay"><h4>The full watchlist is for subscribers</h4>
+  <p>Know which stocks are about to touch their line — before it happens. First 7 days free.</p>
+  <a class="btn primary big" href="pricing.html">Unlock the watchlist</a></div></div></div>
+</div></section>
+<footer><div class="wrap"><div class="flinks"><a href="index.html">Trendlines</a><a href="breakouts.html">Breakout Signals</a><a href="supports.html">Support Signals</a><a href="watchlist.html">Watchlist</a><a href="pricing.html">Pricing</a></div><div>Market data as of 2026-08-14 · scanning 2,200+ stocks every trading day</div><div class="disc"><b>Disclaimer:</b> All content on this site — including signals, stock lists and performance figures — is provided for informational and research purposes only and does not constitute investment advice, a recommendation, or an offer to buy or sell any security. Performance shown is based on historical simulations; simulated results have inherent limitations and past performance is not indicative of future results. Trading securities involves substantial risk of loss. Always do your own research and consult a licensed professional.</div></div></footer>
+<script>
+function isSub(){try{const t=localStorage.getItem('tl_trial_until');return t&&Date.now()<+t;}catch(e){return false;}}
+function applySub(){document.body.classList.toggle('subbed', isSub());}
+function startTrial(){try{localStorage.setItem('tl_trial_until', String(Date.now()+7*864e5));}catch(e){}
+  applySub(); alert('Your 7-day free trial is active (demo mode). All lists are now unlocked.');}
+function endTrial(){try{localStorage.removeItem('tl_trial_until');}catch(e){} applySub();}
+function setChartView(v){
+  document.querySelectorAll('.chart-view').forEach(d=>d.classList.toggle('on', d.dataset.view===v));
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.view===v));
+  try{localStorage.setItem('tl_chart_view', v);}catch(e){}}
+function setPxPeriod(p){
+  const pill=document.getElementById('chg-pill'); if(!pill) return;
+  const v=parseFloat(pill.dataset[p]);
+  if(isNaN(v)){ pill.textContent='—'; pill.className='chg-pill'; }
+  else{ pill.textContent=(v>=0?'+':'')+v.toFixed(2)+'%';
+        pill.className='chg-pill '+(v>=0?'up':'dn'); }
+  document.querySelectorAll('.pb-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+}
+document.addEventListener('DOMContentLoaded', ()=>{ if(document.getElementById('chg-pill')) setPxPeriod('d'); });
+function getWL(){try{return JSON.parse(localStorage.getItem('tl_wl')||'[]');}catch(e){return [];}}
+function saveWL(a){try{localStorage.setItem('tl_wl', JSON.stringify(a));}catch(e){}}
+function toggleWatch(t){let a=getWL(); a=a.includes(t)?a.filter(x=>x!==t):a.concat([t]);
+  saveWL(a); paintHearts(); if(typeof renderMyWL==='function') renderMyWL();}
+function paintHearts(){const a=getWL();
+  document.querySelectorAll('.heart').forEach(b=>{const on=a.includes(b.dataset.t);
+    b.classList.toggle('on',on); b.textContent=on?'\u2665':'\u2661';
+    b.title=on?'Remove from my watchlist':'Add to my watchlist';});}
+function scoreOf(c){if(c==null||isNaN(c))return null;
+  const x=Math.min(1,Math.max(0,(c-35)/35)); return Math.round((6+4*x)*10)/10;}
+function scoreColor(s){const l=62-(s-6)/4*38; return 'hsl(158,52%,'+l.toFixed(0)+'%)';}
+document.addEventListener('DOMContentLoaded', ()=>{ paintHearts();
+  if(typeof renderMyWL==='function') renderMyWL(); });
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(document.querySelector('.chart-view')){
+    let v='candles'; try{v=localStorage.getItem('tl_chart_view')||'candles';}catch(e){}
+    setChartView(v);}});
+document.addEventListener('DOMContentLoaded', applySub);
+</script>
+</body></html>

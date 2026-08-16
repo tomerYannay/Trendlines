@@ -1,1 +1,73 @@
-{"last_date": "2026-08-11", "as_of": "2025-09-01", "events": 11354}
+{
+ "as_of": "2020-01-01",
+ "wallet_start": "2025-09-01",
+ "run_at": "2026-08-16T16:32:36",
+ "mode": "OUT_OF_SAMPLE",
+ "model_fit_through": "2025-01-18",
+ "model_calibrated_through": "2025-07-18",
+ "wallet_universe": "russell",
+ "universes": {
+  "russell": {
+   "label": "ראסל 2000",
+   "last_date": "2026-08-14",
+   "diagnostics": {
+    "scanned": 1772,
+    "processed": 1768,
+    "by_reason": {
+     "DELISTED_OR_SYMBOL_CHANGED": 133,
+     "NO_DATA": 3,
+     "STALE_DATA": 9,
+     "INSUFFICIENT_HISTORY": 1
+    },
+    "global_last_date": "2026-08-14"
+   },
+   "upper_candidates": 50,
+   "under_candidates": 11,
+   "new_events_today": 22
+  },
+  "nasdaq": {
+   "label": "נאסד\"ק 100",
+   "last_date": "2026-08-14",
+   "diagnostics": {
+    "scanned": 101,
+    "processed": 101,
+    "by_reason": {
+     "STALE_DATA": 1
+    },
+    "global_last_date": "2026-08-14"
+   },
+   "upper_candidates": 3,
+   "under_candidates": 0,
+   "new_events_today": 0
+  },
+  "sp500": {
+   "label": "S&P 500",
+   "last_date": "2026-08-14",
+   "diagnostics": {
+    "scanned": 386,
+    "processed": 384,
+    "by_reason": {
+     "NO_DATA": 2,
+     "DELISTED_OR_SYMBOL_CHANGED": 10
+    },
+    "global_last_date": "2026-08-14"
+   },
+   "upper_candidates": 18,
+   "under_candidates": 2,
+   "new_events_today": 6
+  }
+ },
+ "quality": {
+  "closed": 200,
+  "open": 9,
+  "pnl": 40172.5,
+  "win_pct": 24.0,
+  "start": "2024-01-01",
+  "equity_end": 149983.78,
+  "ret_pct": 49.98
+ },
+ "last_date": "2026-08-14",
+ "wallet_entries_today": 0,
+ "wallet_exits_today": 0,
+ "data_issues": []
+}

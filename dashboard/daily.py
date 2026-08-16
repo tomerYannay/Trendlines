@@ -26,9 +26,17 @@ def main():
 
     if not args.no_fetch:
         from daily import daily_update
+        import db
         from db import dump_profile_csv
+        db.cursor.execute("""
+            SELECT ticker FROM tickers_russell
+            UNION SELECT ticker FROM tickers_sp500
+            UNION SELECT ticker FROM tickers_nasdaq
+            UNION SELECT 'SPY';
+        """)
+        universe = [r[0] for r in db.cursor.fetchall()]
         try:
-            daily_update()
+            daily_update(tickers=universe)
         finally:
             dump_profile_csv('profile_times.csv')
 

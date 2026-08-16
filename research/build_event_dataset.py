@@ -123,10 +123,12 @@ def analyze(ticker, as_of, until=None, min_price=2.0):
     up = core.best_upper_trendline(h[:hist_n])
     if up is not None:
         i2, p2, slope = up[1], h[up[1]], up[2]
-        seq, prev_bt, attempt = 0, False, 0
+        seq, attempt, had_breakout = 0, 0, False
         for t in range(hist_n, until_n):
             line_t = float(np.exp(np.log(p2) + slope * (t - i2)))
             bt = c[t] > line_t
+            if bt:
+                had_breakout = True
             dist = (line_t - c[t]) / c[t] * 100
             s = seq + 1 if bt else 0
 
@@ -136,13 +138,14 @@ def analyze(ticker, as_of, until=None, min_price=2.0):
                 events.append(base_features(t, 'upper_breakout', line_t, slope, i2,
                                             {'attempt_no': attempt, **outcomes(c, h, l, t, lf)}))
 
-            flag = (s > SEQ_DAYS) or (dist > FAIL_PCT and prev_bt) or (dist < -EXTREME_PCT)
-            seq, prev_bt = s, bt
+            # deep failure: after ANY breakout on this line, a close >FAIL_PCT below it resets
+            flag = (s > SEQ_DAYS) or (had_breakout and dist > FAIL_PCT) or (dist < -EXTREME_PCT)
+            seq = s
             if flag:
                 res = core.best_upper_trendline(h[:t + 1])
                 if res is not None:
                     i2, p2, slope = res[1], h[res[1]], res[2]
-                    seq, prev_bt, attempt = 0, False, 0
+                    seq, attempt, had_breakout = 0, 0, False
 
     # ---------------- UNDER ----------------
     un = core.best_under_trendline(l[:hist_n])

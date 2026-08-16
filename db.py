@@ -621,12 +621,13 @@ def update_upper_status(stock):
     data['sequence'] = calculate_sequence(data['breakthrough'])
 
     # Renewal rules — validated head-to-head over 2022-2026 (research/compare_renewal_rules.py):
-    # persistent lines (200d / 100% / deep-failure-only) preserve the repeat-attempt
-    # edge; the old 50/20/instant rules destroyed it (re-anchored on every shallow dip).
-    previous_breakthrough = data['breakthrough'].shift(1, fill_value=False)
+    # persistent lines (200d / 100% / deep-failure-only) preserve the repeat-attempt edge.
+    # Deep failure: once the line has been broken (any close above it), ANY later close
+    # more than 5% below it resets the diagonal — not only the day right after a breakout.
+    had_breakout = data['breakthrough'].cummax()
     data['update_trendline'] = (
             (data['sequence'] > 200) |
-            ((data['distance'] > 5) & previous_breakthrough) |
+            (had_breakout & (data['distance'] > 5)) |
             (data['distance'] < -100)
     )
 

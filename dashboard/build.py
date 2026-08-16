@@ -56,6 +56,8 @@ CSS = """
   .chip { display:inline-block; font-size:10px; font-weight:700; border-radius:3px; padding:1px 6px; }
   .chip.fresh { background:var(--upper-soft); color:var(--upper); }
   .chip.near { background:var(--under-soft); color:var(--under); }
+  .chip.warn { background:var(--danger-soft); color:var(--danger); }
+  .chip.appr { background:transparent; border:1px dashed var(--ink3); color:var(--ink2); }
   .chip.side-u { background:var(--upper-soft); color:var(--upper); }
   .chip.side-s { background:var(--under-soft); color:var(--under); }
   .conf { font-weight:750; }
@@ -76,14 +78,29 @@ CSS = """
 def nav(active, stamp):
     a = lambda href, name, key: f'<a href="{href}" class="{"active" if active == key else ""}">{name}</a>'
     return (f'<nav><span class="brand">📐 Trendlines</span>'
-            f'{a("index.html", "מועמדות היום", "index")}{a("wallet.html", "הארנק", "wallet")}'
-            f'<span class="stamp">נכון ל-{stamp}</span></nav>')
+            f'{a("index.html", "מועמדות", "index")}{a("wallet.html", "הארנק", "wallet")}'
+            f'<span class="stamp">נתוני שוק עדכניים ל-<b>{stamp}</b></span></nav>')
+
+
+def staleness_banner(meta):
+    import datetime
+    import numpy as np
+    run_at = pd.Timestamp(meta.get('run_at', datetime.datetime.now().isoformat()))
+    data_date = pd.Timestamp(meta['last_date'])
+    # business-day gap: warns from one missed trading day, quiet over weekends
+    bgap = int(np.busday_count(data_date.date(), run_at.date()))
+    if bgap > 1:
+        return (f'<div style="background:var(--danger-soft);border:1px solid var(--danger);color:var(--danger);'
+                f'border-radius:6px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px">'
+                f'⚠️ הדאטה אינו עדכני: יום המסחר האחרון שנקלט הוא {meta["last_date"]} '
+                f'({bgap} ימי מסחר לפני מועד הריצה). הרץ python -m dashboard.daily לרענון.</div>')
+    return ''
 
 
 def page(title, active, stamp, body):
     return ('<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>{title}</title><style>{CSS}</style></head><body>'
+            f'<title>{title}</title><style>{CSS}{TOGGLE_CSS}</style></head><body>'
             f'<div class="wrap">{nav(active, stamp)}{body}</div></body></html>')
 
 
@@ -103,22 +120,41 @@ def conf_cell(v):
     return f'<td class="num conf {cls}">{v:.1f}%</td>'
 
 
+STATUS_CHIPS = {
+    'BREAKOUT': ('fresh', 'פריצה'),
+    'SUPPORT_TOUCH': ('near', 'נגיעת תמיכה'),
+    'PIERCED': ('warn', 'חדירה — טרם אושרה'),
+    'APPROACHING': ('appr', 'מתקרב'),
+}
+
+
 def candidates_table(df, side):
     is_upper = side == 'upper'
     count_col = 'attempt_no' if is_upper else 'touch_no'
     count_lbl = 'ניסיון' if is_upper else 'נגיעה'
     dist_lbl = 'מרחק לקו' if is_upper else 'מעל הקו'
+    a1_lbl, a2_lbl = ('H1', 'H2') if is_upper else ('L1', 'L2')
     rows = []
     for _, r in df.iterrows():
-        status = r.get('status', '')
-        if status == 'מתקרב':
-            st = '<span class="chip near">מתקרב</span>'
-        else:
-            st = f'<span class="chip fresh">אירוע {status[5:] if isinstance(status, str) else status}</span>'
+        status = r.get('status', 'APPROACHING')
+        cls, lbl = STATUS_CHIPS.get(status, ('appr', status))
+        date_txt = ''
+        if status != 'APPROACHING' and pd.notna(r.get('event_date')):
+            date_txt = f' {str(r["event_date"])[5:]}'
+        st = f'<span class="chip {cls}">{lbl}{date_txt}</span>'
         dist = -r['gap_vs_line_pct'] if is_upper else r['gap_vs_line_pct']
+        if status == 'APPROACHING':
+            conf_td = '<td class="num" title="הסתברות מוצגת רק לאירוע בפועל — המודל אומן על אירועים, לא על התקרבויות">—</td>'
+            exp_td = '<td class="num">—</td>'
+        else:
+            conf_td = conf_cell(r['confidence'])
+            exp_td = f'<td class="num">{fmt(r.get("expected_ret_20d"), "{:+.1f}%")}</td>'
+        a1 = str(r.get('anchor1', ''))[:10] if pd.notna(r.get('anchor1')) else '—'
+        a2 = str(r.get('anchor2', ''))[:10] if pd.notna(r.get('anchor2')) else '—'
         rows.append(
             f'<tr><td class="tk">{r["ticker"]}</td><td>{st}</td>'
             f'<td class="num">{fmt(r["close"])}</td><td class="num">{fmt(r["line"])}</td>'
+            f'<td class="num">{a1}</td><td class="num">{a2}</td>'
             f'<td class="num">{fmt(dist, "{:+.2f}%")}</td>'
             f'<td class="num">{int(r[count_col]) if pd.notna(r.get(count_col)) else "—"}</td>'
             f'<td class="num">{int(r["days_since_anchor"])}</td>'
@@ -127,13 +163,14 @@ def candidates_table(df, side):
             f'<td class="num">{fmt(r["atr_pct"], "{:.1f}%")}</td>'
             f'<td class="num">{fmt(r["runup_20d"], "{:+.1f}%")}</td>'
             f'<td class="num">{fmt(r["dollar_vol_m"], "{:.1f}")}</td>'
-            f'{conf_cell(r["confidence"])}'
-            f'<td class="drivers">{r.get("drivers", "")}</td></tr>'
+            f'{conf_td}{exp_td}'
+            f'<td class="drivers">{r.get("drivers", "") if status != "APPROACHING" else ""}</td></tr>'
         )
     return (f'<div class="tablewrap"><table><thead><tr>'
-            f'<th>טיקר</th><th>סטטוס</th><th>מחיר</th><th>קו</th><th>{dist_lbl}</th>'
+            f'<th>טיקר</th><th>סטטוס</th><th>מחיר</th><th>קו</th>'
+            f'<th>{a1_lbl}</th><th>{a2_lbl}</th><th>{dist_lbl}</th>'
             f'<th>{count_lbl} #</th><th>גיל קו</th><th>שיפוע/שנה</th><th>ווליום יחסי</th>'
-            f'<th>ATR</th><th>ראן-אפ 20י</th><th>מחזור $M</th><th>ביטחון</th><th>גורמים מובילים</th>'
+            f'<th>ATR</th><th>ראן-אפ 20י</th><th>מחזור $M</th><th>ביטחון</th><th>תוחלת 20י</th><th>גורמים מובילים</th>'
             f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
 
 
@@ -169,30 +206,96 @@ def equity_svg(eq):
             f'</svg></div>')
 
 
+def read_csv_safe(path, columns):
+    try:
+        return pd.read_csv(path)
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        return pd.DataFrame(columns=columns)
+
+
+TOGGLE_CSS = """
+  .uni-toggle { display:flex; gap:6px; margin:4px 0 18px; }
+  .uni-toggle button { font:inherit; font-size:13.5px; font-weight:700; padding:7px 18px; border-radius:5px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink2); cursor:pointer; }
+  .uni-toggle button.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .uni-toggle button:focus-visible { outline:2px solid var(--under); outline-offset:2px; }
+  .universe { display:none; }
+  .universe.on { display:block; }
+"""
+
+TOGGLE_JS = """
+<script>
+function showUni(key) {
+  document.querySelectorAll('.universe').forEach(d => d.classList.toggle('on', d.dataset.uni === key));
+  document.querySelectorAll('.uni-toggle button').forEach(b => b.classList.toggle('on', b.dataset.uni === key));
+  try { localStorage.setItem('trendlines_universe', key); } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', () => {
+  let k = 'russell';
+  try { k = localStorage.getItem('trendlines_universe') || 'russell'; } catch (e) {}
+  if (!document.querySelector(`.universe[data-uni="${k}"]`)) k = 'russell';
+  showUni(k);
+});
+</script>
+"""
+
+
+def universe_section(key, label, meta_u, upper, under, watch_only_note=''):
+    return (
+        f'<div class="universe" data-uni="{key}">'
+        f'{watch_only_note}'
+        f'<h2>אלכסון עליון — מועמדות לפריצה ({len(upper)})</h2>'
+        f'<p class="lede">אירועי פריצה מהימים האחרונים + מניות במרחק עד 3% מתחת לקו.</p>'
+        + candidates_table(upper, 'upper') +
+        f'<h2>אלכסון תחתון — מועמדות לקפיצת תמיכה ({len(under)})</h2>'
+        f'<p class="lede">נגיעות תמיכה מהימים האחרונים + מניות במרחק עד 3% מעל הקו.</p>'
+        + candidates_table(under, 'under') +
+        f'</div>'
+    )
+
+
 def build():
     meta = json.load(open('dashboard/data/meta.json'))
     stamp = meta['last_date']
-    upper = pd.read_csv('dashboard/data/table_upper.csv')
-    under = pd.read_csv('dashboard/data/table_under.csv')
-    trades = pd.read_csv('dashboard/data/trades.csv')
-    open_pos = pd.read_csv('dashboard/data/open_positions.csv')
-    eq = pd.read_csv('dashboard/data/equity.csv')
+    trades = read_csv_safe('dashboard/data/trades.csv',
+                           ['ticker', 'side', 'entry_date', 'exit_date', 'entry', 'exit', 'reason',
+                            'pnl', 'pnl_pct', 'days_held', 'sl', 'tp', 'confidence'])
+    open_pos = read_csv_safe('dashboard/data/open_positions.csv',
+                             ['ticker', 'side', 'entry_date', 'entry', 'last', 'pnl_pct',
+                              'sl', 'tp', 'days_held', 'confidence'])
+    eq = read_csv_safe('dashboard/data/equity.csv', ['date', 'equity', 'open_positions', 'cash'])
 
     os.makedirs(OUT, exist_ok=True)
 
     # ---------- index ----------
+    banner = staleness_banner(meta)
+    universes = meta.get('universes', {})
+    toggle_btns = ''.join(
+        f'<button data-uni="{k}" onclick="showUni(\'{k}\')">{u["label"]}</button>'
+        for k, u in universes.items())
+    sections = ''
+    for k, u in universes.items():
+        upper_u = read_csv_safe(f'dashboard/data/table_upper_{k}.csv',
+                                ['ticker', 'status', 'close', 'line', 'gap_vs_line_pct', 'confidence'])
+        under_u = read_csv_safe(f'dashboard/data/table_under_{k}.csv',
+                                ['ticker', 'status', 'close', 'line', 'gap_vs_line_pct', 'confidence'])
+        note = ''
+        if k != meta.get('wallet_universe'):
+            note = (f'<div style="border:1px dashed var(--ink3);color:var(--ink2);border-radius:6px;'
+                    f'padding:8px 14px;font-size:12.5px;margin-bottom:6px">👁️ יקום צפייה בלבד — הארנק אינו נכנס '
+                    f'לעסקאות כאן, וציוני הביטחון הם העברה של מודל שאומן על ראסל וטרם אומתו על מדד זה.</div>')
+        sections += universe_section(k, u['label'], u, upper_u, under_u, note)
+
     body = (
-        f'<h2>אלכסון עליון — מועמדות לפריצה</h2>'
-        f'<p class="lede">אירועי פריצה מהימים האחרונים + מניות במרחק עד 3% מתחת לקו. '
-        f'כניסות הארנק דורשות ניסיון 2+, מחיר ≥ $5 וביטחון ≥ 55%.</p>'
-        + candidates_table(upper, 'upper') +
-        f'<h2>אלכסון תחתון — מועמדות לקפיצת תמיכה</h2>'
-        f'<p class="lede">נגיעות תמיכה מהימים האחרונים + מניות במרחק עד 3% מעל הקו. '
-        f'כניסות הארנק דורשות קו בוגר 50+ יום, שיפוע שפוי וביטחון ≥ 55%.</p>'
-        + candidates_table(under, 'under') +
+        banner +
+        f'<div class="uni-toggle">{toggle_btns}</div>'
+        + sections +
         f'<p class="foot">הקווים מעוגנים על דאטה עד {meta["as_of"]} ומתעדכנים לפי כללי החידוש המאומתים '
-        f'(200 יום / 100% / כישלון עמוק). ביטחון = הסתברות מכוילת ל-20 ימי מסחר חיוביים, '
-        f'ממודל שאומן על 49,034 אירועים 2022–2026. עדכון: python -m dashboard.daily</p>'
+        f'(200 יום / 100% / כישלון עמוק). ביטחון = הסתברות מכוילת ל-20 ימי מסחר חיוביים, מוצגת לאירועים בפועל בלבד; '
+        f'מודל {meta.get("mode","")} קפוא שאומן עד {meta.get("model_fit_through","")} וכויל עד {meta.get("model_calibrated_through","")}. '
+        f'תוחלת 20י = תשואה ממוצעת היסטורית בדלי הקליברציה — מדד נפרד מההסתברות. '
+        f'כניסות הארנק (ראסל בלבד): ניסיון 2+/תמיכה בוגרת, מחיר ≥ $5, ביטחון ≥ 55%. עדכון: python -m dashboard.daily</p>'
+        + TOGGLE_JS
     )
     with open(f'{OUT}/index.html', 'w', encoding='utf-8') as f:
         f.write(page('Trendlines — מועמדות היום', 'index', stamp, body))
@@ -235,10 +338,67 @@ def build():
         f'<td class="num">{int(r["days_held"])}</td>{conf_cell(r["confidence"])}</tr>'
         for _, r in tr_sorted.iterrows())
 
+    issues = meta.get('data_issues', [])
+    issues_html = ''
+    if issues:
+        items = ''.join(f'<li>{i}</li>' for i in issues)
+        issues_html = (f'<h2>בעיות דאטה שטופלו</h2><div class="tablewrap" style="padding:10px 16px">'
+                       f'<ul style="margin:6px 0;padding-inline-start:18px;font-size:13px">{items}</ul></div>')
+    qmeta = meta.get('quality', {})
+    q_closed = read_csv_safe('dashboard/data/quality_trades.csv',
+                             ['ticker', 'rule', 'entry_date', 'entry', 'status', 'reason',
+                              'ret_pct', 'days', 'exit_date', 'stop_today', 'pnl'])
+    q_open = read_csv_safe('dashboard/data/quality_open.csv',
+                           ['ticker', 'rule', 'entry_date', 'entry', 'status', 'reason',
+                            'ret_pct', 'days', 'exit_date', 'stop_today', 'pnl'])
+    q_eq = read_csv_safe('dashboard/data/quality_equity.csv', ['date', 'equity'])
+    q_tiles = ''
+    if len(q_closed) or len(q_open):
+        q_end = qmeta.get('equity_end', 100000)
+        q_ret = qmeta.get('ret_pct', 0)
+        q_tiles = f'''
+        <div class="tiles">
+          <div class="tile"><div class="t">שווי הארנק</div><div class="v num">${q_end:,.0f}</div></div>
+          <div class="tile"><div class="t">תשואה כוללת</div>
+            <div class="v num {'pnl-pos' if q_ret >= 0 else 'pnl-neg'}">{q_ret:+.2f}%</div></div>
+          <div class="tile"><div class="t">עסקאות סגורות</div><div class="v num">{len(q_closed)}</div></div>
+          <div class="tile"><div class="t">אחוז הצלחה</div><div class="v num">{qmeta.get('win_pct') or 0}%</div></div>
+          <div class="tile"><div class="t">פוזיציות פתוחות</div><div class="v num">{len(q_open)}</div></div>
+        </div>''' + equity_svg(q_eq)
+    def q_row(r, is_open):
+        pnl_cls = 'pnl-pos' if (r['ret_pct'] or 0) >= 0 else 'pnl-neg'
+        tail = (f'<td class="num">{fmt(r["stop_today"])}</td>' if is_open
+                else f'<td class="num">{r["exit_date"]}</td><td>{r["reason"]}</td>')
+        return (f'<tr><td class="tk">{r["ticker"]}</td>'
+                f'<td><span class="chip near">{r["rule"]}</span></td>'
+                f'<td class="num">{r["entry_date"]}</td><td class="num">{fmt(r["entry"])}</td>'
+                f'<td class="num {pnl_cls}">{(r["ret_pct"] or 0):+.2f}%</td>'
+                f'<td class="num">{int(r["days"])}</td>{tail}</tr>')
+    q_open_rows = ''.join(q_row(r, True) for _, r in q_open.iterrows())
+    q_closed_recent = q_closed.sort_values('exit_date', ascending=False).head(25)
+    q_closed_rows = ''.join(q_row(r, False) for _, r in q_closed_recent.iterrows())
+    quality_html = ''
+    if len(q_closed) or len(q_open):
+        quality_html = (
+            f'<h2 style="margin-top:48px">אסטרטגיה 2 — ארנק האיכות '
+            f'<span class="chip near">תמיכות בלבד · שער N1/N2/N3 · סטופ קו−ATR · עד 90 יום</span></h2>'
+            f'<p class="lede">המפרט הוקפא על 2020–2023 ונבחן על 2024–2026 (+3.14% לעסקה מול +1.22% ללא שער). '
+            f'מ-{qmeta.get("start","2024-01-01")}; מהיום — LIVE_FORWARD. פרופיל: ~25% הצלחה עם זנב ימני גדול — לא להיבהל מרצפי סטופים.</p>'
+            + q_tiles +
+            f'<h3 style="font-size:15px;margin:18px 0 6px">פוזיציות פתוחות ({len(q_open)})</h3>'
+            f'<div class="tablewrap"><table><thead><tr><th>טיקר</th><th>כלל</th><th>כניסה</th>'
+            f'<th>מחיר</th><th>רווח/הפסד</th><th>ימים</th><th>סטופ נוכחי (קו−ATR)</th></tr></thead>'
+            f'<tbody>{q_open_rows}</tbody></table></div>'
+            f'<h3 style="font-size:15px;margin:18px 0 6px">עסקאות אחרונות ({len(q_closed)} סה"כ, 25 אחרונות)</h3>'
+            f'<div class="tablewrap"><table><thead><tr><th>טיקר</th><th>כלל</th><th>כניסה</th>'
+            f'<th>מחיר</th><th>%</th><th>ימים</th><th>יציאה</th><th>סיבה</th></tr></thead>'
+            f'<tbody>{q_closed_rows}</tbody></table></div>')
     body = (
-        f'<h2>הארנק הדיגיטלי — סימולציית ההמלצות</h2>'
-        f'<p class="lede">כל כניסה: $5,000 · סטופ ‎-10% · טייק +20% · יציאת זמן אחרי 40 ימי מסחר · '
-        f'מקס׳ 20 פוזיציות. נכנס אוטומטית לכל איתות שעומד בכללים המאומתים.</p>'
+        staleness_banner(meta) +
+        f'<p class="lede" style="font-size:14px"><b>שני ארנקים וירטואליים עצמאיים</b>, לכל אחד $100,000 משלו, כללי כניסה ויציאה שונים ואותו פורמט דיווח — כדי להשוות ראש-בראש איזו גישה מנצחת בזמן אמת.</p>'
+        f'<h2>אסטרטגיה 1 — ארנק הביטחון <span class="chip warn">OUT-OF-SAMPLE — מודל קפוא</span></h2>'
+        f'<p class="lede">יקום: <b>ראסל 2000 בלבד</b> (שם ה-edge אומת; S&P לצפייה בלבד) · כל כניסה: $5,000 · סטופ ‎-10% · '
+        f'טייק +20% · יציאת זמן אחרי 40 ימי מסחר · מקס׳ 20 פוזיציות.</p>'
         + tiles + equity_svg(eq) +
         f'<h2>פוזיציות פתוחות ({len(open_pos)})</h2>'
         f'<div class="tablewrap"><table><thead><tr><th>טיקר</th><th>סוג</th><th>כניסה</th>'
@@ -248,8 +408,10 @@ def build():
         f'<div class="tablewrap"><table><thead><tr><th>טיקר</th><th>סוג</th><th>כניסה</th><th>יציאה</th>'
         f'<th>מחיר כניסה</th><th>מחיר יציאה</th><th>סיבה</th><th>%</th><th>$</th><th>ימים</th><th>ביטחון</th>'
         f'</tr></thead><tbody>{tr_rows}</tbody></table></div>'
+        + quality_html + issues_html +
         f'<p class="foot">קו מקווקו בגרף = הון התחלתי $100,000. הסימולציה דטרמיניסטית ומחושבת מחדש '
-        f'מ-{meta["as_of"]} בכל עדכון יומי — המספרים תמיד נכונים לתאריך שבכותרת.</p>'
+        f'מ-{meta["as_of"]} בכל עדכון יומי. הארנק ההיסטורי הוא שחזור OUT_OF_SAMPLE: המודל אומן וכויל רק על מידע שקדם '
+        f'ל-{meta["as_of"]}; ביצועים מ-{meta.get("run_at","")[:10]} ואילך הם LIVE_FORWARD.</p>'
     )
     with open(f'{OUT}/wallet.html', 'w', encoding='utf-8') as f:
         f.write(page('Trendlines — הארנק', 'wallet', stamp, body))

@@ -1,0 +1,354 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="VRTX trendline analysis: resistance breakout, confidence score, and company fundamentals."><title>VRTX — Vertex Pharmaceuticals Inc · Trendlines</title><style>
+  :root {
+    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0F1726; --ink2:#49556A; --ink3:#8A94A6;
+    --line:#E4E8EF; --navy:#0D1B2E; --navy2:#13253D;
+    --accent:#0E9382; --accent-ink:#0A6E62; --accent-soft:#E4F3F0;
+    --rust:#C05C1D; --rust-soft:#F8ECE1; --danger:#A8323C;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(13,27,46,.05), 0 10px 28px -14px rgba(13,27,46,.14);
+  }
+  * { box-sizing:border-box; margin:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--ink); line-height:1.6;
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color:inherit; text-decoration:none; }
+  .num { font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+  header.nav { position:sticky; top:0; z-index:50; background:rgba(246,247,249,.85);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .nav-in { display:flex; align-items:center; gap:26px; height:64px; }
+  .logo { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .nav-links { display:flex; gap:4px; font-size:14px; font-weight:600; color:var(--ink2); }
+  .nav-links a { padding:8px 13px; border-radius:8px; }
+  .nav-links a:hover { background:var(--surface); color:var(--ink); }
+  .nav-links a.on { background:var(--navy); color:#fff; }
+  .nav-cta { margin-inline-start:auto; display:flex; gap:10px; align-items:center; }
+  .btn { display:inline-block; font-weight:700; font-size:14.5px; border-radius:10px;
+         padding:10px 20px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary:hover { background:var(--accent-ink); }
+  .btn.ghost { border-color:var(--line); background:var(--surface); color:var(--ink); }
+  .btn.ghost:hover { border-color:var(--ink3); }
+  .btn.big { padding:14px 30px; font-size:16px; }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .sub-badge { font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft);
+               padding:4px 10px; border-radius:99px; display:none; }
+  body.subbed .sub-badge { display:inline-block; }
+  body.subbed .hide-when-subbed { display:none; }
+
+  .hero { background:var(--navy); color:#EAF0F7; position:relative; overflow:hidden; }
+  .hero.warm { background:linear-gradient(118deg, #0D1B2E 0%, #241A1B 42%, #3C2212 76%, #59300F 100%); }
+  .hero.warm .eyebrow { color:#F0A868; }
+  .hero.warm h1 em { background:linear-gradient(90deg, #F0A868, #E07B2B);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero.warm .btn.primary { background:linear-gradient(90deg, #C05C1D, #E08A3C); border:none; }
+  .hero.warm .btn.primary:hover { filter:brightness(1.08); }
+  .hero.warm .btn.ghost { border-color:#5A4232; color:#E3CDB8; }
+  .stats.warm { background:linear-gradient(90deg, #16233A, #3A2415); }
+  .stats.warm .v.up { color:#F0A868; }
+  .stats.warm .stat { border-inline-start:1px solid rgba(240,168,104,.14); }
+  .kicker.warm { color:var(--rust); }
+  .steps.warm .step::before { background:linear-gradient(135deg, #C05C1D, #E08A3C); }
+  .block.warm-wash { background:linear-gradient(180deg, #FCF2E7, #FFFFFF);
+    border-block:1px solid #F2E2D2; }
+  .cta-banner.warm { background:linear-gradient(120deg, #2A1508, #7A3D14 62%, #C05C1D 125%); }
+  .cta-banner.warm p { color:#E3C8AE; }
+  .hero-in { padding:88px 0 96px; position:relative; z-index:1; max-width:680px; }
+  .hero .eyebrow { color:#7FD6C9; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+  .hero h1 { font-size:clamp(34px, 5.4vw, 56px); line-height:1.1; font-weight:800;
+             letter-spacing:-.028em; margin:14px 0 18px; text-wrap:balance; }
+  .hero h1 em { font-style:normal; color:#5BC8B8; }
+  .hero p.sub { font-size:18px; color:#A9B7C9; max-width:56ch; margin-bottom:30px; }
+  .hero-cta { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hero .fine { font-size:12.5px; color:#7788A0; margin-top:14px; }
+  .hero-lines { position:absolute; inset:0; opacity:.5; pointer-events:none; }
+
+  .stats { background:var(--navy2); color:#fff; border-top:1px solid rgba(255,255,255,.06); }
+  .stats-in { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+  .stat { padding:22px 26px; border-inline-start:1px solid rgba(255,255,255,.07); }
+  .stat .v { font-size:27px; font-weight:800; letter-spacing:-.02em; }
+  .stat .v.up { color:#5BC8B8; }
+  .stat .t { font-size:12.5px; color:#8FA0B5; margin-top:2px; }
+
+  section.block { padding:76px 0; }
+  .kicker { color:var(--accent-ink); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+  h2.title { font-size:clamp(26px,3.4vw,36px); font-weight:800; letter-spacing:-.022em;
+             margin:10px 0 12px; text-wrap:balance; }
+  p.lede { color:var(--ink2); font-size:16.5px; max-width:64ch; }
+  .cols3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+          padding:26px; box-shadow:var(--shadow); }
+  .card .ic { width:44px; height:44px; border-radius:10px; display:flex; align-items:center;
+              justify-content:center; margin-bottom:16px; font-size:20px; }
+  .card h3 { font-size:17.5px; margin-bottom:8px; }
+  .card p { font-size:14.5px; color:var(--ink2); }
+
+  .tablecard { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+               box-shadow:var(--shadow); overflow:hidden; margin-top:30px; }
+  .tablecard .thead { display:flex; align-items:center; gap:12px; padding:18px 22px;
+                      border-bottom:1px solid var(--line); }
+  .tablecard .thead h3 { font-size:16.5px; }
+  .tablecard .thead .cnt { font-size:12.5px; font-weight:700; color:var(--accent-ink);
+                           background:var(--accent-soft); border-radius:99px; padding:3px 11px; }
+  .twrap { overflow-x:auto; }
+  table.sig { border-collapse:collapse; width:100%; font-size:13.6px; min-width:840px; }
+  table.sig th { text-align:left; font-size:11.5px; color:var(--ink3); font-weight:650;
+                 letter-spacing:.04em; text-transform:uppercase; padding:10px 16px;
+                 border-bottom:1px solid var(--line); background:var(--bg); white-space:nowrap; }
+  table.sig td { padding:11px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.sig tr:last-child td { border-bottom:none; }
+  table.sig.side-brk thead th { background:#FBF2E9; color:#8A5A32; }
+  table.sig.side-sup thead th { background:#E7F4F1; color:#256A5F; }
+  td.tick { font-weight:800; font-size:14.5px; }
+  .pill { font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; display:inline-block; }
+  .pill.brk { background:var(--rust-soft); color:var(--rust); }
+  .pill.sup { background:var(--accent-soft); color:var(--accent-ink); }
+  .pill.q { background:var(--navy); color:#7FD6C9; }
+  .conf-b { display:flex; align-items:center; gap:8px; }
+  .conf-b i { display:block; height:6px; border-radius:3px; background:var(--accent); }
+  .conf-b b { font-size:13px; }
+
+  tr.locked td { filter:blur(7px); user-select:none; pointer-events:none; }
+  body.subbed tr.locked td { filter:none; user-select:auto; pointer-events:auto; }
+  .paywall { position:relative; }
+  .paywall-overlay { position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(246,247,249,0) 0%, rgba(246,247,249,.88) 34%, rgba(246,247,249,.97) 100%); }
+  body.subbed .paywall-overlay { display:none; }
+  .paywall-overlay h4 { font-size:19px; font-weight:800; }
+  .paywall-overlay p { font-size:14px; color:var(--ink2); max-width:44ch; }
+
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:20px; margin-top:40px; }
+  .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:30px;
+          box-shadow:var(--shadow); position:relative; display:flex; flex-direction:column; text-align:left; }
+  .plan.hot { border:2px solid var(--accent); }
+  .plan .flag { position:absolute; top:-13px; inset-inline-start:24px; background:var(--accent);
+                color:#fff; font-size:12px; font-weight:800; padding:3px 13px; border-radius:99px; }
+  .plan h3 { font-size:17px; }
+  .plan .price { font-size:42px; font-weight:800; letter-spacing:-.03em; margin:10px 0 2px; }
+  .plan .price span { font-size:15px; font-weight:600; color:var(--ink2); }
+  .plan .per { color:var(--ink3); font-size:13px; margin-bottom:20px; }
+  .plan ul { list-style:none; padding:0; margin:0 0 26px; display:grid; gap:10px; font-size:14.5px; }
+  .plan li { padding-inline-start:26px; position:relative; }
+  .plan li::before { content:'✓'; position:absolute; inset-inline-start:0; color:var(--accent); font-weight:800; }
+  .plan li.soon { color:var(--ink3); }
+  .plan li.soon::before { content:'◷'; color:var(--ink3); }
+  .plan .btn { margin-top:auto; text-align:center; }
+
+  .steps { counter-reset:s; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+           gap:18px; margin-top:38px; }
+  .step { counter-increment:s; background:var(--surface); border:1px solid var(--line);
+          border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); }
+  .step::before { content:counter(s); display:flex; width:38px; height:38px; align-items:center;
+    justify-content:center; background:var(--navy); color:#fff; font-weight:800; border-radius:10px;
+    margin-bottom:14px; font-size:16px; }
+  details.faq { background:var(--surface); border:1px solid var(--line); border-radius:10px;
+                padding:16px 20px; margin-top:10px; text-align:left; }
+  details.faq summary { font-weight:700; cursor:pointer; font-size:15px; }
+  details.faq p { margin-top:10px; color:var(--ink2); font-size:14.5px; }
+  footer { background:var(--navy); color:#8FA0B5; padding:46px 0 40px; margin-top:80px; font-size:13px; }
+  footer .flinks { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:18px; color:#C6D2E0; font-weight:600; }
+  footer .disc { max-width:92ch; line-height:1.7; font-size:12px; border-top:1px solid rgba(255,255,255,.08);
+                 padding-top:18px; margin-top:18px; }
+  .notice { background:var(--rust-soft); border:1px solid var(--rust); color:var(--rust);
+            border-radius:10px; padding:12px 18px; font-size:13.5px; font-weight:600; margin-top:26px; }
+  .diago { color:var(--accent); font-weight:800; }
+  .hero .diago { color:#5BC8B8; }
+  .mark { display:inline-block; transform:translateY(-1px); }
+  .cta-banner { background:var(--navy); color:#EAF0F7; border-radius:18px; padding:44px 40px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    box-shadow:var(--shadow); }
+  .cta-banner h2 { font-size:clamp(22px,3vw,30px); font-weight:800; letter-spacing:-.02em; max-width:34ch; }
+  .cta-banner p { color:#A9B7C9; font-size:14.5px; margin-top:6px; }
+  .pain { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .pain .card b.no { color:var(--danger); }
+  .view-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+    border-radius:9px; padding:3px; margin-bottom:10px; }
+  .view-toggle button { font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+    background:transparent; border:none; border-radius:7px; padding:6px 16px; cursor:pointer; }
+  .view-toggle button.on { background:var(--surface); color:var(--ink);
+    box-shadow:0 1px 3px rgba(13,27,46,.12); }
+  .chart-view { display:none; }
+  .chart-view.on { display:block; }
+  .cap .chart-view.on { display:contents; }
+  .chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .chart-head .view-toggle { margin-bottom:0; }
+  .price-block { margin-left:auto; text-align:right; }
+  .pb-price { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+  .chg-pill { font-size:15px; font-weight:800; padding:4px 12px; border-radius:99px; }
+  .chg-pill.up { background:var(--accent-soft); color:var(--accent-ink); }
+  .chg-pill.dn { background:#FBE9E9; color:var(--danger); }
+  .pb-cap { font-size:11.5px; color:var(--ink3); font-weight:600; }
+  .pb-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+               border-radius:8px; padding:2px; }
+  .pb-toggle button { font:inherit; font-size:11px; font-weight:800; color:var(--ink2);
+    background:transparent; border:none; border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .pb-toggle button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(13,27,46,.12); }
+  .tf-badge { font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--navy); background:var(--bg); border:1.5px solid var(--line); border-radius:9px;
+    padding:7px 16px; }
+  .tlink { border-bottom:1.5px dashed var(--accent); }
+  .tlink:hover { color:var(--accent-ink); }
+
+  .heart { font:inherit; background:none; border:none; cursor:pointer; font-size:17px; line-height:1;
+           color:var(--ink3); padding:2px 4px; border-radius:6px; transition:transform .12s, color .12s; }
+  .heart:hover { transform:scale(1.25); color:#D33A52; }
+  .heart.on { color:#D33A52; }
+  .heart.big { font-size:27px; padding:4px 8px; align-self:center; }
+  td.hcell { width:34px; padding-inline:10px 0 !important; }
+  .date-strip { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 12px; margin-top:24px;
+                scrollbar-width:thin; }
+  .dchip { flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+           background:var(--surface); border:1px solid var(--line); border-radius:99px;
+           padding:6px 14px; cursor:pointer; transition:all .12s; }
+  .dchip:hover { border-color:var(--ink3); }
+  .dchip.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .dchip .dow { font-weight:600; color:inherit; opacity:.6; font-size:11px; margin-inline-start:4px; }
+  .filter-bar { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px 18px; margin-bottom:16px; display:flex; flex-wrap:wrap;
+    gap:14px 18px; align-items:flex-end; }
+  .filter-bar[hidden] { display:none; }
+  .filter-bar label { display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:700;
+    color:var(--ink3); text-transform:uppercase; letter-spacing:.05em; }
+  .filter-bar input, .filter-bar select { font:inherit; font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); width:118px; }
+  .filter-bar input:focus, .filter-bar select:focus { outline:2px solid var(--accent); border-color:transparent; }
+  .filter-bar .fpair { display:flex; gap:6px; align-items:center; }
+  .filter-bar .fpair input { width:84px; }
+  .filter-bar .btn { padding:8px 16px; font-size:13px; }
+
+  /* ---------- stock detail ---------- */
+  .stock-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:44px 0 6px; }
+  .stock-head h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .stock-head .co { color:var(--ink2); font-size:16px; }
+  .stock-grid { display:grid; grid-template-columns:320px 1fr; gap:22px; margin-top:22px; align-items:start; }
+  @media (max-width:900px) { .stock-grid { grid-template-columns:1fr; } }
+  .info-panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:22px; }
+  .info-panel h3 { font-size:13px; color:var(--ink3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line);
+        font-size:13.8px; }
+  .kv:last-child { border-bottom:none; }
+  .kv b { font-weight:700; }
+  .kv span { color:var(--ink2); }
+  .about { font-size:13.5px; color:var(--ink2); line-height:1.65; margin-top:14px; }
+  .conf-card { border-radius:var(--radius); padding:22px 26px; display:flex; align-items:center; gap:22px;
+               box-shadow:var(--shadow); margin-bottom:18px; }
+  .conf-card .score { font-size:52px; font-weight:800; letter-spacing:-.03em; line-height:1; white-space:nowrap; flex:none; }
+  .conf-card .score small { font-size:20px; font-weight:700; opacity:.75; }
+  .conf-card .lbl { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+  .conf-card .sub2 { font-size:13px; opacity:.85; margin-top:3px; }
+  .chart-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:20px; }
+  .chart-card .cap { display:flex; gap:12px; align-items:center; font-size:12.5px; color:var(--ink3);
+                     margin-top:10px; flex-wrap:wrap; }
+  .legend-dot { display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:-1px; }
+  @media (max-width:720px) { .nav-links { display:none; } }
+</style></head><body><header class="nav"><div class="wrap nav-in"><a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+<rect width="26" height="26" rx="6" fill="#0D1B2E"/>
+<path d="M4 19 L13 8 L17 12 L22 5" stroke="#5BC8B8" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="22" cy="5" r="2" fill="#5BC8B8"/></svg>Trendlines</a><nav class="nav-links"><a href="index.html" class="">Home</a><a href="breakouts.html" class="">Breakout Signals</a><a href="supports.html" class="">Support Signals</a><a href="watchlist.html" class="">Watchlist</a><a href="pricing.html" class="">Pricing</a></nav><div class="nav-cta"><span class="sub-badge">Subscriber · demo</span><a class="btn ghost hide-when-subbed" href="pricing.html">Sign in</a><a class="btn primary hide-when-subbed" href="pricing.html">Start free trial</a></div></div></header>
+<section style="padding-bottom:76px"><div class="wrap">
+  <div class="stock-head">
+    <a href="breakouts.html" style="color:var(--ink3);font-size:13px">← Back to signals</a>
+  </div>
+  <div class="stock-head" style="margin-top:6px">
+    <h1>VRTX</h1>
+    <button class="heart big" data-t="VRTX" onclick="toggleWatch('VRTX')">♡</button>
+    <span class="co">Vertex Pharmaceuticals Inc</span>
+    <span class="pill brk">Breakout signal</span>
+    <div class="price-block">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+        <span class="pb-price num">$505.75</span>
+        <span id="chg-pill" class="chg-pill" data-d="-2.07"
+              data-w="1.95" data-m="4.06">—</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:6px">
+        <span class="pb-cap">last close · 2026-08-14</span>
+        <span class="pb-toggle">
+          <button data-p="d" onclick="setPxPeriod('d')">1D</button><button data-p="w" onclick="setPxPeriod('w')">1W</button><button data-p="m" onclick="setPxPeriod('m')">1M</button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="stock-grid">
+    <div>
+      <div class="info-panel">
+        <h3>Company overview</h3>
+        <div class="kv"><span>Market cap</span><b class="num">$128.19B</b></div><div class="kv"><span>Sector</span><b class="num">HEALTHCARE</b></div><div class="kv"><span>Industry</span><b class="num">BIOTECHNOLOGY</b></div><div class="kv"><span>P/E ratio</span><b class="num">29.51</b></div><div class="kv"><span>EPS</span><b class="num">17.14</b></div><div class="kv"><span>Beta</span><b class="num">0.30</b></div><div class="kv"><span>Dividend yield</span><b class="num">—</b></div><div class="kv"><span>52-week high</span><b class="num">546.17</b></div><div class="kv"><span>52-week low</span><b class="num">374.17</b></div><div class="kv"><span>Avg $ volume</span><b class="num">$996.95M</b></div><div class="kv"><span>Volatility (ATR)</span><b class="num">2.7%</b></div>
+        <p class="about">Vertex Pharmaceuticals, Inc. is an American biopharmaceutical company based in Boston, Massachusetts.</p>
+      </div>
+      <div class="info-panel" style="margin-top:18px">
+        <h3>Signal details</h3>
+        <div class="kv"><span>Signal type</span><b class="num">Resistance breakout</b></div><div class="kv"><span>Status</span><b class="num">Breakout signal</b></div><div class="kv"><span>Trendline price</span><b class="num">518.90</b></div><div class="kv"><span>Distance to line</span><b class="num">-1.8%</b></div><div class="kv"><span>Anchor 1</span><b class="num">2024-11-08</b></div><div class="kv"><span>Anchor 2</span><b class="num">2025-03-14</b></div><div class="kv"><span>Line age</span><b class="num">326 trading days</b></div><div class="kv"><span>Line slope</span><b class="num">-0.1% / yr</b></div>
+      </div>
+    </div>
+    <div>
+      <div class="conf-card" style="background:hsl(158, 52%, 45%);color:#FFFFFF"><div class="score num">7.8<small> / 10</small></div><div><div class="lbl">Diago confidence</div><div class="sub2">Calibrated from 50% historical hit-rate on similar setups (20-trading-day horizon). Statistics — not a guarantee.</div></div></div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="view-toggle" role="tablist" aria-label="Chart style">
+            <button data-view="candles" onclick="setChartView('candles')">Candles</button>
+            <button data-view="line" onclick="setChartView('line')">Line</button>
+          </div>
+          <div class="tf-badge">Weekly chart</div>
+        </div>
+        <div class="chart-view" data-view="candles"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="VRTX candlestick chart with trendline"><line x1="14" x2="898" y1="393.6" y2="393.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="289.5" y2="289.5" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="197.7" y2="197.7" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="115.6" y2="115.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="41.4" y2="41.4" stroke="#EAEDF3" stroke-width="1"/><line x1="18.6" x2="18.6" y1="131.1" y2="157.7" stroke="#C25B5B" stroke-width="1"/><rect x="15.7" y="147.4" width="5.7" height="3.4" fill="#C25B5B" rx="0.8"/><line x1="27.7" x2="27.7" y1="155.7" y2="187.3" stroke="#C25B5B" stroke-width="1"/><rect x="24.8" y="156.7" width="5.7" height="18.6" fill="#C25B5B" rx="0.8"/><line x1="36.8" x2="36.8" y1="160.0" y2="193.8" stroke="#C25B5B" stroke-width="1"/><rect x="34.0" y="170.5" width="5.7" height="21.1" fill="#C25B5B" rx="0.8"/><line x1="45.9" x2="45.9" y1="152.3" y2="201.7" stroke="#0E9382" stroke-width="1"/><rect x="43.1" y="153.7" width="5.7" height="35.4" fill="#0E9382" rx="0.8"/><line x1="55.0" x2="55.0" y1="117.1" y2="154.2" stroke="#0E9382" stroke-width="1"/><rect x="52.2" y="117.6" width="5.7" height="32.2" fill="#0E9382" rx="0.8"/><line x1="64.1" x2="64.1" y1="117.8" y2="172.6" stroke="#C25B5B" stroke-width="1"/><rect x="61.3" y="118.3" width="5.7" height="42.4" fill="#C25B5B" rx="0.8"/><line x1="73.2" x2="73.2" y1="146.8" y2="166.4" stroke="#C25B5B" stroke-width="1"/><rect x="70.4" y="152.0" width="5.7" height="2.0" fill="#C25B5B" rx="0.8"/><line x1="82.4" x2="82.4" y1="105.3" y2="175.3" stroke="#0E9382" stroke-width="1"/><rect x="79.5" y="111.8" width="5.7" height="50.3" fill="#0E9382" rx="0.8"/><line x1="91.5" x2="91.5" y1="85.3" y2="141.7" stroke="#C25B5B" stroke-width="1"/><rect x="88.6" y="104.5" width="5.7" height="36.5" fill="#C25B5B" rx="0.8"/><line x1="100.6" x2="100.6" y1="147.5" y2="206.4" stroke="#C25B5B" stroke-width="1"/><rect x="97.8" y="149.8" width="5.7" height="47.3" fill="#C25B5B" rx="0.8"/><line x1="109.7" x2="109.7" y1="162.3" y2="199.4" stroke="#0E9382" stroke-width="1"/><rect x="106.9" y="167.0" width="5.7" height="23.4" fill="#0E9382" rx="0.8"/><line x1="118.8" x2="118.8" y1="166.3" y2="197.7" stroke="#C25B5B" stroke-width="1"/><rect x="116.0" y="168.0" width="5.7" height="9.0" fill="#C25B5B" rx="0.8"/><line x1="127.9" x2="127.9" y1="153.2" y2="181.0" stroke="#C25B5B" stroke-width="1"/><rect x="125.1" y="168.3" width="5.7" height="6.0" fill="#C25B5B" rx="0.8"/><line x1="137.0" x2="137.0" y1="157.0" y2="333.9" stroke="#C25B5B" stroke-width="1"/><rect x="134.2" y="174.9" width="5.7" height="119.9" fill="#C25B5B" rx="0.8"/><line x1="146.1" x2="146.1" y1="267.8" y2="307.4" stroke="#0E9382" stroke-width="1"/><rect x="143.3" y="290.8" width="5.7" height="14.7" fill="#0E9382" rx="0.8"/><line x1="155.3" x2="155.3" y1="267.2" y2="291.5" stroke="#0E9382" stroke-width="1"/><rect x="152.4" y="273.5" width="5.7" height="16.8" fill="#0E9382" rx="0.8"/><line x1="164.4" x2="164.4" y1="241.4" y2="294.9" stroke="#0E9382" stroke-width="1"/><rect x="161.5" y="243.6" width="5.7" height="25.3" fill="#0E9382" rx="0.8"/><line x1="173.5" x2="173.5" y1="210.2" y2="260.6" stroke="#0E9382" stroke-width="1"/><rect x="170.7" y="215.7" width="5.7" height="29.5" fill="#0E9382" rx="0.8"/><line x1="182.6" x2="182.6" y1="201.7" y2="231.7" stroke="#C25B5B" stroke-width="1"/><rect x="179.8" y="217.5" width="5.7" height="1.0" fill="#C25B5B" rx="0.8"/><line x1="191.7" x2="191.7" y1="128.5" y2="202.6" stroke="#0E9382" stroke-width="1"/><rect x="188.9" y="145.6" width="5.7" height="45.0" fill="#0E9382" rx="0.8"/><line x1="200.8" x2="200.8" y1="146.7" y2="204.7" stroke="#C25B5B" stroke-width="1"/><rect x="198.0" y="149.1" width="5.7" height="27.1" fill="#C25B5B" rx="0.8"/><line x1="209.9" x2="209.9" y1="135.6" y2="194.3" stroke="#0E9382" stroke-width="1"/><rect x="207.1" y="140.6" width="5.7" height="35.8" fill="#0E9382" rx="0.8"/><line x1="219.1" x2="219.1" y1="135.4" y2="158.1" stroke="#C25B5B" stroke-width="1"/><rect x="216.2" y="142.8" width="5.7" height="4.9" fill="#C25B5B" rx="0.8"/><line x1="228.2" x2="228.2" y1="122.6" y2="151.1" stroke="#0E9382" stroke-width="1"/><rect x="225.3" y="134.1" width="5.7" height="16.9" fill="#0E9382" rx="0.8"/><line x1="237.3" x2="237.3" y1="85.6" y2="147.0" stroke="#0E9382" stroke-width="1"/><rect x="234.5" y="108.2" width="5.7" height="33.7" fill="#0E9382" rx="0.8"/><line x1="246.4" x2="246.4" y1="89.3" y2="114.0" stroke="#C25B5B" stroke-width="1"/><rect x="243.6" y="107.6" width="5.7" height="3.1" fill="#C25B5B" rx="0.8"/><line x1="255.5" x2="255.5" y1="94.1" y2="129.2" stroke="#C25B5B" stroke-width="1"/><rect x="252.7" y="107.9" width="5.7" height="19.2" fill="#C25B5B" rx="0.8"/><line x1="264.6" x2="264.6" y1="117.1" y2="161.4" stroke="#C25B5B" stroke-width="1"/><rect x="261.8" y="136.0" width="5.7" height="20.3" fill="#C25B5B" rx="0.8"/><line x1="273.7" x2="273.7" y1="135.9" y2="201.0" stroke="#0E9382" stroke-width="1"/><rect x="270.9" y="140.6" width="5.7" height="30.0" fill="#0E9382" rx="0.8"/><line x1="282.8" x2="282.8" y1="112.2" y2="159.1" stroke="#C25B5B" stroke-width="1"/><rect x="280.0" y="136.1" width="5.7" height="15.3" fill="#C25B5B" rx="0.8"/><line x1="292.0" x2="292.0" y1="117.7" y2="146.5" stroke="#0E9382" stroke-width="1"/><rect x="289.1" y="121.1" width="5.7" height="20.1" fill="#0E9382" rx="0.8"/><line x1="301.1" x2="301.1" y1="99.0" y2="130.0" stroke="#0E9382" stroke-width="1"/><rect x="298.2" y="115.3" width="5.7" height="9.3" fill="#0E9382" rx="0.8"/><line x1="310.2" x2="310.2" y1="167.4" y2="245.6" stroke="#C25B5B" stroke-width="1"/><rect x="307.4" y="171.2" width="5.7" height="45.1" fill="#C25B5B" rx="0.8"/><line x1="319.3" x2="319.3" y1="211.5" y2="257.8" stroke="#0E9382" stroke-width="1"/><rect x="316.5" y="214.1" width="5.7" height="5.6" fill="#0E9382" rx="0.8"/><line x1="328.4" x2="328.4" y1="201.2" y2="237.8" stroke="#0E9382" stroke-width="1"/><rect x="325.6" y="204.7" width="5.7" height="7.0" fill="#0E9382" rx="0.8"/><line x1="337.5" x2="337.5" y1="194.9" y2="216.4" stroke="#0E9382" stroke-width="1"/><rect x="334.7" y="203.9" width="5.7" height="1.0" fill="#0E9382" rx="0.8"/><line x1="346.6" x2="346.6" y1="188.0" y2="219.8" stroke="#0E9382" stroke-width="1"/><rect x="343.8" y="195.1" width="5.7" height="6.0" fill="#0E9382" rx="0.8"/><line x1="355.8" x2="355.8" y1="180.1" y2="213.9" stroke="#C25B5B" stroke-width="1"/><rect x="352.9" y="195.5" width="5.7" height="16.2" fill="#C25B5B" rx="0.8"/><line x1="364.9" x2="364.9" y1="194.5" y2="220.9" stroke="#0E9382" stroke-width="1"/><rect x="362.0" y="205.0" width="5.7" height="4.2" fill="#0E9382" rx="0.8"/><line x1="374.0" x2="374.0" y1="184.4" y2="216.6" stroke="#0E9382" stroke-width="1"/><rect x="371.2" y="185.7" width="5.7" height="19.4" fill="#0E9382" rx="0.8"/><line x1="383.1" x2="383.1" y1="140.1" y2="187.8" stroke="#0E9382" stroke-width="1"/><rect x="380.3" y="148.2" width="5.7" height="35.0" fill="#0E9382" rx="0.8"/><line x1="392.2" x2="392.2" y1="150.3" y2="177.5" stroke="#C25B5B" stroke-width="1"/><rect x="389.4" y="153.2" width="5.7" height="21.9" fill="#C25B5B" rx="0.8"/><line x1="401.3" x2="401.3" y1="147.4" y2="186.0" stroke="#0E9382" stroke-width="1"/><rect x="398.5" y="160.1" width="5.7" height="8.7" fill="#0E9382" rx="0.8"/><line x1="410.4" x2="410.4" y1="156.0" y2="188.4" stroke="#C25B5B" stroke-width="1"/><rect x="407.6" y="159.5" width="5.7" height="26.5" fill="#C25B5B" rx="0.8"/><line x1="419.5" x2="419.5" y1="158.3" y2="345.3" stroke="#C25B5B" stroke-width="1"/><rect x="416.7" y="185.0" width="5.7" height="153.5" fill="#C25B5B" rx="0.8"/><line x1="428.7" x2="428.7" y1="295.9" y2="366.2" stroke="#0E9382" stroke-width="1"/><rect x="425.8" y="308.7" width="5.7" height="27.0" fill="#0E9382" rx="0.8"/><line x1="437.8" x2="437.8" y1="287.7" y2="311.8" stroke="#0E9382" stroke-width="1"/><rect x="434.9" y="294.5" width="5.7" height="11.8" fill="#0E9382" rx="0.8"/><line x1="446.9" x2="446.9" y1="282.6" y2="322.1" stroke="#C25B5B" stroke-width="1"/><rect x="444.1" y="289.5" width="5.7" height="15.6" fill="#C25B5B" rx="0.8"/><line x1="456.0" x2="456.0" y1="284.2" y2="310.5" stroke="#0E9382" stroke-width="1"/><rect x="453.2" y="297.1" width="5.7" height="7.9" fill="#0E9382" rx="0.8"/><line x1="465.1" x2="465.1" y1="292.5" y2="314.9" stroke="#C25B5B" stroke-width="1"/><rect x="462.3" y="298.8" width="5.7" height="1.5" fill="#C25B5B" rx="0.8"/><line x1="474.2" x2="474.2" y1="292.9" y2="324.2" stroke="#C25B5B" stroke-width="1"/><rect x="471.4" y="303.3" width="5.7" height="19.8" fill="#C25B5B" rx="0.8"/><line x1="483.3" x2="483.3" y1="314.3" y2="341.5" stroke="#0E9382" stroke-width="1"/><rect x="480.5" y="317.8" width="5.7" height="3.4" fill="#0E9382" rx="0.8"/><line x1="492.5" x2="492.5" y1="266.7" y2="320.5" stroke="#0E9382" stroke-width="1"/><rect x="489.6" y="283.1" width="5.7" height="32.4" fill="#0E9382" rx="0.8"/><line x1="501.6" x2="501.6" y1="246.5" y2="288.1" stroke="#0E9382" stroke-width="1"/><rect x="498.7" y="274.5" width="5.7" height="6.0" fill="#0E9382" rx="0.8"/><line x1="510.7" x2="510.7" y1="252.7" y2="284.5" stroke="#0E9382" stroke-width="1"/><rect x="507.9" y="257.4" width="5.7" height="23.9" fill="#0E9382" rx="0.8"/><line x1="519.8" x2="519.8" y1="228.2" y2="261.7" stroke="#0E9382" stroke-width="1"/><rect x="517.0" y="248.9" width="5.7" height="6.0" fill="#0E9382" rx="0.8"/><line x1="528.9" x2="528.9" y1="238.7" y2="260.8" stroke="#0E9382" stroke-width="1"/><rect x="526.1" y="241.2" width="5.7" height="6.6" fill="#0E9382" rx="0.8"/><line x1="538.0" x2="538.0" y1="231.9" y2="283.4" stroke="#C25B5B" stroke-width="1"/><rect x="535.2" y="235.9" width="5.7" height="35.4" fill="#C25B5B" rx="0.8"/><line x1="547.1" x2="547.1" y1="211.3" y2="269.3" stroke="#0E9382" stroke-width="1"/><rect x="544.3" y="220.3" width="5.7" height="45.5" fill="#0E9382" rx="0.8"/><line x1="556.2" x2="556.2" y1="215.3" y2="254.2" stroke="#C25B5B" stroke-width="1"/><rect x="553.4" y="220.6" width="5.7" height="18.5" fill="#C25B5B" rx="0.8"/><line x1="565.4" x2="565.4" y1="224.7" y2="245.1" stroke="#C25B5B" stroke-width="1"/><rect x="562.5" y="240.0" width="5.7" height="1.2" fill="#C25B5B" rx="0.8"/><line x1="574.5" x2="574.5" y1="174.1" y2="244.0" stroke="#0E9382" stroke-width="1"/><rect x="571.6" y="211.6" width="5.7" height="26.4" fill="#0E9382" rx="0.8"/><line x1="583.6" x2="583.6" y1="186.6" y2="226.3" stroke="#0E9382" stroke-width="1"/><rect x="580.8" y="187.9" width="5.7" height="22.8" fill="#0E9382" rx="0.8"/><line x1="592.7" x2="592.7" y1="179.0" y2="205.7" stroke="#0E9382" stroke-width="1"/><rect x="589.9" y="180.1" width="5.7" height="7.8" fill="#0E9382" rx="0.8"/><line x1="601.8" x2="601.8" y1="173.1" y2="191.9" stroke="#C25B5B" stroke-width="1"/><rect x="599.0" y="179.9" width="5.7" height="11.4" fill="#C25B5B" rx="0.8"/><line x1="610.9" x2="610.9" y1="135.3" y2="209.7" stroke="#0E9382" stroke-width="1"/><rect x="608.1" y="140.7" width="5.7" height="54.0" fill="#0E9382" rx="0.8"/><line x1="620.0" x2="620.0" y1="138.3" y2="204.7" stroke="#C25B5B" stroke-width="1"/><rect x="617.2" y="145.0" width="5.7" height="53.5" fill="#C25B5B" rx="0.8"/><line x1="629.2" x2="629.2" y1="159.6" y2="235.0" stroke="#0E9382" stroke-width="1"/><rect x="626.3" y="168.3" width="5.7" height="31.6" fill="#0E9382" rx="0.8"/><line x1="638.3" x2="638.3" y1="139.4" y2="176.0" stroke="#0E9382" stroke-width="1"/><rect x="635.4" y="154.5" width="5.7" height="17.3" fill="#0E9382" rx="0.8"/><line x1="647.4" x2="647.4" y1="149.5" y2="184.5" stroke="#C25B5B" stroke-width="1"/><rect x="644.6" y="161.9" width="5.7" height="20.7" fill="#C25B5B" rx="0.8"/><line x1="656.5" x2="656.5" y1="149.8" y2="190.2" stroke="#0E9382" stroke-width="1"/><rect x="653.7" y="172.2" width="5.7" height="9.0" fill="#0E9382" rx="0.8"/><line x1="665.6" x2="665.6" y1="109.6" y2="175.5" stroke="#0E9382" stroke-width="1"/><rect x="662.8" y="152.5" width="5.7" height="8.6" fill="#0E9382" rx="0.8"/><line x1="674.7" x2="674.7" y1="119.1" y2="156.3" stroke="#0E9382" stroke-width="1"/><rect x="671.9" y="120.6" width="5.7" height="34.9" fill="#0E9382" rx="0.8"/><line x1="683.8" x2="683.8" y1="118.7" y2="196.6" stroke="#C25B5B" stroke-width="1"/><rect x="681.0" y="121.0" width="5.7" height="65.3" fill="#C25B5B" rx="0.8"/><line x1="692.9" x2="692.9" y1="103.4" y2="196.4" stroke="#0E9382" stroke-width="1"/><rect x="690.1" y="164.9" width="5.7" height="23.2" fill="#0E9382" rx="0.8"/><line x1="702.1" x2="702.1" y1="153.7" y2="198.2" stroke="#C25B5B" stroke-width="1"/><rect x="699.2" y="155.4" width="5.7" height="35.5" fill="#C25B5B" rx="0.8"/><line x1="711.2" x2="711.2" y1="174.2" y2="231.3" stroke="#C25B5B" stroke-width="1"/><rect x="708.4" y="183.3" width="5.7" height="44.3" fill="#C25B5B" rx="0.8"/><line x1="720.3" x2="720.3" y1="190.9" y2="229.3" stroke="#C25B5B" stroke-width="1"/><rect x="717.5" y="217.5" width="5.7" height="7.9" fill="#C25B5B" rx="0.8"/><line x1="729.4" x2="729.4" y1="203.0" y2="241.8" stroke="#0E9382" stroke-width="1"/><rect x="726.6" y="215.2" width="5.7" height="8.1" fill="#0E9382" rx="0.8"/><line x1="738.5" x2="738.5" y1="201.5" y2="231.1" stroke="#0E9382" stroke-width="1"/><rect x="735.7" y="216.7" width="5.7" height="7.0" fill="#0E9382" rx="0.8"/><line x1="747.6" x2="747.6" y1="211.7" y2="240.7" stroke="#C25B5B" stroke-width="1"/><rect x="744.8" y="220.4" width="5.7" height="20.1" fill="#C25B5B" rx="0.8"/><line x1="756.7" x2="756.7" y1="230.0" y2="252.0" stroke="#C25B5B" stroke-width="1"/><rect x="753.9" y="230.9" width="5.7" height="2.5" fill="#C25B5B" rx="0.8"/><line x1="765.9" x2="765.9" y1="211.4" y2="266.0" stroke="#0E9382" stroke-width="1"/><rect x="763.0" y="223.9" width="5.7" height="5.7" fill="#0E9382" rx="0.8"/><line x1="775.0" x2="775.0" y1="186.3" y2="232.7" stroke="#C25B5B" stroke-width="1"/><rect x="772.1" y="215.4" width="5.7" height="5.9" fill="#C25B5B" rx="0.8"/><line x1="784.1" x2="784.1" y1="207.6" y2="240.4" stroke="#C25B5B" stroke-width="1"/><rect x="781.3" y="221.0" width="5.7" height="1.5" fill="#C25B5B" rx="0.8"/><line x1="793.2" x2="793.2" y1="197.7" y2="242.5" stroke="#C25B5B" stroke-width="1"/><rect x="790.4" y="217.9" width="5.7" height="24.2" fill="#C25B5B" rx="0.8"/><line x1="802.3" x2="802.3" y1="192.3" y2="251.5" stroke="#0E9382" stroke-width="1"/><rect x="799.5" y="205.1" width="5.7" height="45.2" fill="#0E9382" rx="0.8"/><line x1="811.4" x2="811.4" y1="189.9" y2="226.3" stroke="#0E9382" stroke-width="1"/><rect x="808.6" y="192.3" width="5.7" height="10.2" fill="#0E9382" rx="0.8"/><line x1="820.5" x2="820.5" y1="146.1" y2="202.0" stroke="#0E9382" stroke-width="1"/><rect x="817.7" y="155.3" width="5.7" height="43.0" fill="#0E9382" rx="0.8"/><line x1="829.6" x2="829.6" y1="109.6" y2="158.1" stroke="#0E9382" stroke-width="1"/><rect x="826.8" y="118.7" width="5.7" height="36.7" fill="#0E9382" rx="0.8"/><line x1="838.8" x2="838.8" y1="64.9" y2="144.0" stroke="#C25B5B" stroke-width="1"/><rect x="835.9" y="109.8" width="5.7" height="11.3" fill="#C25B5B" rx="0.8"/><line x1="847.9" x2="847.9" y1="117.3" y2="164.5" stroke="#C25B5B" stroke-width="1"/><rect x="845.1" y="118.5" width="5.7" height="19.2" fill="#C25B5B" rx="0.8"/><line x1="857.0" x2="857.0" y1="120.8" y2="172.2" stroke="#C25B5B" stroke-width="1"/><rect x="854.2" y="141.8" width="5.7" height="17.0" fill="#C25B5B" rx="0.8"/><line x1="866.1" x2="866.1" y1="125.7" y2="163.0" stroke="#0E9382" stroke-width="1"/><rect x="863.3" y="144.7" width="5.7" height="9.2" fill="#0E9382" rx="0.8"/><line x1="875.2" x2="875.2" y1="127.6" y2="171.3" stroke="#0E9382" stroke-width="1"/><rect x="872.4" y="140.9" width="5.7" height="5.4" fill="#0E9382" rx="0.8"/><line x1="884.3" x2="884.3" y1="46.8" y2="144.0" stroke="#0E9382" stroke-width="1"/><rect x="881.5" y="90.4" width="5.7" height="45.6" fill="#0E9382" rx="0.8"/><line x1="893.4" x2="893.4" y1="94.7" y2="112.1" stroke="#C25B5B" stroke-width="1"/><rect x="890.6" y="98.1" width="5.7" height="8.7" fill="#C25B5B" rx="0.8"/><polyline points="18.6,85.2 27.7,85.2 36.8,85.2 45.9,85.2 55.0,85.2 64.1,85.3 73.2,85.3 82.4,85.3 91.5,85.3 100.6,85.3 109.7,85.3 118.8,85.4 127.9,85.4 137.0,85.4 146.1,85.4 155.3,85.4 164.4,85.4 173.5,85.4 182.6,85.5 191.7,85.5 200.8,85.5 209.9,85.5 219.1,85.5 228.2,85.5 237.3,85.6 246.4,85.6 255.5,85.6 264.6,85.6 273.7,85.6 282.8,85.6 292.0,85.6 301.1,85.7 310.2,85.7 319.3,85.7 328.4,85.7 337.5,85.7 346.6,85.7 355.8,85.8 364.9,85.8 374.0,85.8 383.1,85.8 392.2,85.8 401.3,85.8 410.4,85.8 419.5,85.9 428.7,85.9 437.8,85.9 446.9,85.9 456.0,85.9 465.1,85.9 474.2,86.0 483.3,86.0 492.5,86.0 501.6,86.0 510.7,86.0 519.8,86.0 528.9,86.0 538.0,86.1 547.1,86.1 556.2,86.1 565.4,86.1 574.5,86.1 583.6,86.1 592.7,86.2 601.8,86.2 610.9,86.2 620.0,86.2 629.2,86.2 638.3,86.2 647.4,86.2 656.5,86.3 665.6,86.3 674.7,86.3 683.8,86.3 692.9,86.3 702.1,86.3 711.2,86.4 720.3,86.4 729.4,86.4 738.5,86.4 747.6,86.4 756.7,86.4 765.9,86.4 775.0,86.5 784.1,86.5 793.2,86.5 802.3,86.5 811.4,86.5 820.5,86.5 829.6,86.6 838.8,86.6 847.9,86.6 857.0,86.6 866.1,86.6 875.2,86.6 884.3,86.6 893.4,86.7" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.6,85.2 27.7,85.2 36.8,85.2 45.9,85.2 55.0,85.2 64.1,85.3 73.2,85.3 82.4,85.3 91.5,85.3 100.6,85.3 109.7,85.3 118.8,85.4 127.9,85.4 137.0,85.4 146.1,85.4 155.3,85.4 164.4,85.4 173.5,85.4 182.6,85.5 191.7,85.5 200.8,85.5 209.9,85.5 219.1,85.5 228.2,85.5 237.3,85.6 246.4,85.6 255.5,85.6 264.6,85.6 273.7,85.6 282.8,85.6 292.0,85.6 301.1,85.7 310.2,85.7 319.3,85.7 328.4,85.7 337.5,85.7 346.6,85.7 355.8,85.8 364.9,85.8 374.0,85.8 383.1,85.8 392.2,85.8 401.3,85.8 410.4,85.8 419.5,85.9 428.7,85.9 437.8,85.9 446.9,85.9 456.0,85.9 465.1,85.9 474.2,86.0 483.3,86.0 492.5,86.0 501.6,86.0 510.7,86.0 519.8,86.0 528.9,86.0 538.0,86.1 547.1,86.1 556.2,86.1 565.4,86.1 574.5,86.1 583.6,86.1 592.7,86.2 601.8,86.2 610.9,86.2 620.0,86.2 629.2,86.2 638.3,86.2 647.4,86.2 656.5,86.3 665.6,86.3 674.7,86.3 683.8,86.3 692.9,86.3 702.1,86.3 711.2,86.4 720.3,86.4 729.4,86.4 738.5,86.4 747.6,86.4 756.7,86.4 765.9,86.4 775.0,86.5 784.1,86.5 793.2,86.5 802.3,86.5 811.4,86.5 820.5,86.5 829.6,86.6 838.8,86.6 847.9,86.6 857.0,86.6 866.1,86.6 875.2,86.6 884.3,86.6 893.4,86.7" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="91.5" cy="85.3" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="91.5" y="74.3" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="237.3" cy="85.6" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="237.3" y="74.6" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="96.7" width="58" height="20" rx="4" fill="#C25B5B"/><text x="929.0" y="110.7" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">505.75</text><text x="906" y="397.6" font-size="11" fill="#8A94A6" class="num">350</text><text x="906" y="293.5" font-size="11" fill="#8A94A6" class="num">400</text><text x="906" y="201.7" font-size="11" fill="#8A94A6" class="num">450</text><text x="906" y="119.6" font-size="11" fill="#8A94A6" class="num">500</text><text x="906" y="45.4" font-size="11" fill="#8A94A6" class="num">550</text><text x="27.7" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2024-09-26</text><text x="310.2" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-05-12</text><text x="592.7" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-12-22</text><text x="875.2" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-08-06</text></svg></div>
+        <div class="chart-view" data-view="line"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="VRTX candlestick chart with trendline"><line x1="14" x2="898" y1="393.6" y2="393.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="289.5" y2="289.5" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="197.7" y2="197.7" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="115.6" y2="115.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="41.4" y2="41.4" stroke="#EAEDF3" stroke-width="1"/><path d="M 18.6,131.1 L 27.7,155.7 L 36.8,160.0 L 45.9,152.3 L 55.0,117.1 L 64.1,117.8 L 73.2,146.8 L 82.4,105.3 L 91.5,85.3 L 100.6,147.5 L 109.7,162.3 L 118.8,166.3 L 127.9,153.2 L 137.0,157.0 L 146.1,267.8 L 155.3,267.2 L 164.4,241.4 L 173.5,210.2 L 182.6,201.7 L 191.7,128.5 L 200.8,146.7 L 209.9,135.6 L 219.1,135.4 L 228.2,122.6 L 237.3,85.6 L 246.4,89.3 L 255.5,94.1 L 264.6,117.1 L 273.7,135.9 L 282.8,112.2 L 292.0,117.7 L 301.1,99.0 L 310.2,167.4 L 319.3,211.5 L 328.4,201.2 L 337.5,194.9 L 346.6,188.0 L 355.8,180.1 L 364.9,194.5 L 374.0,184.4 L 383.1,140.1 L 392.2,150.3 L 401.3,147.4 L 410.4,156.0 L 419.5,158.3 L 428.7,295.9 L 437.8,287.7 L 446.9,282.6 L 456.0,284.2 L 465.1,292.5 L 474.2,292.9 L 483.3,314.3 L 492.5,266.7 L 501.6,246.5 L 510.7,252.7 L 519.8,228.2 L 528.9,238.7 L 538.0,231.9 L 547.1,211.3 L 556.2,215.3 L 565.4,224.7 L 574.5,174.1 L 583.6,186.6 L 592.7,179.0 L 601.8,173.1 L 610.9,135.3 L 620.0,138.3 L 629.2,159.6 L 638.3,139.4 L 647.4,149.5 L 656.5,149.8 L 665.6,109.6 L 674.7,119.1 L 683.8,118.7 L 692.9,103.4 L 702.1,153.7 L 711.2,174.2 L 720.3,190.9 L 729.4,203.0 L 738.5,201.5 L 747.6,211.7 L 756.7,230.0 L 765.9,211.4 L 775.0,186.3 L 784.1,207.6 L 793.2,197.7 L 802.3,192.3 L 811.4,189.9 L 820.5,146.1 L 829.6,109.6 L 838.8,64.9 L 847.9,117.3 L 857.0,120.8 L 866.1,125.7 L 875.2,127.6 L 884.3,46.8 L 893.4,94.7 L 893.4,112.1 L 884.3,144.0 L 875.2,171.3 L 866.1,163.0 L 857.0,172.2 L 847.9,164.5 L 838.8,144.0 L 829.6,158.1 L 820.5,202.0 L 811.4,226.3 L 802.3,251.5 L 793.2,242.5 L 784.1,240.4 L 775.0,232.7 L 765.9,266.0 L 756.7,252.0 L 747.6,240.7 L 738.5,231.1 L 729.4,241.8 L 720.3,229.3 L 711.2,231.3 L 702.1,198.2 L 692.9,196.4 L 683.8,196.6 L 674.7,156.3 L 665.6,175.5 L 656.5,190.2 L 647.4,184.5 L 638.3,176.0 L 629.2,235.0 L 620.0,204.7 L 610.9,209.7 L 601.8,191.9 L 592.7,205.7 L 583.6,226.3 L 574.5,244.0 L 565.4,245.1 L 556.2,254.2 L 547.1,269.3 L 538.0,283.4 L 528.9,260.8 L 519.8,261.7 L 510.7,284.5 L 501.6,288.1 L 492.5,320.5 L 483.3,341.5 L 474.2,324.2 L 465.1,314.9 L 456.0,310.5 L 446.9,322.1 L 437.8,311.8 L 428.7,366.2 L 419.5,345.3 L 410.4,188.4 L 401.3,186.0 L 392.2,177.5 L 383.1,187.8 L 374.0,216.6 L 364.9,220.9 L 355.8,213.9 L 346.6,219.8 L 337.5,216.4 L 328.4,237.8 L 319.3,257.8 L 310.2,245.6 L 301.1,130.0 L 292.0,146.5 L 282.8,159.1 L 273.7,201.0 L 264.6,161.4 L 255.5,129.2 L 246.4,114.0 L 237.3,147.0 L 228.2,151.1 L 219.1,158.1 L 209.9,194.3 L 200.8,204.7 L 191.7,202.6 L 182.6,231.7 L 173.5,260.6 L 164.4,294.9 L 155.3,291.5 L 146.1,307.4 L 137.0,333.9 L 127.9,181.0 L 118.8,197.7 L 109.7,199.4 L 100.6,206.4 L 91.5,141.7 L 82.4,175.3 L 73.2,166.4 L 64.1,172.6 L 55.0,154.2 L 45.9,201.7 L 36.8,193.8 L 27.7,187.3 L 18.6,157.7 Z" fill="#49556A" opacity="0.12"/><polyline points="18.6,150.9 27.7,175.3 36.8,191.6 45.9,153.7 55.0,117.6 64.1,160.7 73.2,154.0 82.4,111.8 91.5,141.0 100.6,197.1 109.7,167.0 118.8,177.1 127.9,174.3 137.0,294.9 146.1,290.8 155.3,273.5 164.4,243.6 173.5,215.7 182.6,218.1 191.7,145.6 200.8,176.3 209.9,140.6 219.1,147.8 228.2,134.1 237.3,108.2 246.4,110.7 255.5,127.1 264.6,156.2 273.7,140.6 282.8,151.5 292.0,121.1 301.1,115.3 310.2,216.4 319.3,214.1 328.4,204.7 337.5,203.9 346.6,195.1 355.8,211.7 364.9,205.0 374.0,185.7 383.1,148.2 392.2,175.1 401.3,160.1 410.4,185.9 419.5,338.5 428.7,308.7 437.8,294.5 446.9,305.2 456.0,297.1 465.1,300.3 474.2,323.1 483.3,317.8 492.5,283.1 501.6,274.5 510.7,257.4 519.8,248.9 528.9,241.2 538.0,271.3 547.1,220.3 556.2,239.1 565.4,241.2 574.5,211.6 583.6,187.9 592.7,180.1 601.8,191.3 610.9,140.7 620.0,198.6 629.2,168.3 638.3,154.5 647.4,182.6 656.5,172.2 665.6,152.5 674.7,120.6 683.8,186.2 692.9,164.9 702.1,190.8 711.2,227.6 720.3,225.4 729.4,215.2 738.5,216.7 747.6,240.4 756.7,233.4 765.9,223.9 775.0,221.3 784.1,222.5 793.2,242.1 802.3,205.1 811.4,192.3 820.5,155.3 829.6,118.7 838.8,121.1 847.9,137.7 857.0,158.7 866.1,144.7 875.2,140.9 884.3,90.4 893.4,106.7" fill="none" stroke="#0F1726" stroke-width="1.7"/><polyline points="18.6,85.2 27.7,85.2 36.8,85.2 45.9,85.2 55.0,85.2 64.1,85.3 73.2,85.3 82.4,85.3 91.5,85.3 100.6,85.3 109.7,85.3 118.8,85.4 127.9,85.4 137.0,85.4 146.1,85.4 155.3,85.4 164.4,85.4 173.5,85.4 182.6,85.5 191.7,85.5 200.8,85.5 209.9,85.5 219.1,85.5 228.2,85.5 237.3,85.6 246.4,85.6 255.5,85.6 264.6,85.6 273.7,85.6 282.8,85.6 292.0,85.6 301.1,85.7 310.2,85.7 319.3,85.7 328.4,85.7 337.5,85.7 346.6,85.7 355.8,85.8 364.9,85.8 374.0,85.8 383.1,85.8 392.2,85.8 401.3,85.8 410.4,85.8 419.5,85.9 428.7,85.9 437.8,85.9 446.9,85.9 456.0,85.9 465.1,85.9 474.2,86.0 483.3,86.0 492.5,86.0 501.6,86.0 510.7,86.0 519.8,86.0 528.9,86.0 538.0,86.1 547.1,86.1 556.2,86.1 565.4,86.1 574.5,86.1 583.6,86.1 592.7,86.2 601.8,86.2 610.9,86.2 620.0,86.2 629.2,86.2 638.3,86.2 647.4,86.2 656.5,86.3 665.6,86.3 674.7,86.3 683.8,86.3 692.9,86.3 702.1,86.3 711.2,86.4 720.3,86.4 729.4,86.4 738.5,86.4 747.6,86.4 756.7,86.4 765.9,86.4 775.0,86.5 784.1,86.5 793.2,86.5 802.3,86.5 811.4,86.5 820.5,86.5 829.6,86.6 838.8,86.6 847.9,86.6 857.0,86.6 866.1,86.6 875.2,86.6 884.3,86.6 893.4,86.7" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.6,85.2 27.7,85.2 36.8,85.2 45.9,85.2 55.0,85.2 64.1,85.3 73.2,85.3 82.4,85.3 91.5,85.3 100.6,85.3 109.7,85.3 118.8,85.4 127.9,85.4 137.0,85.4 146.1,85.4 155.3,85.4 164.4,85.4 173.5,85.4 182.6,85.5 191.7,85.5 200.8,85.5 209.9,85.5 219.1,85.5 228.2,85.5 237.3,85.6 246.4,85.6 255.5,85.6 264.6,85.6 273.7,85.6 282.8,85.6 292.0,85.6 301.1,85.7 310.2,85.7 319.3,85.7 328.4,85.7 337.5,85.7 346.6,85.7 355.8,85.8 364.9,85.8 374.0,85.8 383.1,85.8 392.2,85.8 401.3,85.8 410.4,85.8 419.5,85.9 428.7,85.9 437.8,85.9 446.9,85.9 456.0,85.9 465.1,85.9 474.2,86.0 483.3,86.0 492.5,86.0 501.6,86.0 510.7,86.0 519.8,86.0 528.9,86.0 538.0,86.1 547.1,86.1 556.2,86.1 565.4,86.1 574.5,86.1 583.6,86.1 592.7,86.2 601.8,86.2 610.9,86.2 620.0,86.2 629.2,86.2 638.3,86.2 647.4,86.2 656.5,86.3 665.6,86.3 674.7,86.3 683.8,86.3 692.9,86.3 702.1,86.3 711.2,86.4 720.3,86.4 729.4,86.4 738.5,86.4 747.6,86.4 756.7,86.4 765.9,86.4 775.0,86.5 784.1,86.5 793.2,86.5 802.3,86.5 811.4,86.5 820.5,86.5 829.6,86.6 838.8,86.6 847.9,86.6 857.0,86.6 866.1,86.6 875.2,86.6 884.3,86.6 893.4,86.7" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="91.5" cy="85.3" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="91.5" y="74.3" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="237.3" cy="85.6" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="237.3" y="74.6" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="96.7" width="58" height="20" rx="4" fill="#C25B5B"/><text x="929.0" y="110.7" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">505.75</text><text x="906" y="397.6" font-size="11" fill="#8A94A6" class="num">350</text><text x="906" y="293.5" font-size="11" fill="#8A94A6" class="num">400</text><text x="906" y="201.7" font-size="11" fill="#8A94A6" class="num">450</text><text x="906" y="119.6" font-size="11" fill="#8A94A6" class="num">500</text><text x="906" y="45.4" font-size="11" fill="#8A94A6" class="num">550</text><text x="27.7" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2024-09-26</text><text x="310.2" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-05-12</text><text x="592.7" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-12-22</text><text x="875.2" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-08-06</text></svg></div>
+        <div class="cap">
+          <span class="chart-view" data-view="candles">
+            <span><span class="legend-dot" style="background:#0E9382"></span> Up candle</span>
+            <span><span class="legend-dot" style="background:#C25B5B"></span> Down candle</span></span>
+          <span class="chart-view" data-view="line">
+            <span><span class="legend-dot" style="background:#49556A;opacity:.35"></span> High–Low range</span>
+            <span><span class="legend-dot" style="background:#0F1726"></span> Close price</span></span>
+          <span><span class="legend-dot" style="background:#C05C1D"></span> Resistance diagonal (log scale)</span>
+          <span><span class="legend-dot" style="background:#C05C1D;border-radius:50%"></span> Line anchors</span>
+          <span style="margin-left:auto">data through 2026-08-14</span>
+        </div>
+      </div>
+      <div class="notice" style="margin-top:16px">⚠️ Algorithmic output for research purposes — not investment advice.</div>
+    </div>
+  </div>
+</div></section>
+<footer><div class="wrap"><div class="flinks"><a href="index.html">Trendlines</a><a href="breakouts.html">Breakout Signals</a><a href="supports.html">Support Signals</a><a href="watchlist.html">Watchlist</a><a href="pricing.html">Pricing</a></div><div>Market data as of 2026-08-14 · scanning 2,200+ stocks every trading day</div><div class="disc"><b>Disclaimer:</b> All content on this site — including signals, stock lists and performance figures — is provided for informational and research purposes only and does not constitute investment advice, a recommendation, or an offer to buy or sell any security. Performance shown is based on historical simulations; simulated results have inherent limitations and past performance is not indicative of future results. Trading securities involves substantial risk of loss. Always do your own research and consult a licensed professional.</div></div></footer>
+<script>
+function isSub(){try{const t=localStorage.getItem('tl_trial_until');return t&&Date.now()<+t;}catch(e){return false;}}
+function applySub(){document.body.classList.toggle('subbed', isSub());}
+function startTrial(){try{localStorage.setItem('tl_trial_until', String(Date.now()+7*864e5));}catch(e){}
+  applySub(); alert('Your 7-day free trial is active (demo mode). All lists are now unlocked.');}
+function endTrial(){try{localStorage.removeItem('tl_trial_until');}catch(e){} applySub();}
+function setChartView(v){
+  document.querySelectorAll('.chart-view').forEach(d=>d.classList.toggle('on', d.dataset.view===v));
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.view===v));
+  try{localStorage.setItem('tl_chart_view', v);}catch(e){}}
+function setPxPeriod(p){
+  const pill=document.getElementById('chg-pill'); if(!pill) return;
+  const v=parseFloat(pill.dataset[p]);
+  if(isNaN(v)){ pill.textContent='—'; pill.className='chg-pill'; }
+  else{ pill.textContent=(v>=0?'+':'')+v.toFixed(2)+'%';
+        pill.className='chg-pill '+(v>=0?'up':'dn'); }
+  document.querySelectorAll('.pb-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+}
+document.addEventListener('DOMContentLoaded', ()=>{ if(document.getElementById('chg-pill')) setPxPeriod('d'); });
+function getWL(){try{return JSON.parse(localStorage.getItem('tl_wl')||'[]');}catch(e){return [];}}
+function saveWL(a){try{localStorage.setItem('tl_wl', JSON.stringify(a));}catch(e){}}
+function toggleWatch(t){let a=getWL(); a=a.includes(t)?a.filter(x=>x!==t):a.concat([t]);
+  saveWL(a); paintHearts(); if(typeof renderMyWL==='function') renderMyWL();}
+function paintHearts(){const a=getWL();
+  document.querySelectorAll('.heart').forEach(b=>{const on=a.includes(b.dataset.t);
+    b.classList.toggle('on',on); b.textContent=on?'\u2665':'\u2661';
+    b.title=on?'Remove from my watchlist':'Add to my watchlist';});}
+function scoreOf(c){if(c==null||isNaN(c))return null;
+  const x=Math.min(1,Math.max(0,(c-35)/35)); return Math.round((6+4*x)*10)/10;}
+function scoreColor(s){const l=62-(s-6)/4*38; return 'hsl(158,52%,'+l.toFixed(0)+'%)';}
+document.addEventListener('DOMContentLoaded', ()=>{ paintHearts();
+  if(typeof renderMyWL==='function') renderMyWL(); });
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(document.querySelector('.chart-view')){
+    let v='candles'; try{v=localStorage.getItem('tl_chart_view')||'candles';}catch(e){}
+    setChartView(v);}});
+document.addEventListener('DOMContentLoaded', applySub);
+</script>
+</body></html>

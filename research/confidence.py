@@ -33,9 +33,12 @@ import pandas as pd
 import db
 
 MODEL_PATH = 'research/output/confidence_model.json'
+MODEL_OOS_PATH = 'research/output/confidence_model_oos.json'
 N_BINS = 5
 L2 = 2.0
 WOE_SMOOTH = 20          # pseudo-events per bin against overconfident small bins
+CALIB_MONTHS = 6         # temporal calibration slice taken from the END of the usable data
+OUTCOME_LAG_DAYS = 45    # calendar days until a 20-trading-day outcome is fully known
 
 FEATURES = {
     'upper': ['attempt_no', 'days_since_anchor', 'slope_yr_pct', 'vol_ratio20', 'atr_pct',
@@ -208,46 +211,95 @@ def decile_calibration(p, y, ret):
     return out
 
 
-def cmd_train():
+def calibration_report(p, y, ret, label):
+    """Bucket report + Brier + expected calibration error (ECE)."""
+    cal = decile_calibration(p, y, ret)
+    brier = float(np.mean((p - y) ** 2))
+    naive = float(y.mean() * (1 - y.mean()))
+    n_tot = sum(c[2] for c in cal)
+    ece = sum(c[2] * abs(c[0] - c[1]) for c in cal) / max(1, n_tot)
+    print(f"\n--- calibration report: {label} ---")
+    print(f"n={len(y)}  base win {y.mean() * 100:.1f}%  Brier {brier:.4f} (naive {naive:.4f})  ECE {ece * 100:.2f}pp")
+    print("bucket: predicted -> realized | n | avg ret_20d")
+    for pr, act, n, r in cal:
+        print(f"  {pr * 100:5.1f}% -> {act * 100:5.1f}%  n={n:5d}  avg {r:+5.2f}%")
+    return cal, brier, ece
+
+
+def cmd_train(oos_cutoff=None):
+    """
+    Clean temporal training: the model is FIT on events before the calibration
+    window, the calibration curve is measured on that window using the SAME
+    fitted model (no refit afterwards), and both are frozen together.
+
+    oos_cutoff: if given (e.g. 2025-09-01), only events whose 20d outcome was
+    fully known before that date are used at all — producing a frozen model
+    with zero look-ahead relative to the cutoff (saved to MODEL_OOS_PATH).
+    """
     print("loading event datasets...")
     ev = add_market_context(load_all_events(), spy_context())
     ev['event_date_ts'] = pd.to_datetime(ev['event_date'])
-    split = pd.Timestamp('2025-07-01')
+
+    if oos_cutoff is not None:
+        cutoff = pd.Timestamp(oos_cutoff)
+        usable_end = cutoff - pd.Timedelta(days=OUTCOME_LAG_DAYS)
+        ev = ev[ev['event_date_ts'] <= usable_end]
+        out_path = MODEL_OOS_PATH
+        mode = f"OOS frozen (no information after {cutoff.date()})"
+    else:
+        usable_end = ev['event_date_ts'].max() - pd.Timedelta(days=OUTCOME_LAG_DAYS)
+        ev = ev[ev['event_date_ts'] <= usable_end]
+        out_path = MODEL_PATH
+        mode = "live (full history)"
+
+    calib_start = usable_end - pd.DateOffset(months=CALIB_MONTHS)
+    print(f"mode: {mode}\nfit: events < {calib_start.date()} | calibrate: {calib_start.date()}..{usable_end.date()}")
 
     model = {}
     for side in ('upper', 'under'):
         d = side_frame(ev, side)
-        tr, te = d[d['event_date_ts'] < split], d[d['event_date_ts'] >= split]
-        print(f"\n=== {side}: train n={len(tr)} (2022-2025), holdout n={len(te)} (2025-26) ===")
+        fit_set = d[d['event_date_ts'] < calib_start]
+        cal_set = d[d['event_date_ts'] >= calib_start]
+        print(f"\n=== {side}: fit n={len(fit_set)}, calibration n={len(cal_set)} ===")
 
-        m = fit_side(tr, side)
-        p_te, _ = raw_score(te, m)
-        y_te, r_te = te['y'].values, te['ret_20d'].values
-        brier = float(np.mean((p_te - y_te) ** 2))
-        print(f"holdout base win rate {y_te.mean() * 100:.1f}% | Brier {brier:.4f} (naive {y_te.mean() * (1 - y_te.mean()):.4f})")
-        cal = decile_calibration(p_te, y_te, r_te)
-        print("decile calibration (predicted -> realized win rate | avg ret_20d):")
-        for pr, act, n, ret in cal:
-            print(f"  pred {pr * 100:5.1f}%  ->  actual {act * 100:5.1f}%  (n={n:5d}, avg ret {ret:+5.2f}%)")
+        m = fit_side(fit_set, side)                      # fitted ONCE — never refit
+        p_cal, _ = raw_score(cal_set, m)
+        cal, brier, ece = calibration_report(
+            p_cal, cal_set['y'].values, cal_set['ret_20d'].values, f"{side} (temporal calibration slice)")
 
-        # calibration curve from the holdout, then refit on ALL data for serving
-        m_full = fit_side(d, side)
-        m_full['calibration'] = [(pr, act) for pr, act, _, _ in cal]
-        m_full['trained_on'] = f"{len(d)} events through {d['event_date'].max()}"
-        model[side] = m_full
+        m['calibration'] = [(pr, act) for pr, act, _, _ in cal]
+        m['calibration_detail'] = [{'predicted': pr, 'realized': act, 'n': n, 'avg_ret_20d': r}
+                                   for pr, act, n, r in cal]
+        m['brier'] = brier
+        m['ece'] = ece
+        m['fit_through'] = str(calib_start.date())
+        m['calibrated_through'] = str(usable_end.date())
+        m['mode'] = mode
+        model[side] = m
 
-        # feature weights report
         names = FEATURES[side]
-        weights = m_full['w'][1:]
+        weights = m['w'][1:]
         order = np.argsort(-np.abs(weights))
         print("feature weights (|w| desc):")
         for i in order:
             print(f"  {names[i]:20s} {weights[i]:+.3f}")
 
     os.makedirs('research/output', exist_ok=True)
-    with open(MODEL_PATH, 'w') as f:
+    with open(out_path, 'w') as f:
         json.dump(model, f, indent=1)
-    print(f"\nmodel saved: {MODEL_PATH}")
+    print(f"\nmodel saved: {out_path}")
+
+
+def expected_ret_20d(conf_pct, model_side):
+    """Expected 20d return implied by the calibration bucket the confidence falls in.
+    Kept SEPARATE from the probability — confidence is never presented as expected profit."""
+    detail = model_side.get('calibration_detail')
+    if not detail:
+        return None
+    xs = np.array([c['realized'] for c in detail]) * 100
+    ys = np.array([c['avg_ret_20d'] for c in detail])
+    order = np.argsort(xs)
+    return float(np.interp(conf_pct, xs[order], ys[order]))
 
 
 # ---------------------------------------------------------------- serving
@@ -391,9 +443,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('command', choices=['train', 'predict', 'evaluate'])
     ap.add_argument('--lookback-days', type=int, default=5, help='predict: scan events from the last N calendar days')
+    ap.add_argument('--oos-cutoff', default=None,
+                    help='train: freeze a model using only information available before this date (saved separately)')
     args = ap.parse_args()
     if args.command == 'train':
-        cmd_train()
+        cmd_train(args.oos_cutoff)
     elif args.command == 'predict':
         cmd_predict(args.lookback_days)
     else:
