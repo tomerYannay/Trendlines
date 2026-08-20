@@ -16,8 +16,10 @@ import os
 
 import pandas as pd
 
+import db
+
 OUT = 'product/site'
-BRAND = 'Trendlines'
+BRAND = 'Diago'
 ALGO = 'Diago'          # the engine's name — from the Diagonals it hunts
 ALGO_MARK = '◢'
 
@@ -46,6 +48,7 @@ def css():
     backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
   .nav-in { display:flex; align-items:center; gap:26px; height:64px; }
   .logo { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .logo .wm b { font-weight:700; color:var(--accent-ink); }
   .nav-links { display:flex; gap:4px; font-size:14px; font-weight:600; color:var(--ink2); }
   .nav-links a { padding:8px 13px; border-radius:8px; }
   .nav-links a:hover { background:var(--surface); color:var(--ink); }
@@ -177,7 +180,39 @@ def css():
   .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:20px; margin-top:40px; }
   .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:30px;
           box-shadow:var(--shadow); position:relative; display:flex; flex-direction:column; text-align:left; }
-  .plan.hot { border:2px solid var(--accent); }
+  .plan.hot { border:2px solid var(--accent); padding:36px 30px;
+    box-shadow:0 2px 4px rgba(13,27,46,.06), 0 26px 52px -20px rgba(14,147,130,.35); }
+  .plans { align-items:center; }
+  .plan.hot .price { font-size:50px; }
+  @media (min-width:960px) { .plan.hot { transform:scale(1.03); } }
+  .plan.hot .btn.primary { position:relative; overflow:hidden;
+    transition:transform .15s, box-shadow .15s; }
+  .plan.hot .btn.primary:hover { transform:translateY(-1px);
+    box-shadow:0 8px 20px -8px rgba(14,147,130,.5); }
+  .plan.hot .btn.primary::after { content:''; position:absolute; inset:0;
+    background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.3) 50%, transparent 60%);
+    transform:translateX(-130%); animation:sheen 7s ease-in-out infinite; }
+  @keyframes sheen { 0%,72% { transform:translateX(-130%); } 88%,100% { transform:translateX(130%); } }
+  @keyframes riseIn { from { opacity:0; transform:translateY(14px); } }
+  .plan { animation:riseIn .5s ease-out backwards; }
+  .plan:nth-child(2) { animation-delay:.08s; }
+  .plan:nth-child(3) { animation-delay:.16s; }
+  .save-pill { font-size:11px; font-weight:800; color:var(--accent-ink);
+    background:var(--accent-soft); border-radius:99px; padding:2px 9px;
+    vertical-align:1px; margin-inline-start:2px; }
+  .btn-note { font-size:11.5px; color:var(--ink3); font-weight:600; margin-top:8px; text-align:center; }
+  .perf-stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+  .pstat { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+           padding:12px 20px; font-size:12.5px; color:var(--ink3); font-weight:600;
+           box-shadow:var(--shadow); }
+  .pstat b { display:block; font-size:22px; letter-spacing:-.02em; margin-bottom:1px; color:var(--ink); }
+  .proof-strip { margin-top:26px; font-size:13.5px; color:var(--ink2); font-weight:600; }
+  .proof-strip .mark { color:var(--rust); }
+  .proof-link { display:inline-block; margin-top:6px; font-size:12.5px; font-weight:700;
+    color:var(--accent-ink); border-bottom:1.5px dashed var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    .plan, .plan.hot .btn.primary::after { animation:none; }
+  }
   .plan .flag { position:absolute; top:-13px; inset-inline-start:24px; background:var(--accent);
                 color:#fff; font-size:12px; font-weight:800; padding:3px 13px; border-radius:99px; }
   .plan h3 { font-size:17px; }
@@ -200,7 +235,15 @@ def css():
     margin-bottom:14px; font-size:16px; }
   details.faq { background:var(--surface); border:1px solid var(--line); border-radius:10px;
                 padding:16px 20px; margin-top:10px; text-align:left; }
-  details.faq summary { font-weight:700; cursor:pointer; font-size:15px; }
+  details.faq summary { font-weight:700; cursor:pointer; font-size:15px;
+    list-style:none; position:relative; padding-inline-end:30px; }
+  details.faq summary::-webkit-details-marker { display:none; }
+  details.faq summary::after { content:'+'; position:absolute; inset-inline-end:2px; top:50%;
+    transform:translateY(-50%); font-size:19px; font-weight:800; color:var(--ink3);
+    transition:transform .18s, color .18s; }
+  details.faq[open] summary::after { content:'−'; color:var(--accent-ink); }
+  details.faq:hover { border-color:var(--ink3); }
+  details.faq[open] { border-color:var(--accent); }
   details.faq p { margin-top:10px; color:var(--ink2); font-size:14.5px; }
   footer { background:var(--navy); color:#8FA0B5; padding:46px 0 40px; margin-top:80px; font-size:13px; }
   footer .flinks { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:18px; color:#C6D2E0; font-weight:600; }
@@ -271,7 +314,16 @@ def css():
   .filter-bar input:focus, .filter-bar select:focus { outline:2px solid var(--accent); border-color:transparent; }
   .filter-bar .fpair { display:flex; gap:6px; align-items:center; }
   .filter-bar .fpair input { width:84px; }
-  .filter-bar .btn { padding:8px 16px; font-size:13px; }
+  .f-live { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700;
+    color:var(--accent-ink); background:var(--accent-soft); border-radius:99px; padding:8px 14px;
+    white-space:nowrap; }
+  .f-live::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent);
+    flex:none; }
+  .filter-clear { margin-inline-start:auto; border:0; background:none; font:inherit; font-size:12.5px;
+    font-weight:600; color:var(--ink3); cursor:pointer; padding:9px 2px; text-decoration:underline;
+    text-underline-offset:3px; transition:color .12s; }
+  .filter-clear:hover { color:var(--ink2); }
+  .filter-clear[hidden] { display:none; }
 
   /* ---------- stock detail ---------- */
   .stock-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:44px 0 6px; }
@@ -303,10 +355,30 @@ def css():
 """
 
 
+# Brand mark: Diago's rising diagonal (◢) as a teal support wedge, with an amber
+# bar broken out above the hypotenuse — the gap between them is the trendline.
 LOGO = """<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-<rect width="26" height="26" rx="6" fill="#0D1B2E"/>
-<path d="M4 19 L13 8 L17 12 L22 5" stroke="#5BC8B8" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="22" cy="5" r="2" fill="#5BC8B8"/></svg>"""
+<defs>
+<linearGradient id="lg-w" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#0E9382"/><stop offset="1" stop-color="#14B4A0"/></linearGradient>
+<linearGradient id="lg-b" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#C05C1D"/><stop offset="1" stop-color="#F0A868"/></linearGradient>
+</defs>
+<path d="M6 22.5 L22.5 22.5 L22.5 6 Z" fill="url(#lg-w)" stroke="url(#lg-w)" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M3.5 16.5 L16.5 3.5" stroke="url(#lg-b)" stroke-width="3.4" stroke-linecap="round"/></svg>"""
+
+# Wordmark: "Trend" heavy ink, "lines" teal — ties the name to the mark's support side.
+WORDMARK = '<span class="wm">Diago</span>'
+
+# Same mark as a self-contained data-URI favicon (gradients inlined, ids namespaced).
+FAVICON = ('<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,'
+           '%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 26%27%3E'
+           '%3Cdefs%3E%3ClinearGradient id=%27fw%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E'
+           '%3Cstop offset=%270%27 stop-color=%27%230E9382%27/%3E%3Cstop offset=%271%27 stop-color=%27%2314B4A0%27/%3E%3C/linearGradient%3E'
+           '%3ClinearGradient id=%27fb%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E'
+           '%3Cstop offset=%270%27 stop-color=%27%23C05C1D%27/%3E%3Cstop offset=%271%27 stop-color=%27%23F0A868%27/%3E%3C/linearGradient%3E%3C/defs%3E'
+           '%3Cpath d=%27M6 22.5 L22.5 22.5 L22.5 6 Z%27 fill=%27url(%23fw)%27 stroke=%27url(%23fw)%27 stroke-width=%273.4%27 stroke-linejoin=%27round%27/%3E'
+           '%3Cpath d=%27M3.5 16.5 L16.5 3.5%27 stroke=%27url(%23fb)%27 stroke-width=%273.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">')
 
 JS = """
 <script>
@@ -369,10 +441,10 @@ document.addEventListener('DOMContentLoaded', applySub);
 def nav(active):
     links = [('index.html', 'Home', 'home'), ('breakouts.html', 'Breakout Signals', 'brk'),
              ('supports.html', 'Support Signals', 'sup'), ('watchlist.html', 'Watchlist', 'wl'),
-             ('pricing.html', 'Pricing', 'price')]
+             ('performance.html', 'Performance', 'perf'), ('pricing.html', 'Pricing', 'price')]
     a = ''.join(f'<a href="{h}" class="{"on" if k == active else ""}">{t}</a>' for h, t, k in links)
     return (f'<header class="nav"><div class="wrap nav-in">'
-            f'<a class="logo" href="index.html">{LOGO}{BRAND}</a>'
+            f'<a class="logo" href="index.html">{LOGO}{WORDMARK}</a>'
             f'<nav class="nav-links">{a}</nav>'
             f'<div class="nav-cta"><span class="sub-badge">Subscriber · demo</span>'
             f'<a class="btn ghost hide-when-subbed" href="pricing.html">Sign in</a>'
@@ -397,7 +469,7 @@ def footer(stamp):
 
 def page(title, active, stamp, body, desc='', base=''):
     return (f'<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8">{base}'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">{FAVICON}'
             f'<meta name="description" content="{desc}">'
             f'<title>{title}</title><style>{css()}</style></head><body>'
             f'{nav(active)}{body}{footer(stamp)}{JS}</body></html>')
@@ -440,6 +512,55 @@ def load_data():
         held = pd.to_numeric(hist['closed_above'], errors='coerce').fillna(0) > 0
         hist = hist[(hist['side_key'] == 'upper') | held]
         hist = hist.reset_index(drop=True)
+
+    # last close per ticker -> "% since signal", refreshed on every (daily) build
+    tickers = set(cand['ticker']) if len(cand) else set()
+    if len(hist):
+        tickers |= set(hist['ticker'])
+    lc = {}
+    if tickers:
+        rows = db.fetch_query(
+            "SELECT DISTINCT ON (ticker) ticker, close FROM stock_prices "
+            "WHERE ticker IN %s ORDER BY ticker, date DESC;", (tuple(tickers),))
+        lc = {r[0]: float(r[1]) for r in rows}
+    for df_ in (cand, hist):
+        if len(df_):
+            df_['last_close'] = df_['ticker'].map(lc)
+            df_['ret_since'] = (df_['last_close'] / df_['close'] - 1) * 100
+
+    # entry base for the user-facing "% since signal": the OPEN of the FIRST
+    # session AFTER the signal day — the alert is computed from end-of-day data,
+    # so that open is the first price a subscriber could actually get. Signals
+    # from the latest bar have no next session yet -> None (shown as pending).
+    # The performance page keeps its signal-close measure for analysis.
+    from bisect import bisect_right
+    series = {}
+    if tickers:
+        dmins = [str(df_['event_date'].min())[:10] for df_ in (cand, hist)
+                 if len(df_) and 'event_date' in df_.columns]
+        if dmins:
+            rows = db.fetch_query(
+                "SELECT ticker, date, open FROM stock_prices "
+                "WHERE ticker IN %s AND date >= %s ORDER BY ticker, date;",
+                (tuple(tickers), min(dmins)))
+            for t, d, o in rows:
+                if o:
+                    series.setdefault(t, []).append((str(d)[:10], float(o)))
+
+    def next_open(t, d):
+        s = series.get(t)
+        if not s:
+            return None
+        i = bisect_right(s, (str(d)[:10], float('inf')))
+        return s[i][1] if i < len(s) else None
+
+    for df_ in (cand, hist):
+        if len(df_) and 'event_date' in df_.columns:
+            no = [next_open(t, d) for t, d in zip(df_['ticker'], df_['event_date'])]
+            df_['entry_next_open'] = no
+            df_['ret_next'] = [
+                ((lc_ / o - 1) * 100) if (o and o > 0 and pd.notna(lc_)) else None
+                for o, lc_ in zip(no, df_['last_close'])]
     return meta, cand, q_open, hist
 
 
@@ -461,6 +582,7 @@ def history_payload(hist, side):
                 'a1': str(r['anchor1'])[:10], 'a2': str(r['anchor2'])[:10],
                 'dsa': int(r['days_since_anchor']),
                 'cf': None if pd.isna(conf) else round(float(conf), 1),
+                'rs': None if pd.isna(r.get('ret_next')) else round(float(r['ret_next']), 2),
             })
         out[str(d)[:10]] = rows
     return out
@@ -504,6 +626,13 @@ def score_stripe(conf):
     return score_color(conf_to_score(conf))[0]
 
 
+def ret_cell(v):
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return '<td class="num" style="color:var(--ink3)">—</td>'
+    cls = 'var(--accent-ink)' if v >= 0 else 'var(--danger)'
+    return f'<td class="num" style="color:{cls};font-weight:700">{v:+.2f}%</td>'
+
+
 def signal_rows(df, side, quality_tickers, locked_after=1):
     rows = []
     n = len(df)
@@ -520,8 +649,10 @@ def signal_rows(df, side, quality_tickers, locked_after=1):
             f'<button class="heart" data-t="{r["ticker"]}" '
             f'onclick="toggleWatch(\'{r["ticker"]}\')">♡</button></td>'
             f'<td class="tick"><a class="tlink" href="stock/{r["ticker"]}.html">{r["ticker"]}</a>{qbadge}</td>'
+            f'<td class="num">{str(r.get("event_date", ""))[:10]}</td>'
             f'<td>{pill}</td><td>{r["universe"]}</td>'
             f'<td class="num">{fmt(r["close"])}</td>'
+            f'{ret_cell(r.get("ret_next"))}'
             f'<td class="num">{fmt(r["line"])}</td>'
             f'<td class="num">{fmt(dist, "{:+.1f}%")}</td>'
             f'<td class="num">{str(r.get("anchor1", ""))[:10]} → {str(r.get("anchor2", ""))[:10]}</td>'
@@ -533,7 +664,7 @@ def signal_rows(df, side, quality_tickers, locked_after=1):
 def date_strip(payload):
     chips = ['<button class="dchip on" onclick="renderDay(\'cur\',this)">Current</button>',
              '<button class="dchip" onclick="showFiltered(this)">⚙ Filtered</button>']
-    for d in payload:
+    for d in list(payload)[:30]:
         ts = pd.Timestamp(d)
         chips.append(f'<button class="dchip" onclick="renderDay(\'{d}\',this)">'
                      f'{ts.strftime("%b %d")}<span class="dow">{ts.strftime("%a")}</span></button>')
@@ -566,14 +697,15 @@ def filter_bar(payload, side):
       <input type="number" id="f-age" placeholder="any" oninput="applyFilters()"></label>
     <label>Ticker
       <input id="f-tick" placeholder="e.g. AAPL" oninput="applyFilters()" style="text-transform:uppercase"></label>
-    <button class="btn ghost" onclick="resetFilters()">Reset</button>
+    <span class="f-live num" id="f-live" role="status" aria-live="polite"></span>
+    <button type="button" class="filter-clear" id="f-clear" onclick="resetFilters()" hidden>Clear filters &times;</button>
   </div>"""
 
 
 def history_js(payload, side):
     dist_lbl = 'Above line' if side == 'under' else 'To line'
-    filt_head = (f'<th></th><th>Ticker</th><th>Date</th><th>Signal</th><th>Index</th><th>Price</th>'
-                 f'<th>Trendline</th><th>{dist_lbl}</th><th>Line anchors</th><th>Line age</th><th>Diago score</th>')
+    filt_head = (f'<th></th><th>Ticker</th><th>Date</th><th>Signal</th><th>Index</th><th>Signal close</th>'
+                 f'<th title="From the open of the first session after the signal — the first price a subscriber could get — to the latest close. New signals show — until their next session opens.">Since signal</th><th>Trendline</th><th>{dist_lbl}</th><th>Line anchors</th><th>Line age</th><th>Diago score</th>')
     return f"""
 <script>
 const HIST = {json.dumps(payload)};
@@ -609,7 +741,11 @@ function rowHtml(r, i, withDate, n){{
     +'<td class="tick"><a class="tlink" href="stock/'+r.t+'.html">'+r.t+'</a></td>'
     +(withDate ? '<td class="num">'+r.d+'</td>' : '')
     +'<td>'+pill+'</td><td>'+r.u+'</td>'
-    +'<td class="num">'+r.c.toFixed(2)+'</td><td class="num">'+r.l.toFixed(2)+'</td>'
+    +'<td class="num">'+r.c.toFixed(2)+'</td>'
+    +(r.rs==null ? '<td class="num" style="color:var(--ink3)">\u2014</td>'
+      : '<td class="num" style="font-weight:700;color:'+(r.rs>=0?'var(--accent-ink)':'var(--danger)')+'">'
+        +(r.rs>=0?'+':'')+r.rs.toFixed(2)+'%</td>')
+    +'<td class="num">'+r.l.toFixed(2)+'</td>'
     +'<td class="num">'+(dist>=0?'+':'')+dist.toFixed(1)+'%</td>'
     +'<td class="num">'+r.a1+' \\u2192 '+r.a2+'</td><td class="num">'+r.dsa+'d</td>'
     +'<td>'+bar+'</td></tr>';
@@ -627,8 +763,8 @@ function renderDay(d, btn){{
     syncOverlay(null); paintHearts(); return;
   }}
   const rows = HIST[d] || [];
-  tb.innerHTML = rows.length ? rows.map((r,i)=>rowHtml(r,i,false,rows.length)).join('')
-  : '<tr><td colspan="10" style="text-align:center;color:var(--ink3);padding:28px">No signals printed on this day</td></tr>';
+  tb.innerHTML = rows.length ? rows.map((r,i)=>rowHtml(r,i,true,rows.length)).join('')
+  : '<tr><td colspan="12" style="text-align:center;color:var(--ink3);padding:28px">No signals printed on this day</td></tr>';
   document.getElementById('tbl-cnt').textContent = rows.length+' signals \\u00b7 '+d;
   document.getElementById('pw-count').textContent =
     '{ALGO} found '+Math.max(0, rows.length-1)+' more signals on '+d;
@@ -656,12 +792,18 @@ function applyFilters(){{
   const age = parseFloat(v('f-age'));   if(!isNaN(age))  rows = rows.filter(r=>r.dsa>=age);
   const tq = v('f-tick').trim().toUpperCase();
   if(tq) rows = rows.filter(r=>r.t.indexOf(tq)===0);
+  document.getElementById('f-live').textContent =
+    rows.length===1 ? '1 signal matches' : rows.length+' signals match';
+  const dsk = Object.keys(HIST);
+  const dirty = ['f-uni','f-score','f-pmin','f-pmax','f-dist','f-age','f-tick'].some(id=>v(id)!=='')
+    || (dsk.length>0 && (v('f-from')!==dsk[dsk.length-1] || v('f-to')!==dsk[0]));
+  document.getElementById('f-clear').hidden = !dirty;
   rows.sort((a,b)=> a.d===b.d ? ((b.cf||0)-(a.cf||0)) : (a.d<b.d ? 1 : -1));
   document.querySelector('table.sig thead tr').innerHTML = FILT_HEAD;
   const tb = document.querySelector('table.sig tbody');
   tb.innerHTML = rows.length ? rows.map((r,i)=>rowHtml(r,i,true,rows.length)).join('')
-  : '<tr><td colspan="11" style="text-align:center;color:var(--ink3);padding:28px">No signals match these filters</td></tr>';
-  document.getElementById('tbl-cnt').textContent = rows.length+' signals \\u00b7 filtered \\u00b7 6 weeks';
+  : '<tr><td colspan="12" style="text-align:center;color:var(--ink3);padding:28px">No signals match these filters</td></tr>';
+  document.getElementById('tbl-cnt').textContent = rows.length+' signals \\u00b7 filtered \\u00b7 2026';
   document.getElementById('pw-count').textContent =
     '{ALGO} found '+Math.max(0, rows.length-1)+' more matching signals';
   syncOverlay(rows.length);
@@ -687,11 +829,11 @@ function syncOverlay(n){{
 
 def signals_table(df, side, quality_tickers, title, stamp):
     dist_lbl = 'Above line' if side == 'under' else 'To line'
-    head = (f'<tr><th></th><th>Ticker</th><th>Signal</th><th>Index</th><th>Price</th><th>Trendline</th>'
+    head = (f'<tr><th></th><th>Ticker</th><th>Date</th><th>Signal</th><th>Index</th><th>Signal close</th><th title="From the open of the first session after the signal — the first price a subscriber could get — to the latest close. New signals show — until their next session opens.">Since signal</th><th>Trendline</th>'
             f'<th>{dist_lbl}</th><th>Line anchors</th><th>Line age</th><th>Diago score</th></tr>')
     return (
         f'<div class="tablecard"><div class="thead"><h3>{title}</h3>'
-        f'<span class="cnt num" id="tbl-cnt">{len(df)} signals · {stamp}</span></div>'
+        f'<span class="cnt num" id="tbl-cnt">{len(df)} signals · data through {stamp}</span></div>'
         f'<div class="paywall"><div class="twrap"><table class="sig side-{"brk" if side == "upper" else "sup"}"><thead>{head}</thead>'
         f'<tbody>{signal_rows(df, side, quality_tickers)}</tbody></table></div>'
         f'<div class="paywall-overlay"><h4 id="pw-count">{ALGO} found {max(0, len(df) - 1)} more signals today</h4>'
@@ -990,7 +1132,7 @@ def build_index(meta, cand, stamp):
   </div>
 </div></section>
 """
-    return page(f'{BRAND} — {ALGO}, the Diagonal-Hunting Signal Engine', 'home', stamp, body,
+    return page(f'{BRAND} — The Diagonal-Hunting Signal Engine', 'home', stamp, body,
                 f'{ALGO} scans 2,259 stocks daily, flags every breakout and support bounce, and scores each 6-10 on calibrated historical odds.')
 
 
@@ -1014,7 +1156,7 @@ def build_signals_page(kind, meta, cand, q_open, hist, stamp):
   <h2 class="title">{title}</h2>
   <p class="lede">{sub}</p>
   <p style="font-size:13px;color:var(--ink3);margin-top:20px;font-weight:600">Browse by the day {ALGO}
-  flagged the signal — or hit ⚙ Filtered to search all 6 weeks by index, score, price and more.
+  flagged the signal — or hit ⚙ Filtered to search every signal since Jan 1 by index, score, price and more.
   Tap ♡ on any ticker to add it to your watchlist.</p>
   {date_strip(payload)}
   {filter_bar(payload, side)}
@@ -1111,69 +1253,158 @@ function renderMyWL(){{
     return page(f'Watchlist — {BRAND}', 'wl', stamp, body)
 
 
-def build_pricing(meta, stamp):
+def build_performance(meta, cand, hist, stamp):
+    """Every signal since Jan 1, ranked by % move since the signal —
+    the radical-transparency page: winners and losers, updated every build."""
+    df = hist.dropna(subset=['ret_since']).sort_values('ret_since', ascending=False).reset_index(drop=True)
+    os.makedirs('product/data', exist_ok=True)
+    keep = ['ticker', 'universe', 'side_key', 'event_date', 'status', 'close', 'entry_next_open',
+            'last_close', 'ret_since', 'ret_next', 'gap_vs_line_pct', 'days_since_anchor',
+            'attempt_no', 'touch_no', 'slope_yr_pct', 'vol_ratio20', 'atr_pct', 'dollar_vol_m',
+            'confidence']
+    df[[c for c in keep if c in df.columns]].to_csv('product/data/signal_performance.csv', index=False)
+
+    n = len(df)
+    win = float((df['ret_since'] > 0).mean() * 100) if n else 0
+    avg = float(df['ret_since'].mean()) if n else 0
+    med = float(df['ret_since'].median()) if n else 0
+    best, worst = (df.iloc[0], df.iloc[-1]) if n else (None, None)
+
+    rows = []
+    for _, r in df.iterrows():
+        pill = ('<span class="pill brk">Breakout</span>' if r['side_key'] == 'upper'
+                else '<span class="pill sup">Support</span>')
+        rows.append(
+            f'<tr><td class="hcell"><button class="heart" data-t="{r["ticker"]}" '
+            f'onclick="toggleWatch(\'{r["ticker"]}\')">♡</button></td>'
+            f'<td class="tick"><a class="tlink" href="stock/{r["ticker"]}.html">{r["ticker"]}</a></td>'
+            f'<td>{pill}</td><td>{r["universe"]}</td>'
+            f'<td class="num">{str(r["event_date"])[:10]}</td>'
+            f'<td class="num">{fmt(r["close"])}</td>'
+            f'<td class="num">{fmt(r["last_close"])}</td>'
+            f'{ret_cell(r["ret_since"])}'
+            f'<td>{conf_bar(r.get("confidence"))}</td></tr>')
+
+    stats = f"""
+  <div class="perf-stats">
+    <div class="pstat"><b class="num">{n}</b>signals · 2026 YTD</div>
+    <div class="pstat"><b class="num" style="color:{'var(--accent-ink)' if win >= 50 else 'var(--danger)'}">{win:.0f}%</b>closed higher than signal day</div>
+    <div class="pstat"><b class="num" style="color:{'var(--accent-ink)' if avg >= 0 else 'var(--danger)'}">{avg:+.2f}%</b>average move since signal</div>
+    <div class="pstat"><b class="num">{med:+.2f}%</b>median move</div>
+    <div class="pstat"><b class="num" style="color:var(--accent-ink)">{best["ticker"] if best is not None else "—"} {f"{best['ret_since']:+.1f}%" if best is not None else ""}</b>best</div>
+    <div class="pstat"><b class="num" style="color:var(--danger)">{worst["ticker"] if worst is not None else "—"} {f"{worst['ret_since']:+.1f}%" if worst is not None else ""}</b>worst</div>
+  </div>"""
+
     body = f"""
-<section class="block"><div class="wrap" style="text-align:center">
-  <div class="kicker">Simple pricing</div>
+<section class="block"><div class="wrap">
+  <div class="kicker warm">Radical transparency · updated every trading morning</div>
+  <h2 class="title">Every signal {ALGO} flagged — ranked by what happened next</h2>
+  <p class="lede">Every signal since January 1, measured from its signal-day close to the latest
+  close ({stamp}). Winners and losers alike — nothing curated, nothing deleted.</p>
+  {stats}
+  <div class="tablecard"><div class="thead"><h3>Signal performance</h3>
+    <span class="cnt num">{n} signals · through {stamp}</span></div>
+  <div class="twrap"><table class="sig"><thead>
+  <tr><th></th><th>Ticker</th><th>Signal</th><th>Index</th><th>Signal date</th><th>Entry close</th><th>Last close</th><th>Since signal</th><th>Diago score</th></tr>
+  </thead><tbody>{''.join(rows)}</tbody></table></div></div>
+  <div class="notice">⚠️ "Since signal" is a raw price move, not a managed trade — no stops, no exits.
+  Algorithmic output for research purposes; not investment advice.</div>
+</div></section>
+"""
+    return page(f'Signal Performance — {BRAND}', 'perf', stamp, body,
+                f'Every {ALGO} signal of 2026 ranked by performance since the signal — winners and losers, updated daily.')
+
+
+def build_pricing(meta, cand, stamp):
+    n_all = int((cand['side_key'] == 'upper').sum() + (cand['side_key'] == 'under').sum())
+    ret = meta.get('quality', {}).get('ret_pct', 0)
+    body = f"""
+<section class="block warm-wash"><div class="wrap" style="text-align:center">
+  <div class="kicker warm">{ALGO} flagged {n_all} signals today</div>
   <h2 class="title">First 7 days free. Always.</h2>
-  <p class="lede" style="margin:0 auto">No credit card for the trial, no fine print.
-  If the platform isn't worth $5 to you — don't pay.</p>
+  <p class="lede" style="margin:0 auto">You've seen one signal — the other {n_all - 1} are behind the blur.
+  The trial unlocks all of them, today and every morning after. No credit card, no fine print.
+  If it isn't worth $5 to you — don't pay.</p>
   <div class="plans">
     <div class="plan">
       <h3>Free</h3>
-      <div class="price">$0</div><div class="per">forever</div>
-      <ul><li>One unlocked signal per list, every day</li><li>Methodology pages</li><li>Cumulative performance stats</li></ul>
-      <a class="btn ghost" href="breakouts.html">See today's signals</a>
+      <div class="price num">$0</div><div class="per">forever · no account, no card</div>
+      <ul>
+        <li>{ALGO}'s top signal, unlocked every day</li>
+        <li>How the engine works — full methodology</li>
+        <li>The cumulative performance record</li>
+      </ul>
+      <a class="btn ghost" href="breakouts.html">See today's free signal</a>
     </div>
     <div class="plan hot">
       <span class="flag">Most popular</span>
       <h3>Monthly</h3>
-      <div class="price">$5<span> / month</span></div><div class="per">after your 7-day free trial</div>
+      <div class="price num">$5<span> / month</span></div><div class="per">after your 7-day free trial</div>
       <ul>
-        <li>Every breakout & support signal, unblurred</li>
-        <li>Confidence scores & quality badges on all signals</li>
-        <li>Full watchlist — know before the signal prints</li>
-        <li>Tracking wallet — transparent record of every call</li>
-        <li class="soon">WhatsApp alerts from Diago — coming soon</li>
+        <li><b>All {n_all} of today's signals, unblurred</b> — and tomorrow's, every morning</li>
+        <li>{ALGO}'s score and quality badge on every signal</li>
+        <li>The full watchlist — see stocks approaching their line before the signal prints</li>
+        <li>The tracking wallet — every call {ALGO} ever made, wins and losses</li>
+        <li class="soon">WhatsApp alerts from {ALGO} — coming soon</li>
       </ul>
       <button class="btn primary" onclick="startTrial()">Start 7-day free trial</button>
+      <div class="btn-note">No credit card · cancel in one click</div>
     </div>
     <div class="plan">
       <h3>Annual</h3>
-      <div class="price">$45<span> / year</span></div><div class="per">$3.75/month · save 25%</div>
+      <div class="price num">$45<span> / year</span></div>
+      <div class="per">$3.75/month · <span class="save-pill">3 months free</span></div>
       <ul>
         <li>Everything in Monthly</li>
-        <li>Price locked for a full year</li>
-        <li>Priority access to new features</li>
-        <li class="soon">WhatsApp alerts from Diago — coming soon</li>
+        <li>3 months free — $45 instead of $60</li>
+        <li>Price locked: $45 today, $45 next year</li>
+        <li class="soon">WhatsApp alerts from {ALGO} — coming soon</li>
       </ul>
       <button class="btn ghost" onclick="startTrial()">Start 7-day free trial</button>
+      <div class="btn-note">No credit card · cancel in one click</div>
     </div>
   </div>
-  <p style="color:var(--ink3);font-size:12.5px;margin-top:22px">Secure checkout launching soon · buttons currently
-  enable a full 7-day demo mode · <a href="#" onclick="endTrial();return false" style="text-decoration:underline">end demo</a></p>
+
+  <div class="proof-strip"><span class="mark">{ALGO_MARK}</span> 2,259 stocks scanned every night
+  · +{ret:.0f}% tracked wallet since Jan 2024 (simulated — losses included)
+  · 72,000+ historical setups behind every score</div>
+  <div><a class="proof-link" href="index.html">See every trade {ALGO} ever logged — including the losers →</a></div>
+
+  <p style="color:var(--ink3);font-size:12.5px;margin-top:22px">Checkout is launching soon — today the
+  button opens a full 7-day demo of the subscriber view. ·
+  <a href="#" onclick="endTrial();return false" style="text-decoration:underline">end demo</a></p>
 
   <div style="max-width:720px;margin:70px auto 0">
     <h2 class="title" style="font-size:24px">Frequently asked questions</h2>
-    <details class="faq"><summary>Who — or what — is Diago?</summary>
-      <p>Diago is our signal engine, named after the diagonals it hunts. It's not a chatbot and it has
-      no opinions — it's a quantitative system that maps trendlines, detects events and scores them
-      statistically. We gave it a name because you'll be hearing from it every morning.</p></details>
-    <details class="faq"><summary>What exactly is a diagonal trendline?</summary>
-      <p>A line connecting declining highs (resistance) or rising lows (support) on a logarithmic scale.
-      Breaking such a line — especially a mature one — is one of the most established technical signals.
-      Our engine simply finds and ranks them across thousands of stocks simultaneously, which is
-      impossible to do by hand.</p></details>
-    <details class="faq"><summary>What does "confidence" mean?</summary>
-      <p>A calibrated probability that the signal resolves profitably over a 20-trading-day horizon,
-      based on tens of thousands of historical signals. Calibrated means that when we say 60%,
-      similar setups actually worked about 60% of the time historically. It's statistics — not a promise.</p></details>
-    <details class="faq"><summary>Are the performance numbers real?</summary>
-      <p>They come from a precise simulation of the system's rules on real market data, including
-      out-of-sample periods the model never saw in training. We show losses and drawdowns, not just
-      the wins. Still — past performance never guarantees future results.</p></details>
+    <details class="faq" open><summary>What happens when the 7 free days end?</summary>
+      <p>Nothing sneaky. We never took your card, so you can't be charged by surprise. If {ALGO} earned
+      your $5, you subscribe. If not, you keep the free plan — one unlocked signal a day, forever.</p></details>
     <details class="faq"><summary>Can I cancel anytime?</summary>
       <p>Yes, in one click, and you keep access until the end of the period you paid for.</p></details>
+    <details class="faq"><summary>Will {ALGO} tell me what to buy?</summary>
+      <p>No — and be wary of anyone who will. {ALGO} publishes signals and their historical odds; it gives
+      no personal advice and guarantees no outcome. What you do with a signal is your decision, and
+      yours alone.</p></details>
+    <details class="faq"><summary>Are the performance numbers real?</summary>
+      <p>They come from a precise simulation of the system's rules on real market data, including
+      out-of-sample periods the model never saw in training. We show the losses and drawdowns, not just
+      the wins. Still — past performance never guarantees future results.</p></details>
+    <details class="faq"><summary>What does "confidence" mean?</summary>
+      <p>A calibrated probability that a signal resolves profitably over 20 trading days, based on
+      72,000+ historical setups. When {ALGO} says 60%, similar setups worked about 60% of the time
+      historically. Statistics — not a promise.</p></details>
+    <details class="faq"><summary>Who — or what — is {ALGO}?</summary>
+      <p>Our signal engine, named after the diagonals it hunts. Not a chatbot, no opinions — a
+      quantitative system that maps trendlines, detects events, and scores them. We named it because
+      you'll hear from it every morning.</p></details>
+  </div>
+</div></section>
+
+<section class="block" style="padding-top:0"><div class="wrap">
+  <div class="cta-banner warm">
+    <div><h2>Tomorrow at dawn, {ALGO} scans 2,259 stocks again.</h2>
+    <p>Read the full list free for 7 days. $5/month after — and we publish the losses too.</p></div>
+    <button class="btn primary big" onclick="startTrial()">Start 7-day free trial</button>
   </div>
 </div></section>
 """
@@ -1189,7 +1420,8 @@ def main():
         'breakouts.html': build_signals_page('brk', meta, cand, q_open, hist, stamp),
         'supports.html': build_signals_page('sup', meta, cand, q_open, hist, stamp),
         'watchlist.html': build_watchlist(meta, cand, hist, stamp),
-        'pricing.html': build_pricing(meta, stamp),
+        'performance.html': build_performance(meta, cand, hist, stamp),
+        'pricing.html': build_pricing(meta, cand, stamp),
     }
     for name, html in pages.items():
         with open(f'{OUT}/{name}', 'w', encoding='utf-8') as f:

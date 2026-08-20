@@ -1,3 +1,3 @@
 ticker,side,event_date,close,line,gap_vs_line_pct,slope_yr_pct,days_since_anchor,vol_ratio20,atr_pct,runup_20d,dist_from_ath_pct,dollar_vol_m,attempt_no,anchor1,anchor2,touch_no,pierce_depth_pct,closed_above,q_rule,q_status,q_reason,q_ret,q_days,q_exit_date,q_stop_today,event_date_ts,status,spy_ret_20d,spy_above_ma200,confidence,expected_ret_20d,drivers,is_event
+OTIS,under_touch,2026-08-17,70.56,70.59,-0.04,10.2,53,1.03,2.18,-3.97,-33.95,263.62,,2020-03-25,2026-06-01,3.0,0.24,0.0,,,,,,,,2026-08-17,PIERCED,4.12079397377676,1.0,41.7,-1.3,משטר שוק (SPY>MA200) ↓ · מחזור דולרי ↓,True
 VTRS,under_touch,2026-08-12,16.1,16.02,0.49,89.5,189,1.24,3.32,-3.48,-14.63,176.08,,2025-04-10,2025-11-07,2.0,0.26,1.0,,,,,,,,2026-08-12,SUPPORT_TOUCH,2.342311310131029,1.0,40.0,-1.18,משטר שוק (SPY>MA200) ↓ · מחזור דולרי ↓,True
-OTIS,under_touch,2026-08-14,72.63,70.56,2.93,10.2,52,0.77,2.11,-1.12,-32.01,274.53,,2020-03-25,2026-06-01,3.0,0.0,True,,,,,,,,,APPROACHING,,,,,,False

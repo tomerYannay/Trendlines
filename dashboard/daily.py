@@ -40,9 +40,31 @@ def main():
         finally:
             dump_profile_csv('profile_times.csv')
 
+    # data-sanity gate: delete vendor bad prints (one-day spikes that fully
+    # revert next day) before simulating — they fabricate breakouts/touches
+    import db as _db
+    _db.cursor.execute("""
+        WITH x AS (
+          SELECT ticker, date, close,
+            LAG(close)  OVER (PARTITION BY ticker ORDER BY date) AS prev,
+            LEAD(close) OVER (PARTITION BY ticker ORDER BY date) AS next
+          FROM stock_prices)
+        DELETE FROM stock_prices sp USING x
+        WHERE sp.ticker = x.ticker AND sp.date = x.date
+          AND x.prev > 0 AND x.next > 0 AND x.close > 0
+          AND ((x.close/x.prev > 3 AND x.next/x.close < 0.4)
+            OR (x.close/x.prev < 0.333 AND x.next/x.close > 2.5));""")
+    if _db.cursor.rowcount:
+        print(f"sanity gate: removed {_db.cursor.rowcount} bad price prints")
+    _db.connection.commit()
+
     from dashboard import engine, build
     engine.run()
     build.build()
+
+    # public product site — signal tables, per-ticker pages, daily "since signal" returns
+    from product import build as product_build
+    product_build.main()
     print("\n✅ platform refreshed — open dashboard/site/index.html")
 
 

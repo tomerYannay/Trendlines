@@ -1,0 +1,444 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 26%27%3E%3Cdefs%3E%3ClinearGradient id=%27fw%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E%3Cstop offset=%270%27 stop-color=%27%230E9382%27/%3E%3Cstop offset=%271%27 stop-color=%27%2314B4A0%27/%3E%3C/linearGradient%3E%3ClinearGradient id=%27fb%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E%3Cstop offset=%270%27 stop-color=%27%23C05C1D%27/%3E%3Cstop offset=%271%27 stop-color=%27%23F0A868%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d=%27M6 22.5 L22.5 22.5 L22.5 6 Z%27 fill=%27url(%23fw)%27 stroke=%27url(%23fw)%27 stroke-width=%273.4%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M3.5 16.5 L16.5 3.5%27 stroke=%27url(%23fb)%27 stroke-width=%273.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E"><meta name="description" content="CVLG trendline analysis: resistance breakout, confidence score, and company fundamentals."><title>CVLG — Covenant Logistics Group, Inc. · Diago</title><style>
+  :root {
+    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0F1726; --ink2:#49556A; --ink3:#8A94A6;
+    --line:#E4E8EF; --navy:#0D1B2E; --navy2:#13253D;
+    --accent:#0E9382; --accent-ink:#0A6E62; --accent-soft:#E4F3F0;
+    --rust:#C05C1D; --rust-soft:#F8ECE1; --danger:#A8323C;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(13,27,46,.05), 0 10px 28px -14px rgba(13,27,46,.14);
+  }
+  * { box-sizing:border-box; margin:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--ink); line-height:1.6;
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color:inherit; text-decoration:none; }
+  .num { font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+  header.nav { position:sticky; top:0; z-index:50; background:rgba(246,247,249,.85);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .nav-in { display:flex; align-items:center; gap:26px; height:64px; }
+  .logo { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .logo .wm b { font-weight:700; color:var(--accent-ink); }
+  .nav-links { display:flex; gap:4px; font-size:14px; font-weight:600; color:var(--ink2); }
+  .nav-links a { padding:8px 13px; border-radius:8px; }
+  .nav-links a:hover { background:var(--surface); color:var(--ink); }
+  .nav-links a.on { background:var(--navy); color:#fff; }
+  .nav-cta { margin-inline-start:auto; display:flex; gap:10px; align-items:center; }
+  .btn { display:inline-block; font-weight:700; font-size:14.5px; border-radius:10px;
+         padding:10px 20px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary:hover { background:var(--accent-ink); }
+  .btn.ghost { border-color:var(--line); background:var(--surface); color:var(--ink); }
+  .btn.ghost:hover { border-color:var(--ink3); }
+  .btn.big { padding:14px 30px; font-size:16px; }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .sub-badge { font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft);
+               padding:4px 10px; border-radius:99px; display:none; }
+  body.subbed .sub-badge { display:inline-block; }
+  body.subbed .hide-when-subbed { display:none; }
+
+  .hero { background:var(--navy); color:#EAF0F7; position:relative; overflow:hidden; }
+  .hero.warm { background:linear-gradient(118deg, #0D1B2E 0%, #241A1B 30%, #3C2212 56%, #59300F 78%, #2A1508 100%);
+    background-size:260% 260%; animation:heroShift 16s ease-in-out infinite alternate; }
+  @keyframes heroShift { from { background-position:0% 30%; } to { background-position:100% 70%; } }
+  .hero .glow { position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none;
+    background:radial-gradient(circle, rgba(224,138,60,.30), rgba(224,138,60,0) 65%); }
+  .hero .glow.g1 { width:560px; height:560px; top:-130px; right:-60px;
+    animation:glowDrift 13s ease-in-out infinite alternate; }
+  .hero .glow.g2 { width:380px; height:380px; bottom:-140px; left:16%;
+    background:radial-gradient(circle, rgba(192,92,29,.22), rgba(192,92,29,0) 65%);
+    animation:glowDrift 17s ease-in-out infinite alternate-reverse; }
+  @keyframes glowDrift { from { transform:translate(0,0) scale(1); }
+    to { transform:translate(-170px,120px) scale(1.3); } }
+  .hero-lines { animation:floaty 12s ease-in-out infinite alternate; }
+  @keyframes floaty { from { transform:translateY(0); } to { transform:translateY(-16px); } }
+  .hero-lines path { stroke-dasharray:1700; stroke-dashoffset:1700; animation:drawLine 3.4s ease-out forwards; }
+  .hero-lines path:nth-of-type(2) { animation-delay:.55s; }
+  .hero-lines path:nth-of-type(3) { animation-delay:1.1s; }
+  @keyframes drawLine { to { stroke-dashoffset:0; } }
+  .hero-lines circle { transform-box:fill-box; transform-origin:center;
+    animation:pulse 2.8s ease-in-out infinite; }
+  .hero-lines circle:last-of-type { animation-delay:1.2s; }
+  @keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.8); opacity:.5; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero.warm, .cta-banner.warm, .hero-lines, .hero-lines path, .hero-lines circle, .hero .glow {
+      animation:none; }
+    .hero-lines path { stroke-dashoffset:0; }
+  }
+  .hero.warm .eyebrow { color:#F0A868; }
+  .hero.warm h1 em { background:linear-gradient(90deg, #F0A868, #E07B2B);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero.warm .btn.primary { background:linear-gradient(90deg, #C05C1D, #E08A3C); border:none; }
+  .hero.warm .btn.primary:hover { filter:brightness(1.08); }
+  .hero.warm .btn.ghost { border-color:#5A4232; color:#E3CDB8; }
+  .stats.warm { background:linear-gradient(90deg, #16233A, #3A2415); }
+  .stats.warm .v.up { color:#F0A868; }
+  .stats.warm .stat { border-inline-start:1px solid rgba(240,168,104,.14); }
+  .kicker.warm { color:var(--rust); }
+  .steps.warm .step::before { background:linear-gradient(135deg, #C05C1D, #E08A3C); }
+  .block.warm-wash { background:linear-gradient(180deg, #FCF2E7, #FFFFFF);
+    border-block:1px solid #F2E2D2; }
+  .cta-banner.warm { background:linear-gradient(120deg, #2A1508, #7A3D14 62%, #C05C1D 125%); }
+  .cta-banner.warm p { color:#E3C8AE; }
+  .cta-banner.warm .btn.primary { background:#fff; color:#9A4A16; }
+  .cta-banner.warm .btn.primary:hover { background:#FDEFE2; }
+  .hero-in { padding:88px 0 96px; position:relative; z-index:1; max-width:680px; }
+  .hero .eyebrow { color:#7FD6C9; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+  .hero h1 { font-size:clamp(34px, 5.4vw, 56px); line-height:1.1; font-weight:800;
+             letter-spacing:-.028em; margin:14px 0 18px; text-wrap:balance; }
+  .hero h1 em { font-style:normal; color:#5BC8B8; }
+  .hero p.sub { font-size:18px; color:#A9B7C9; max-width:56ch; margin-bottom:30px; }
+  .hero-cta { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hero .fine { font-size:12.5px; color:#7788A0; margin-top:14px; }
+  .hero-lines { position:absolute; inset:0; opacity:.5; pointer-events:none; }
+
+  .stats { background:var(--navy2); color:#fff; border-top:1px solid rgba(255,255,255,.06); }
+  .stats-in { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+  .stat { padding:22px 26px; border-inline-start:1px solid rgba(255,255,255,.07); }
+  .stat .v { font-size:27px; font-weight:800; letter-spacing:-.02em; }
+  .stat .v.up { color:#5BC8B8; }
+  .stat .t { font-size:12.5px; color:#8FA0B5; margin-top:2px; }
+
+  section.block { padding:76px 0; }
+  .kicker { color:var(--accent-ink); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+  h2.title { font-size:clamp(26px,3.4vw,36px); font-weight:800; letter-spacing:-.022em;
+             margin:10px 0 12px; text-wrap:balance; }
+  p.lede { color:var(--ink2); font-size:16.5px; max-width:64ch; }
+  .cols3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+          padding:26px; box-shadow:var(--shadow); }
+  .card .ic { width:44px; height:44px; border-radius:10px; display:flex; align-items:center;
+              justify-content:center; margin-bottom:16px; font-size:20px; }
+  .card h3 { font-size:17.5px; margin-bottom:8px; }
+  .card p { font-size:14.5px; color:var(--ink2); }
+
+  .tablecard { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+               box-shadow:var(--shadow); overflow:hidden; margin-top:30px; }
+  .tablecard .thead { display:flex; align-items:center; gap:12px; padding:18px 22px;
+                      border-bottom:1px solid var(--line); }
+  .tablecard .thead h3 { font-size:16.5px; }
+  .tablecard .thead .cnt { font-size:12.5px; font-weight:700; color:var(--accent-ink);
+                           background:var(--accent-soft); border-radius:99px; padding:3px 11px; }
+  .twrap { overflow-x:auto; }
+  table.sig { border-collapse:collapse; width:100%; font-size:13.6px; min-width:840px; }
+  table.sig th { text-align:left; font-size:11.5px; color:var(--ink3); font-weight:650;
+                 letter-spacing:.04em; text-transform:uppercase; padding:10px 16px;
+                 border-bottom:1px solid var(--line); background:var(--bg); white-space:nowrap; }
+  table.sig td { padding:11px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.sig tr:last-child td { border-bottom:none; }
+  table.sig.side-brk thead th { background:#FBF2E9; color:#8A5A32; }
+  table.sig.side-sup thead th { background:#E7F4F1; color:#256A5F; }
+  td.tick { font-weight:800; font-size:14.5px; }
+  .pill { font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; display:inline-block; }
+  .pill.brk { background:var(--rust-soft); color:var(--rust); }
+  .pill.sup { background:var(--accent-soft); color:var(--accent-ink); }
+  .pill.q { background:var(--navy); color:#7FD6C9; }
+  .conf-b { display:flex; align-items:center; gap:8px; }
+  .conf-b i { display:block; height:6px; border-radius:3px; background:var(--accent); }
+  .conf-b b { font-size:13px; }
+
+  tr.locked td { filter:blur(7px); user-select:none; pointer-events:none; }
+  body.subbed tr.locked td { filter:none; user-select:auto; pointer-events:auto; }
+  .paywall { position:relative; }
+  .paywall-overlay { position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(246,247,249,0) 0%, rgba(246,247,249,.88) 34%, rgba(246,247,249,.97) 100%); }
+  body.subbed .paywall-overlay { display:none; }
+  .paywall-overlay h4 { font-size:19px; font-weight:800; }
+  .paywall-overlay p { font-size:14px; color:var(--ink2); max-width:44ch; }
+
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:20px; margin-top:40px; }
+  .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:30px;
+          box-shadow:var(--shadow); position:relative; display:flex; flex-direction:column; text-align:left; }
+  .plan.hot { border:2px solid var(--accent); padding:36px 30px;
+    box-shadow:0 2px 4px rgba(13,27,46,.06), 0 26px 52px -20px rgba(14,147,130,.35); }
+  .plans { align-items:center; }
+  .plan.hot .price { font-size:50px; }
+  @media (min-width:960px) { .plan.hot { transform:scale(1.03); } }
+  .plan.hot .btn.primary { position:relative; overflow:hidden;
+    transition:transform .15s, box-shadow .15s; }
+  .plan.hot .btn.primary:hover { transform:translateY(-1px);
+    box-shadow:0 8px 20px -8px rgba(14,147,130,.5); }
+  .plan.hot .btn.primary::after { content:''; position:absolute; inset:0;
+    background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.3) 50%, transparent 60%);
+    transform:translateX(-130%); animation:sheen 7s ease-in-out infinite; }
+  @keyframes sheen { 0%,72% { transform:translateX(-130%); } 88%,100% { transform:translateX(130%); } }
+  @keyframes riseIn { from { opacity:0; transform:translateY(14px); } }
+  .plan { animation:riseIn .5s ease-out backwards; }
+  .plan:nth-child(2) { animation-delay:.08s; }
+  .plan:nth-child(3) { animation-delay:.16s; }
+  .save-pill { font-size:11px; font-weight:800; color:var(--accent-ink);
+    background:var(--accent-soft); border-radius:99px; padding:2px 9px;
+    vertical-align:1px; margin-inline-start:2px; }
+  .btn-note { font-size:11.5px; color:var(--ink3); font-weight:600; margin-top:8px; text-align:center; }
+  .perf-stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+  .pstat { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+           padding:12px 20px; font-size:12.5px; color:var(--ink3); font-weight:600;
+           box-shadow:var(--shadow); }
+  .pstat b { display:block; font-size:22px; letter-spacing:-.02em; margin-bottom:1px; color:var(--ink); }
+  .proof-strip { margin-top:26px; font-size:13.5px; color:var(--ink2); font-weight:600; }
+  .proof-strip .mark { color:var(--rust); }
+  .proof-link { display:inline-block; margin-top:6px; font-size:12.5px; font-weight:700;
+    color:var(--accent-ink); border-bottom:1.5px dashed var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    .plan, .plan.hot .btn.primary::after { animation:none; }
+  }
+  .plan .flag { position:absolute; top:-13px; inset-inline-start:24px; background:var(--accent);
+                color:#fff; font-size:12px; font-weight:800; padding:3px 13px; border-radius:99px; }
+  .plan h3 { font-size:17px; }
+  .plan .price { font-size:42px; font-weight:800; letter-spacing:-.03em; margin:10px 0 2px; }
+  .plan .price span { font-size:15px; font-weight:600; color:var(--ink2); }
+  .plan .per { color:var(--ink3); font-size:13px; margin-bottom:20px; }
+  .plan ul { list-style:none; padding:0; margin:0 0 26px; display:grid; gap:10px; font-size:14.5px; }
+  .plan li { padding-inline-start:26px; position:relative; }
+  .plan li::before { content:'✓'; position:absolute; inset-inline-start:0; color:var(--accent); font-weight:800; }
+  .plan li.soon { color:var(--ink3); }
+  .plan li.soon::before { content:'◷'; color:var(--ink3); }
+  .plan .btn { margin-top:auto; text-align:center; }
+
+  .steps { counter-reset:s; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+           gap:18px; margin-top:38px; }
+  .step { counter-increment:s; background:var(--surface); border:1px solid var(--line);
+          border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); }
+  .step::before { content:counter(s); display:flex; width:38px; height:38px; align-items:center;
+    justify-content:center; background:var(--navy); color:#fff; font-weight:800; border-radius:10px;
+    margin-bottom:14px; font-size:16px; }
+  details.faq { background:var(--surface); border:1px solid var(--line); border-radius:10px;
+                padding:16px 20px; margin-top:10px; text-align:left; }
+  details.faq summary { font-weight:700; cursor:pointer; font-size:15px;
+    list-style:none; position:relative; padding-inline-end:30px; }
+  details.faq summary::-webkit-details-marker { display:none; }
+  details.faq summary::after { content:'+'; position:absolute; inset-inline-end:2px; top:50%;
+    transform:translateY(-50%); font-size:19px; font-weight:800; color:var(--ink3);
+    transition:transform .18s, color .18s; }
+  details.faq[open] summary::after { content:'−'; color:var(--accent-ink); }
+  details.faq:hover { border-color:var(--ink3); }
+  details.faq[open] { border-color:var(--accent); }
+  details.faq p { margin-top:10px; color:var(--ink2); font-size:14.5px; }
+  footer { background:var(--navy); color:#8FA0B5; padding:46px 0 40px; margin-top:80px; font-size:13px; }
+  footer .flinks { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:18px; color:#C6D2E0; font-weight:600; }
+  footer .disc { max-width:92ch; line-height:1.7; font-size:12px; border-top:1px solid rgba(255,255,255,.08);
+                 padding-top:18px; margin-top:18px; }
+  .notice { background:var(--rust-soft); border:1px solid var(--rust); color:var(--rust);
+            border-radius:10px; padding:12px 18px; font-size:13.5px; font-weight:600; margin-top:26px; }
+  .diago { color:var(--accent); font-weight:800; }
+  .hero .diago { color:#5BC8B8; }
+  .mark { display:inline-block; transform:translateY(-1px); }
+  .cta-banner { background:var(--navy); color:#EAF0F7; border-radius:18px; padding:44px 40px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    box-shadow:var(--shadow); }
+  .cta-banner h2 { font-size:clamp(22px,3vw,30px); font-weight:800; letter-spacing:-.02em; max-width:34ch; }
+  .cta-banner p { color:#A9B7C9; font-size:14.5px; margin-top:6px; }
+  .pain { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .pain .card b.no { color:var(--danger); }
+  .view-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+    border-radius:9px; padding:3px; margin-bottom:10px; }
+  .view-toggle button { font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+    background:transparent; border:none; border-radius:7px; padding:6px 16px; cursor:pointer; }
+  .view-toggle button.on { background:var(--surface); color:var(--ink);
+    box-shadow:0 1px 3px rgba(13,27,46,.12); }
+  .chart-view { display:none; }
+  .chart-view.on { display:block; }
+  .cap .chart-view.on { display:contents; }
+  .chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .chart-head .view-toggle { margin-bottom:0; }
+  .price-block { margin-left:auto; text-align:right; }
+  .pb-price { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+  .chg-pill { font-size:15px; font-weight:800; padding:4px 12px; border-radius:99px; }
+  .chg-pill.up { background:var(--accent-soft); color:var(--accent-ink); }
+  .chg-pill.dn { background:#FBE9E9; color:var(--danger); }
+  .pb-cap { font-size:11.5px; color:var(--ink3); font-weight:600; }
+  .pb-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+               border-radius:8px; padding:2px; }
+  .pb-toggle button { font:inherit; font-size:11px; font-weight:800; color:var(--ink2);
+    background:transparent; border:none; border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .pb-toggle button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(13,27,46,.12); }
+  .tf-badge { font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--navy); background:var(--bg); border:1.5px solid var(--line); border-radius:9px;
+    padding:7px 16px; }
+  .tlink { border-bottom:1.5px dashed var(--accent); }
+  .tlink:hover { color:var(--accent-ink); }
+
+  .heart { font:inherit; background:none; border:none; cursor:pointer; font-size:17px; line-height:1;
+           color:var(--ink3); padding:2px 4px; border-radius:6px; transition:transform .12s, color .12s; }
+  .heart:hover { transform:scale(1.25); color:#D33A52; }
+  .heart.on { color:#D33A52; }
+  .heart.big { font-size:27px; padding:4px 8px; align-self:center; }
+  td.hcell { width:34px; padding-inline:10px 0 !important; }
+  .date-strip { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 12px; margin-top:24px;
+                scrollbar-width:thin; }
+  .dchip { flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+           background:var(--surface); border:1px solid var(--line); border-radius:99px;
+           padding:6px 14px; cursor:pointer; transition:all .12s; }
+  .dchip:hover { border-color:var(--ink3); }
+  .dchip.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .dchip .dow { font-weight:600; color:inherit; opacity:.6; font-size:11px; margin-inline-start:4px; }
+  .filter-bar { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px 18px; margin-bottom:16px; display:flex; flex-wrap:wrap;
+    gap:14px 18px; align-items:flex-end; }
+  .filter-bar[hidden] { display:none; }
+  .filter-bar label { display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:700;
+    color:var(--ink3); text-transform:uppercase; letter-spacing:.05em; }
+  .filter-bar input, .filter-bar select { font:inherit; font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); width:118px; }
+  .filter-bar input:focus, .filter-bar select:focus { outline:2px solid var(--accent); border-color:transparent; }
+  .filter-bar .fpair { display:flex; gap:6px; align-items:center; }
+  .filter-bar .fpair input { width:84px; }
+  .filter-bar .btn { padding:8px 16px; font-size:13px; }
+
+  /* ---------- stock detail ---------- */
+  .stock-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:44px 0 6px; }
+  .stock-head h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .stock-head .co { color:var(--ink2); font-size:16px; }
+  .stock-grid { display:grid; grid-template-columns:320px 1fr; gap:22px; margin-top:22px; align-items:start; }
+  @media (max-width:900px) { .stock-grid { grid-template-columns:1fr; } }
+  .info-panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:22px; }
+  .info-panel h3 { font-size:13px; color:var(--ink3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line);
+        font-size:13.8px; }
+  .kv:last-child { border-bottom:none; }
+  .kv b { font-weight:700; }
+  .kv span { color:var(--ink2); }
+  .about { font-size:13.5px; color:var(--ink2); line-height:1.65; margin-top:14px; }
+  .conf-card { border-radius:var(--radius); padding:22px 26px; display:flex; align-items:center; gap:22px;
+               box-shadow:var(--shadow); margin-bottom:18px; }
+  .conf-card .score { font-size:52px; font-weight:800; letter-spacing:-.03em; line-height:1; white-space:nowrap; flex:none; }
+  .conf-card .score small { font-size:20px; font-weight:700; opacity:.75; }
+  .conf-card .lbl { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+  .conf-card .sub2 { font-size:13px; opacity:.85; margin-top:3px; }
+  .chart-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:20px; }
+  .chart-card .cap { display:flex; gap:12px; align-items:center; font-size:12.5px; color:var(--ink3);
+                     margin-top:10px; flex-wrap:wrap; }
+  .legend-dot { display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:-1px; }
+  @media (max-width:720px) { .nav-links { display:none; } }
+</style></head><body><header class="nav"><div class="wrap nav-in"><a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+<defs>
+<linearGradient id="lg-w" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#0E9382"/><stop offset="1" stop-color="#14B4A0"/></linearGradient>
+<linearGradient id="lg-b" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#C05C1D"/><stop offset="1" stop-color="#F0A868"/></linearGradient>
+</defs>
+<path d="M6 22.5 L22.5 22.5 L22.5 6 Z" fill="url(#lg-w)" stroke="url(#lg-w)" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M3.5 16.5 L16.5 3.5" stroke="url(#lg-b)" stroke-width="3.4" stroke-linecap="round"/></svg><span class="wm">Diago</span></a><nav class="nav-links"><a href="index.html" class="">Home</a><a href="breakouts.html" class="">Breakout Signals</a><a href="supports.html" class="">Support Signals</a><a href="watchlist.html" class="">Watchlist</a><a href="performance.html" class="">Performance</a><a href="pricing.html" class="">Pricing</a></nav><div class="nav-cta"><span class="sub-badge">Subscriber · demo</span><a class="btn ghost hide-when-subbed" href="pricing.html">Sign in</a><a class="btn primary hide-when-subbed" href="pricing.html">Start free trial</a></div></div></header>
+<section style="padding-bottom:76px"><div class="wrap">
+  <div class="stock-head">
+    <a href="breakouts.html" style="color:var(--ink3);font-size:13px">← Back to signals</a>
+  </div>
+  <div class="stock-head" style="margin-top:6px">
+    <h1>CVLG</h1>
+    <button class="heart big" data-t="CVLG" onclick="toggleWatch('CVLG')">♡</button>
+    <span class="co">Covenant Logistics Group, Inc.</span>
+    <span class="pill brk">Breakout signal</span>
+    <div class="price-block">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+        <span class="pb-price num">$35.44</span>
+        <span id="chg-pill" class="chg-pill" data-d="1.55"
+              data-w="5.85" data-m="-25.14">—</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:6px">
+        <span class="pb-cap">last close · 2026-08-17</span>
+        <span class="pb-toggle">
+          <button data-p="d" onclick="setPxPeriod('d')">1D</button><button data-p="w" onclick="setPxPeriod('w')">1W</button><button data-p="m" onclick="setPxPeriod('m')">1M</button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="stock-grid">
+    <div>
+      <div class="info-panel">
+        <h3>Company overview</h3>
+        <div class="kv"><span>Market cap</span><b class="num">$885.68M</b></div><div class="kv"><span>Sector</span><b class="num">INDUSTRIALS</b></div><div class="kv"><span>Industry</span><b class="num">TRUCKING</b></div><div class="kv"><span>P/E ratio</span><b class="num">698.00</b></div><div class="kv"><span>EPS</span><b class="num">0.05</b></div><div class="kv"><span>Beta</span><b class="num">1.30</b></div><div class="kv"><span>Dividend yield</span><b class="num">0.81%</b></div><div class="kv"><span>52-week high</span><b class="num">49.88</b></div><div class="kv"><span>52-week low</span><b class="num">18.00</b></div><div class="kv"><span>Avg $ volume</span><b class="num">$3.60M</b></div><div class="kv"><span>Volatility (ATR)</span><b class="num">3.4%</b></div>
+        <p class="about">Covenant Logistics Group, Inc., provides transportation and logistics services in the United States. The company is headquartered in Chattanooga, Tennessee.</p>
+      </div>
+      <div class="info-panel" style="margin-top:18px">
+        <h3>Signal details</h3>
+        <div class="kv"><span>Signal type</span><b class="num">Resistance breakout</b></div><div class="kv"><span>Status</span><b class="num">Breakout signal</b></div><div class="kv"><span>Trendline price</span><b class="num">23.81</b></div><div class="kv"><span>Distance to line</span><b class="num">-3.6%</b></div><div class="kv"><span>Anchor 1</span><b class="num">2024-11-13</b></div><div class="kv"><span>Anchor 2</span><b class="num">2025-01-27</b></div><div class="kv"><span>Line age</span><b class="num">237 trading days</b></div><div class="kv"><span>Line slope</span><b class="num">-20.3% / yr</b></div>
+      </div>
+    </div>
+    <div>
+      <div class="conf-card" style="background:hsl(158, 52%, 53%);color:#0F1726"><div class="score num">6.9<small> / 10</small></div><div><div class="lbl">Diago confidence</div><div class="sub2">Calibrated from 43% historical hit-rate on similar setups (20-trading-day horizon). Statistics — not a guarantee.</div></div></div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="view-toggle" role="tablist" aria-label="Chart style">
+            <button data-view="candles" onclick="setChartView('candles')">Candles</button>
+            <button data-view="line" onclick="setChartView('line')">Line</button>
+          </div>
+          <div class="tf-badge">Weekly chart</div>
+        </div>
+        <div class="chart-view" data-view="candles"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="CVLG candlestick chart with trendline"><line x1="14" x2="898" y1="354.4" y2="354.4" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="276.6" y2="276.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="216.2" y2="216.2" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="166.9" y2="166.9" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="89.0" y2="89.0" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="28.7" y2="28.7" stroke="#EAEDF3" stroke-width="1"/><line x1="18.6" x2="18.6" y1="195.4" y2="203.9" stroke="#0E9382" stroke-width="1"/><rect x="15.7" y="196.2" width="5.7" height="7.3" fill="#0E9382" rx="0.8"/><line x1="27.8" x2="27.8" y1="193.8" y2="210.0" stroke="#C25B5B" stroke-width="1"/><rect x="25.0" y="195.4" width="5.7" height="13.1" fill="#C25B5B" rx="0.8"/><line x1="37.0" x2="37.0" y1="205.2" y2="217.4" stroke="#0E9382" stroke-width="1"/><rect x="34.2" y="206.0" width="5.7" height="4.0" fill="#0E9382" rx="0.8"/><line x1="46.2" x2="46.2" y1="194.4" y2="213.0" stroke="#0E9382" stroke-width="1"/><rect x="43.4" y="203.2" width="5.7" height="2.9" fill="#0E9382" rx="0.8"/><line x1="55.4" x2="55.4" y1="192.8" y2="208.7" stroke="#C25B5B" stroke-width="1"/><rect x="52.6" y="199.2" width="5.7" height="3.5" fill="#C25B5B" rx="0.8"/><line x1="64.6" x2="64.6" y1="203.6" y2="220.8" stroke="#C25B5B" stroke-width="1"/><rect x="61.8" y="205.4" width="5.7" height="3.6" fill="#C25B5B" rx="0.8"/><line x1="73.9" x2="73.9" y1="201.3" y2="214.8" stroke="#0E9382" stroke-width="1"/><rect x="71.0" y="205.8" width="5.7" height="2.3" fill="#0E9382" rx="0.8"/><line x1="83.1" x2="83.1" y1="161.9" y2="191.4" stroke="#0E9382" stroke-width="1"/><rect x="80.2" y="163.9" width="5.7" height="26.7" fill="#0E9382" rx="0.8"/><line x1="92.3" x2="92.3" y1="160.0" y2="183.5" stroke="#C25B5B" stroke-width="1"/><rect x="89.4" y="162.1" width="5.7" height="17.1" fill="#C25B5B" rx="0.8"/><line x1="101.5" x2="101.5" y1="169.2" y2="185.4" stroke="#0E9382" stroke-width="1"/><rect x="98.6" y="172.4" width="5.7" height="8.4" fill="#0E9382" rx="0.8"/><line x1="110.7" x2="110.7" y1="171.1" y2="180.9" stroke="#C25B5B" stroke-width="1"/><rect x="107.8" y="171.6" width="5.7" height="6.1" fill="#C25B5B" rx="0.8"/><line x1="119.9" x2="119.9" y1="165.8" y2="183.6" stroke="#0E9382" stroke-width="1"/><rect x="117.0" y="169.8" width="5.7" height="7.6" fill="#0E9382" rx="0.8"/><line x1="129.1" x2="129.1" y1="167.8" y2="193.7" stroke="#C25B5B" stroke-width="1"/><rect x="126.2" y="168.1" width="5.7" height="24.5" fill="#C25B5B" rx="0.8"/><line x1="138.3" x2="138.3" y1="186.9" y2="199.9" stroke="#0E9382" stroke-width="1"/><rect x="135.5" y="188.7" width="5.7" height="1.5" fill="#0E9382" rx="0.8"/><line x1="147.5" x2="147.5" y1="182.2" y2="384.4" stroke="#0E9382" stroke-width="1"/><rect x="144.7" y="183.8" width="5.7" height="7.4" fill="#0E9382" rx="0.8"/><line x1="156.7" x2="156.7" y1="183.6" y2="206.1" stroke="#C25B5B" stroke-width="1"/><rect x="153.9" y="185.2" width="5.7" height="12.9" fill="#C25B5B" rx="0.8"/><line x1="165.9" x2="165.9" y1="183.1" y2="197.5" stroke="#0E9382" stroke-width="1"/><rect x="163.1" y="186.9" width="5.7" height="8.1" fill="#0E9382" rx="0.8"/><line x1="175.1" x2="175.1" y1="171.7" y2="199.3" stroke="#0E9382" stroke-width="1"/><rect x="172.3" y="179.4" width="5.7" height="8.1" fill="#0E9382" rx="0.8"/><line x1="184.4" x2="184.4" y1="175.6" y2="195.8" stroke="#C25B5B" stroke-width="1"/><rect x="181.5" y="179.3" width="5.7" height="9.9" fill="#C25B5B" rx="0.8"/><line x1="193.6" x2="193.6" y1="187.8" y2="200.1" stroke="#C25B5B" stroke-width="1"/><rect x="190.7" y="188.8" width="5.7" height="6.0" fill="#C25B5B" rx="0.8"/><line x1="202.8" x2="202.8" y1="191.8" y2="203.8" stroke="#C25B5B" stroke-width="1"/><rect x="199.9" y="199.6" width="5.7" height="3.7" fill="#C25B5B" rx="0.8"/><line x1="212.0" x2="212.0" y1="201.3" y2="221.8" stroke="#C25B5B" stroke-width="1"/><rect x="209.1" y="205.1" width="5.7" height="11.5" fill="#C25B5B" rx="0.8"/><line x1="221.2" x2="221.2" y1="210.9" y2="225.1" stroke="#C25B5B" stroke-width="1"/><rect x="218.3" y="218.3" width="5.7" height="4.1" fill="#C25B5B" rx="0.8"/><line x1="230.4" x2="230.4" y1="217.8" y2="238.0" stroke="#C25B5B" stroke-width="1"/><rect x="227.5" y="223.6" width="5.7" height="10.9" fill="#C25B5B" rx="0.8"/><line x1="239.6" x2="239.6" y1="233.2" y2="245.1" stroke="#C25B5B" stroke-width="1"/><rect x="236.7" y="235.7" width="5.7" height="6.1" fill="#C25B5B" rx="0.8"/><line x1="248.8" x2="248.8" y1="237.0" y2="251.3" stroke="#0E9382" stroke-width="1"/><rect x="246.0" y="240.3" width="5.7" height="3.5" fill="#0E9382" rx="0.8"/><line x1="258.0" x2="258.0" y1="236.6" y2="254.2" stroke="#0E9382" stroke-width="1"/><rect x="255.2" y="237.4" width="5.7" height="2.9" fill="#0E9382" rx="0.8"/><line x1="267.2" x2="267.2" y1="244.7" y2="305.4" stroke="#C25B5B" stroke-width="1"/><rect x="264.4" y="247.3" width="5.7" height="22.3" fill="#C25B5B" rx="0.8"/><line x1="276.4" x2="276.4" y1="273.4" y2="313.4" stroke="#C25B5B" stroke-width="1"/><rect x="273.6" y="275.9" width="5.7" height="33.3" fill="#C25B5B" rx="0.8"/><line x1="285.6" x2="285.6" y1="264.9" y2="309.4" stroke="#0E9382" stroke-width="1"/><rect x="282.8" y="266.5" width="5.7" height="41.3" fill="#0E9382" rx="0.8"/><line x1="294.9" x2="294.9" y1="271.9" y2="287.9" stroke="#C25B5B" stroke-width="1"/><rect x="292.0" y="272.6" width="5.7" height="6.6" fill="#C25B5B" rx="0.8"/><line x1="304.1" x2="304.1" y1="258.3" y2="275.2" stroke="#0E9382" stroke-width="1"/><rect x="301.2" y="261.1" width="5.7" height="14.2" fill="#0E9382" rx="0.8"/><line x1="313.3" x2="313.3" y1="233.8" y2="264.3" stroke="#0E9382" stroke-width="1"/><rect x="310.4" y="234.3" width="5.7" height="26.7" fill="#0E9382" rx="0.8"/><line x1="322.5" x2="322.5" y1="231.9" y2="246.4" stroke="#C25B5B" stroke-width="1"/><rect x="319.6" y="234.1" width="5.7" height="11.0" fill="#C25B5B" rx="0.8"/><line x1="331.7" x2="331.7" y1="236.6" y2="252.3" stroke="#0E9382" stroke-width="1"/><rect x="328.8" y="242.3" width="5.7" height="8.6" fill="#0E9382" rx="0.8"/><line x1="340.9" x2="340.9" y1="232.8" y2="248.0" stroke="#0E9382" stroke-width="1"/><rect x="338.0" y="241.6" width="5.7" height="2.1" fill="#0E9382" rx="0.8"/><line x1="350.1" x2="350.1" y1="231.7" y2="243.5" stroke="#C25B5B" stroke-width="1"/><rect x="347.2" y="239.1" width="5.7" height="2.5" fill="#C25B5B" rx="0.8"/><line x1="359.3" x2="359.3" y1="233.2" y2="242.8" stroke="#0E9382" stroke-width="1"/><rect x="356.5" y="233.9" width="5.7" height="6.2" fill="#0E9382" rx="0.8"/><line x1="368.5" x2="368.5" y1="219.5" y2="232.7" stroke="#0E9382" stroke-width="1"/><rect x="365.7" y="226.0" width="5.7" height="5.4" fill="#0E9382" rx="0.8"/><line x1="377.7" x2="377.7" y1="206.0" y2="228.2" stroke="#0E9382" stroke-width="1"/><rect x="374.9" y="211.0" width="5.7" height="17.2" fill="#0E9382" rx="0.8"/><line x1="386.9" x2="386.9" y1="202.0" y2="226.0" stroke="#C25B5B" stroke-width="1"/><rect x="384.1" y="209.8" width="5.7" height="16.2" fill="#C25B5B" rx="0.8"/><line x1="396.1" x2="396.1" y1="221.8" y2="233.7" stroke="#C25B5B" stroke-width="1"/><rect x="393.3" y="223.1" width="5.7" height="2.8" fill="#C25B5B" rx="0.8"/><line x1="405.4" x2="405.4" y1="199.2" y2="226.1" stroke="#0E9382" stroke-width="1"/><rect x="402.5" y="215.0" width="5.7" height="7.2" fill="#0E9382" rx="0.8"/><line x1="414.6" x2="414.6" y1="213.3" y2="236.7" stroke="#C25B5B" stroke-width="1"/><rect x="411.7" y="216.1" width="5.7" height="13.1" fill="#C25B5B" rx="0.8"/><line x1="423.8" x2="423.8" y1="225.5" y2="243.5" stroke="#0E9382" stroke-width="1"/><rect x="420.9" y="226.4" width="5.7" height="1.0" fill="#0E9382" rx="0.8"/><line x1="433.0" x2="433.0" y1="219.0" y2="231.7" stroke="#C25B5B" stroke-width="1"/><rect x="430.1" y="225.9" width="5.7" height="1.0" fill="#C25B5B" rx="0.8"/><line x1="442.2" x2="442.2" y1="213.6" y2="237.3" stroke="#0E9382" stroke-width="1"/><rect x="439.3" y="221.1" width="5.7" height="4.9" fill="#0E9382" rx="0.8"/><line x1="451.4" x2="451.4" y1="219.2" y2="231.9" stroke="#C25B5B" stroke-width="1"/><rect x="448.5" y="221.1" width="5.7" height="8.4" fill="#C25B5B" rx="0.8"/><line x1="460.6" x2="460.6" y1="221.9" y2="242.1" stroke="#C25B5B" stroke-width="1"/><rect x="457.7" y="227.7" width="5.7" height="11.1" fill="#C25B5B" rx="0.8"/><line x1="469.8" x2="469.8" y1="230.1" y2="244.6" stroke="#C25B5B" stroke-width="1"/><rect x="467.0" y="239.7" width="5.7" height="4.3" fill="#C25B5B" rx="0.8"/><line x1="479.0" x2="479.0" y1="236.6" y2="258.4" stroke="#C25B5B" stroke-width="1"/><rect x="476.2" y="243.4" width="5.7" height="11.7" fill="#C25B5B" rx="0.8"/><line x1="488.2" x2="488.2" y1="252.0" y2="260.8" stroke="#C25B5B" stroke-width="1"/><rect x="485.4" y="256.4" width="5.7" height="2.9" fill="#C25B5B" rx="0.8"/><line x1="497.4" x2="497.4" y1="249.8" y2="266.4" stroke="#0E9382" stroke-width="1"/><rect x="494.6" y="250.3" width="5.7" height="9.4" fill="#0E9382" rx="0.8"/><line x1="506.6" x2="506.6" y1="249.6" y2="271.8" stroke="#C25B5B" stroke-width="1"/><rect x="503.8" y="249.6" width="5.7" height="14.1" fill="#C25B5B" rx="0.8"/><line x1="515.9" x2="515.9" y1="250.3" y2="262.6" stroke="#0E9382" stroke-width="1"/><rect x="513.0" y="252.3" width="5.7" height="6.6" fill="#0E9382" rx="0.8"/><line x1="525.1" x2="525.1" y1="253.3" y2="283.2" stroke="#C25B5B" stroke-width="1"/><rect x="522.2" y="267.2" width="5.7" height="8.6" fill="#C25B5B" rx="0.8"/><line x1="534.3" x2="534.3" y1="268.9" y2="282.5" stroke="#0E9382" stroke-width="1"/><rect x="531.4" y="275.0" width="5.7" height="2.2" fill="#0E9382" rx="0.8"/><line x1="543.5" x2="543.5" y1="274.7" y2="289.3" stroke="#C25B5B" stroke-width="1"/><rect x="540.6" y="275.2" width="5.7" height="6.0" fill="#C25B5B" rx="0.8"/><line x1="552.7" x2="552.7" y1="280.4" y2="302.1" stroke="#C25B5B" stroke-width="1"/><rect x="549.8" y="282.5" width="5.7" height="18.3" fill="#C25B5B" rx="0.8"/><line x1="561.9" x2="561.9" y1="274.8" y2="305.1" stroke="#0E9382" stroke-width="1"/><rect x="559.0" y="277.1" width="5.7" height="22.0" fill="#0E9382" rx="0.8"/><line x1="571.1" x2="571.1" y1="248.7" y2="280.3" stroke="#0E9382" stroke-width="1"/><rect x="568.2" y="255.4" width="5.7" height="21.5" fill="#0E9382" rx="0.8"/><line x1="580.3" x2="580.3" y1="232.3" y2="257.8" stroke="#0E9382" stroke-width="1"/><rect x="577.5" y="233.3" width="5.7" height="24.5" fill="#0E9382" rx="0.8"/><line x1="589.5" x2="589.5" y1="231.0" y2="248.1" stroke="#C25B5B" stroke-width="1"/><rect x="586.7" y="232.8" width="5.7" height="5.1" fill="#C25B5B" rx="0.8"/><line x1="598.7" x2="598.7" y1="237.7" y2="249.0" stroke="#C25B5B" stroke-width="1"/><rect x="595.9" y="240.4" width="5.7" height="5.1" fill="#C25B5B" rx="0.8"/><line x1="607.9" x2="607.9" y1="231.8" y2="254.0" stroke="#0E9382" stroke-width="1"/><rect x="605.1" y="234.9" width="5.7" height="11.0" fill="#0E9382" rx="0.8"/><line x1="617.1" x2="617.1" y1="207.8" y2="236.7" stroke="#0E9382" stroke-width="1"/><rect x="614.3" y="213.7" width="5.7" height="22.8" fill="#0E9382" rx="0.8"/><line x1="626.4" x2="626.4" y1="201.3" y2="219.2" stroke="#0E9382" stroke-width="1"/><rect x="623.5" y="211.9" width="5.7" height="1.5" fill="#0E9382" rx="0.8"/><line x1="635.6" x2="635.6" y1="193.1" y2="211.4" stroke="#C25B5B" stroke-width="1"/><rect x="632.7" y="209.1" width="5.7" height="1.7" fill="#C25B5B" rx="0.8"/><line x1="644.8" x2="644.8" y1="187.4" y2="232.5" stroke="#0E9382" stroke-width="1"/><rect x="641.9" y="187.7" width="5.7" height="21.9" fill="#0E9382" rx="0.8"/><line x1="654.0" x2="654.0" y1="169.2" y2="188.5" stroke="#0E9382" stroke-width="1"/><rect x="651.1" y="173.8" width="5.7" height="11.9" fill="#0E9382" rx="0.8"/><line x1="663.2" x2="663.2" y1="165.2" y2="201.0" stroke="#0E9382" stroke-width="1"/><rect x="660.3" y="170.2" width="5.7" height="2.0" fill="#0E9382" rx="0.8"/><line x1="672.4" x2="672.4" y1="163.5" y2="187.7" stroke="#C25B5B" stroke-width="1"/><rect x="669.5" y="171.5" width="5.7" height="12.6" fill="#C25B5B" rx="0.8"/><line x1="681.6" x2="681.6" y1="163.0" y2="181.1" stroke="#0E9382" stroke-width="1"/><rect x="678.7" y="166.0" width="5.7" height="14.1" fill="#0E9382" rx="0.8"/><line x1="690.8" x2="690.8" y1="164.5" y2="215.1" stroke="#C25B5B" stroke-width="1"/><rect x="688.0" y="168.4" width="5.7" height="39.4" fill="#C25B5B" rx="0.8"/><line x1="700.0" x2="700.0" y1="207.2" y2="222.6" stroke="#0E9382" stroke-width="1"/><rect x="697.2" y="213.2" width="5.7" height="1.1" fill="#0E9382" rx="0.8"/><line x1="709.2" x2="709.2" y1="191.6" y2="219.0" stroke="#0E9382" stroke-width="1"/><rect x="706.4" y="191.9" width="5.7" height="24.2" fill="#0E9382" rx="0.8"/><line x1="718.4" x2="718.4" y1="184.3" y2="204.8" stroke="#0E9382" stroke-width="1"/><rect x="715.6" y="188.9" width="5.7" height="5.4" fill="#0E9382" rx="0.8"/><line x1="727.6" x2="727.6" y1="172.5" y2="195.8" stroke="#0E9382" stroke-width="1"/><rect x="724.8" y="176.9" width="5.7" height="16.8" fill="#0E9382" rx="0.8"/><line x1="736.9" x2="736.9" y1="173.1" y2="188.4" stroke="#0E9382" stroke-width="1"/><rect x="734.0" y="174.2" width="5.7" height="2.6" fill="#0E9382" rx="0.8"/><line x1="746.1" x2="746.1" y1="151.0" y2="173.1" stroke="#0E9382" stroke-width="1"/><rect x="743.2" y="156.4" width="5.7" height="11.2" fill="#0E9382" rx="0.8"/><line x1="755.3" x2="755.3" y1="118.2" y2="166.5" stroke="#0E9382" stroke-width="1"/><rect x="752.4" y="126.3" width="5.7" height="40.3" fill="#0E9382" rx="0.8"/><line x1="764.5" x2="764.5" y1="126.6" y2="155.2" stroke="#C25B5B" stroke-width="1"/><rect x="761.6" y="126.8" width="5.7" height="12.8" fill="#C25B5B" rx="0.8"/><line x1="773.7" x2="773.7" y1="131.0" y2="159.2" stroke="#0E9382" stroke-width="1"/><rect x="770.8" y="132.1" width="5.7" height="5.4" fill="#0E9382" rx="0.8"/><line x1="782.9" x2="782.9" y1="107.3" y2="137.1" stroke="#0E9382" stroke-width="1"/><rect x="780.0" y="107.4" width="5.7" height="27.6" fill="#0E9382" rx="0.8"/><line x1="792.1" x2="792.1" y1="89.0" y2="110.2" stroke="#0E9382" stroke-width="1"/><rect x="789.2" y="91.1" width="5.7" height="17.5" fill="#0E9382" rx="0.8"/><line x1="801.3" x2="801.3" y1="62.0" y2="99.0" stroke="#0E9382" stroke-width="1"/><rect x="798.5" y="66.2" width="5.7" height="28.6" fill="#0E9382" rx="0.8"/><line x1="810.5" x2="810.5" y1="44.9" y2="68.9" stroke="#0E9382" stroke-width="1"/><rect x="807.7" y="54.5" width="5.7" height="10.4" fill="#0E9382" rx="0.8"/><line x1="819.7" x2="819.7" y1="52.9" y2="75.8" stroke="#C25B5B" stroke-width="1"/><rect x="816.9" y="53.8" width="5.7" height="13.6" fill="#C25B5B" rx="0.8"/><line x1="828.9" x2="828.9" y1="54.7" y2="73.9" stroke="#0E9382" stroke-width="1"/><rect x="826.1" y="55.1" width="5.7" height="13.2" fill="#0E9382" rx="0.8"/><line x1="838.1" x2="838.1" y1="54.1" y2="69.4" stroke="#C25B5B" stroke-width="1"/><rect x="835.3" y="57.0" width="5.7" height="5.3" fill="#C25B5B" rx="0.8"/><line x1="847.4" x2="847.4" y1="44.1" y2="62.1" stroke="#0E9382" stroke-width="1"/><rect x="844.5" y="48.5" width="5.7" height="8.0" fill="#0E9382" rx="0.8"/><line x1="856.6" x2="856.6" y1="29.3" y2="52.6" stroke="#0E9382" stroke-width="1"/><rect x="853.7" y="29.3" width="5.7" height="13.9" fill="#0E9382" rx="0.8"/><line x1="865.8" x2="865.8" y1="30.1" y2="67.6" stroke="#C25B5B" stroke-width="1"/><rect x="862.9" y="30.9" width="5.7" height="36.0" fill="#C25B5B" rx="0.8"/><line x1="875.0" x2="875.0" y1="63.3" y2="130.3" stroke="#C25B5B" stroke-width="1"/><rect x="872.1" y="67.0" width="5.7" height="48.8" fill="#C25B5B" rx="0.8"/><line x1="884.2" x2="884.2" y1="115.5" y2="141.3" stroke="#C25B5B" stroke-width="1"/><rect x="881.3" y="119.3" width="5.7" height="18.8" fill="#C25B5B" rx="0.8"/><line x1="893.4" x2="893.4" y1="121.0" y2="135.8" stroke="#0E9382" stroke-width="1"/><rect x="890.5" y="121.8" width="5.7" height="14.0" fill="#0E9382" rx="0.8"/><polyline points="18.6,151.2 27.8,152.5 37.0,153.7 46.2,154.9 55.4,156.1 64.6,157.3 73.9,158.6 83.1,159.8 92.3,161.0 101.5,162.2 110.7,163.4 119.9,164.6 129.1,165.9 138.3,167.1 147.5,168.3 156.7,169.5 165.9,170.7 175.1,172.0 184.4,173.2 193.6,174.4 202.8,175.6 212.0,176.8 221.2,178.0 230.4,179.3 239.6,180.5 248.8,181.7 258.0,182.9 267.2,184.1 276.4,185.4 285.6,186.6 294.9,187.8 304.1,189.0 313.3,190.2 322.5,191.4 331.7,192.7 340.9,193.9 350.1,195.1 359.3,196.3 368.5,197.5 377.7,198.8 386.9,200.0 396.1,201.2 405.4,202.4 414.6,203.6 423.8,204.8 433.0,206.1 442.2,207.3 451.4,208.5 460.6,209.7 469.8,210.9 479.0,212.2 488.2,213.4 497.4,214.6 506.6,215.8 515.9,217.0 525.1,218.2 534.3,219.5 543.5,220.7 552.7,221.9 561.9,223.1 571.1,224.3 580.3,225.6 589.5,226.8 598.7,228.0 607.9,229.2 617.1,230.4 626.4,231.6 635.6,232.9 644.8,234.1 654.0,235.3 663.2,236.5 672.4,237.7 681.6,239.0 690.8,240.2 700.0,241.4 709.2,242.6 718.4,243.8 727.6,245.0 736.9,246.3 746.1,247.5 755.3,248.7 764.5,249.9 773.7,251.1 782.9,252.4 792.1,253.6 801.3,254.8 810.5,256.0 819.7,257.2 828.9,258.4 838.1,259.7 847.4,260.9 856.6,262.1 865.8,263.3 875.0,264.5 884.2,265.8 893.4,266.7" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.6,151.2 27.8,152.5 37.0,153.7 46.2,154.9 55.4,156.1 64.6,157.3 73.9,158.6 83.1,159.8 92.3,161.0 101.5,162.2 110.7,163.4 119.9,164.6 129.1,165.9 138.3,167.1 147.5,168.3 156.7,169.5 165.9,170.7 175.1,172.0 184.4,173.2 193.6,174.4 202.8,175.6 212.0,176.8 221.2,178.0 230.4,179.3 239.6,180.5 248.8,181.7 258.0,182.9 267.2,184.1 276.4,185.4 285.6,186.6 294.9,187.8 304.1,189.0 313.3,190.2 322.5,191.4 331.7,192.7 340.9,193.9 350.1,195.1 359.3,196.3 368.5,197.5 377.7,198.8 386.9,200.0 396.1,201.2 405.4,202.4 414.6,203.6 423.8,204.8 433.0,206.1 442.2,207.3 451.4,208.5 460.6,209.7 469.8,210.9 479.0,212.2 488.2,213.4 497.4,214.6 506.6,215.8 515.9,217.0 525.1,218.2 534.3,219.5 543.5,220.7 552.7,221.9 561.9,223.1 571.1,224.3 580.3,225.6 589.5,226.8 598.7,228.0 607.9,229.2 617.1,230.4 626.4,231.6 635.6,232.9 644.8,234.1 654.0,235.3 663.2,236.5 672.4,237.7 681.6,239.0 690.8,240.2 700.0,241.4 709.2,242.6 718.4,243.8 727.6,245.0 736.9,246.3 746.1,247.5 755.3,248.7 764.5,249.9 773.7,251.1 782.9,252.4 792.1,253.6 801.3,254.8 810.5,256.0 819.7,257.2 828.9,258.4 838.1,259.7 847.4,260.9 856.6,262.1 865.8,263.3 875.0,264.5 884.2,265.8 893.4,266.7" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="92.3" cy="160.0" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="92.3" y="149.0" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="175.1" cy="171.7" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="175.1" y="160.7" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="111.8" width="58" height="20" rx="4" fill="#0E9382"/><text x="929.0" y="125.8" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">35.44</text><text x="906" y="358.4" font-size="11" fill="#8A94A6" class="num">15</text><text x="906" y="280.6" font-size="11" fill="#8A94A6" class="num">20</text><text x="906" y="220.2" font-size="11" fill="#8A94A6" class="num">25</text><text x="906" y="170.9" font-size="11" fill="#8A94A6" class="num">30</text><text x="906" y="93.0" font-size="11" fill="#8A94A6" class="num">40</text><text x="906" y="32.7" font-size="11" fill="#8A94A6" class="num">50</text><text x="27.8" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2024-10-01</text><text x="313.3" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-05-15</text><text x="589.5" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-12-18</text><text x="875.0" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-08-04</text></svg></div>
+        <div class="chart-view" data-view="line"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="CVLG candlestick chart with trendline"><line x1="14" x2="898" y1="354.4" y2="354.4" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="276.6" y2="276.6" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="216.2" y2="216.2" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="166.9" y2="166.9" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="89.0" y2="89.0" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="28.7" y2="28.7" stroke="#EAEDF3" stroke-width="1"/><path d="M 18.6,195.4 L 27.8,193.8 L 37.0,205.2 L 46.2,194.4 L 55.4,192.8 L 64.6,203.6 L 73.9,201.3 L 83.1,161.9 L 92.3,160.0 L 101.5,169.2 L 110.7,171.1 L 119.9,165.8 L 129.1,167.8 L 138.3,186.9 L 147.5,182.2 L 156.7,183.6 L 165.9,183.1 L 175.1,171.7 L 184.4,175.6 L 193.6,187.8 L 202.8,191.8 L 212.0,201.3 L 221.2,210.9 L 230.4,217.8 L 239.6,233.2 L 248.8,237.0 L 258.0,236.6 L 267.2,244.7 L 276.4,273.4 L 285.6,264.9 L 294.9,271.9 L 304.1,258.3 L 313.3,233.8 L 322.5,231.9 L 331.7,236.6 L 340.9,232.8 L 350.1,231.7 L 359.3,233.2 L 368.5,219.5 L 377.7,206.0 L 386.9,202.0 L 396.1,221.8 L 405.4,199.2 L 414.6,213.3 L 423.8,225.5 L 433.0,219.0 L 442.2,213.6 L 451.4,219.2 L 460.6,221.9 L 469.8,230.1 L 479.0,236.6 L 488.2,252.0 L 497.4,249.8 L 506.6,249.6 L 515.9,250.3 L 525.1,253.3 L 534.3,268.9 L 543.5,274.7 L 552.7,280.4 L 561.9,274.8 L 571.1,248.7 L 580.3,232.3 L 589.5,231.0 L 598.7,237.7 L 607.9,231.8 L 617.1,207.8 L 626.4,201.3 L 635.6,193.1 L 644.8,187.4 L 654.0,169.2 L 663.2,165.2 L 672.4,163.5 L 681.6,163.0 L 690.8,164.5 L 700.0,207.2 L 709.2,191.6 L 718.4,184.3 L 727.6,172.5 L 736.9,173.1 L 746.1,151.0 L 755.3,118.2 L 764.5,126.6 L 773.7,131.0 L 782.9,107.3 L 792.1,89.0 L 801.3,62.0 L 810.5,44.9 L 819.7,52.9 L 828.9,54.7 L 838.1,54.1 L 847.4,44.1 L 856.6,29.3 L 865.8,30.1 L 875.0,63.3 L 884.2,115.5 L 893.4,121.0 L 893.4,135.8 L 884.2,141.3 L 875.0,130.3 L 865.8,67.6 L 856.6,52.6 L 847.4,62.1 L 838.1,69.4 L 828.9,73.9 L 819.7,75.8 L 810.5,68.9 L 801.3,99.0 L 792.1,110.2 L 782.9,137.1 L 773.7,159.2 L 764.5,155.2 L 755.3,166.5 L 746.1,173.1 L 736.9,188.4 L 727.6,195.8 L 718.4,204.8 L 709.2,219.0 L 700.0,222.6 L 690.8,215.1 L 681.6,181.1 L 672.4,187.7 L 663.2,201.0 L 654.0,188.5 L 644.8,232.5 L 635.6,211.4 L 626.4,219.2 L 617.1,236.7 L 607.9,254.0 L 598.7,249.0 L 589.5,248.1 L 580.3,257.8 L 571.1,280.3 L 561.9,305.1 L 552.7,302.1 L 543.5,289.3 L 534.3,282.5 L 525.1,283.2 L 515.9,262.6 L 506.6,271.8 L 497.4,266.4 L 488.2,260.8 L 479.0,258.4 L 469.8,244.6 L 460.6,242.1 L 451.4,231.9 L 442.2,237.3 L 433.0,231.7 L 423.8,243.5 L 414.6,236.7 L 405.4,226.1 L 396.1,233.7 L 386.9,226.0 L 377.7,228.2 L 368.5,232.7 L 359.3,242.8 L 350.1,243.5 L 340.9,248.0 L 331.7,252.3 L 322.5,246.4 L 313.3,264.3 L 304.1,275.2 L 294.9,287.9 L 285.6,309.4 L 276.4,313.4 L 267.2,305.4 L 258.0,254.2 L 248.8,251.3 L 239.6,245.1 L 230.4,238.0 L 221.2,225.1 L 212.0,221.8 L 202.8,203.8 L 193.6,200.1 L 184.4,195.8 L 175.1,199.3 L 165.9,197.5 L 156.7,206.1 L 147.5,384.4 L 138.3,199.9 L 129.1,193.7 L 119.9,183.6 L 110.7,180.9 L 101.5,185.4 L 92.3,183.5 L 83.1,191.4 L 73.9,214.8 L 64.6,220.8 L 55.4,208.7 L 46.2,213.0 L 37.0,217.4 L 27.8,210.0 L 18.6,203.9 Z" fill="#49556A" opacity="0.12"/><polyline points="18.6,196.2 27.8,208.5 37.0,206.0 46.2,203.2 55.4,202.7 64.6,209.0 73.9,205.8 83.1,163.9 92.3,179.2 101.5,172.4 110.7,177.7 119.9,169.8 129.1,192.6 138.3,188.7 147.5,183.8 156.7,198.1 165.9,186.9 175.1,179.4 184.4,189.2 193.6,194.8 202.8,203.3 212.0,216.5 221.2,222.3 230.4,234.5 239.6,241.9 248.8,240.3 258.0,237.4 267.2,269.5 276.4,309.2 285.6,266.5 294.9,279.2 304.1,261.1 313.3,234.3 322.5,245.1 331.7,242.3 340.9,241.6 350.1,241.6 359.3,233.9 368.5,226.0 377.7,211.0 386.9,226.0 396.1,225.9 405.4,215.0 414.6,229.2 423.8,226.4 433.0,226.1 442.2,221.1 451.4,229.5 460.6,238.8 469.8,244.0 479.0,255.1 488.2,259.3 497.4,250.3 506.6,263.7 515.9,252.3 525.1,275.8 534.3,275.0 543.5,281.2 552.7,300.8 561.9,277.1 571.1,255.4 580.3,233.3 589.5,238.0 598.7,245.6 607.9,234.9 617.1,213.7 626.4,211.9 635.6,210.8 644.8,187.7 654.0,173.8 663.2,170.2 672.4,184.1 681.6,166.0 690.8,207.8 700.0,213.2 709.2,191.9 718.4,188.9 727.6,176.9 736.9,174.2 746.1,156.4 755.3,126.3 764.5,139.6 773.7,132.1 782.9,107.4 792.1,91.1 801.3,66.2 810.5,54.5 819.7,67.4 828.9,55.1 838.1,62.3 847.4,48.5 856.6,29.3 865.8,67.0 875.0,115.8 884.2,138.1 893.4,121.8" fill="none" stroke="#0F1726" stroke-width="1.7"/><polyline points="18.6,151.2 27.8,152.5 37.0,153.7 46.2,154.9 55.4,156.1 64.6,157.3 73.9,158.6 83.1,159.8 92.3,161.0 101.5,162.2 110.7,163.4 119.9,164.6 129.1,165.9 138.3,167.1 147.5,168.3 156.7,169.5 165.9,170.7 175.1,172.0 184.4,173.2 193.6,174.4 202.8,175.6 212.0,176.8 221.2,178.0 230.4,179.3 239.6,180.5 248.8,181.7 258.0,182.9 267.2,184.1 276.4,185.4 285.6,186.6 294.9,187.8 304.1,189.0 313.3,190.2 322.5,191.4 331.7,192.7 340.9,193.9 350.1,195.1 359.3,196.3 368.5,197.5 377.7,198.8 386.9,200.0 396.1,201.2 405.4,202.4 414.6,203.6 423.8,204.8 433.0,206.1 442.2,207.3 451.4,208.5 460.6,209.7 469.8,210.9 479.0,212.2 488.2,213.4 497.4,214.6 506.6,215.8 515.9,217.0 525.1,218.2 534.3,219.5 543.5,220.7 552.7,221.9 561.9,223.1 571.1,224.3 580.3,225.6 589.5,226.8 598.7,228.0 607.9,229.2 617.1,230.4 626.4,231.6 635.6,232.9 644.8,234.1 654.0,235.3 663.2,236.5 672.4,237.7 681.6,239.0 690.8,240.2 700.0,241.4 709.2,242.6 718.4,243.8 727.6,245.0 736.9,246.3 746.1,247.5 755.3,248.7 764.5,249.9 773.7,251.1 782.9,252.4 792.1,253.6 801.3,254.8 810.5,256.0 819.7,257.2 828.9,258.4 838.1,259.7 847.4,260.9 856.6,262.1 865.8,263.3 875.0,264.5 884.2,265.8 893.4,266.7" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.6,151.2 27.8,152.5 37.0,153.7 46.2,154.9 55.4,156.1 64.6,157.3 73.9,158.6 83.1,159.8 92.3,161.0 101.5,162.2 110.7,163.4 119.9,164.6 129.1,165.9 138.3,167.1 147.5,168.3 156.7,169.5 165.9,170.7 175.1,172.0 184.4,173.2 193.6,174.4 202.8,175.6 212.0,176.8 221.2,178.0 230.4,179.3 239.6,180.5 248.8,181.7 258.0,182.9 267.2,184.1 276.4,185.4 285.6,186.6 294.9,187.8 304.1,189.0 313.3,190.2 322.5,191.4 331.7,192.7 340.9,193.9 350.1,195.1 359.3,196.3 368.5,197.5 377.7,198.8 386.9,200.0 396.1,201.2 405.4,202.4 414.6,203.6 423.8,204.8 433.0,206.1 442.2,207.3 451.4,208.5 460.6,209.7 469.8,210.9 479.0,212.2 488.2,213.4 497.4,214.6 506.6,215.8 515.9,217.0 525.1,218.2 534.3,219.5 543.5,220.7 552.7,221.9 561.9,223.1 571.1,224.3 580.3,225.6 589.5,226.8 598.7,228.0 607.9,229.2 617.1,230.4 626.4,231.6 635.6,232.9 644.8,234.1 654.0,235.3 663.2,236.5 672.4,237.7 681.6,239.0 690.8,240.2 700.0,241.4 709.2,242.6 718.4,243.8 727.6,245.0 736.9,246.3 746.1,247.5 755.3,248.7 764.5,249.9 773.7,251.1 782.9,252.4 792.1,253.6 801.3,254.8 810.5,256.0 819.7,257.2 828.9,258.4 838.1,259.7 847.4,260.9 856.6,262.1 865.8,263.3 875.0,264.5 884.2,265.8 893.4,266.7" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="92.3" cy="160.0" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="92.3" y="149.0" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="175.1" cy="171.7" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="175.1" y="160.7" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="111.8" width="58" height="20" rx="4" fill="#0E9382"/><text x="929.0" y="125.8" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">35.44</text><text x="906" y="358.4" font-size="11" fill="#8A94A6" class="num">15</text><text x="906" y="280.6" font-size="11" fill="#8A94A6" class="num">20</text><text x="906" y="220.2" font-size="11" fill="#8A94A6" class="num">25</text><text x="906" y="170.9" font-size="11" fill="#8A94A6" class="num">30</text><text x="906" y="93.0" font-size="11" fill="#8A94A6" class="num">40</text><text x="906" y="32.7" font-size="11" fill="#8A94A6" class="num">50</text><text x="27.8" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2024-10-01</text><text x="313.3" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-05-15</text><text x="589.5" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2025-12-18</text><text x="875.0" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-08-04</text></svg></div>
+        <div class="cap">
+          <span class="chart-view" data-view="candles">
+            <span><span class="legend-dot" style="background:#0E9382"></span> Up candle</span>
+            <span><span class="legend-dot" style="background:#C25B5B"></span> Down candle</span></span>
+          <span class="chart-view" data-view="line">
+            <span><span class="legend-dot" style="background:#49556A;opacity:.35"></span> High–Low range</span>
+            <span><span class="legend-dot" style="background:#0F1726"></span> Close price</span></span>
+          <span><span class="legend-dot" style="background:#C05C1D"></span> Resistance diagonal (log scale)</span>
+          <span><span class="legend-dot" style="background:#C05C1D;border-radius:50%"></span> Line anchors</span>
+          <span style="margin-left:auto">data through 2026-08-17</span>
+        </div>
+      </div>
+      <div class="notice" style="margin-top:16px">⚠️ Algorithmic output for research purposes — not investment advice.</div>
+    </div>
+  </div>
+</div></section>
+<footer><div class="wrap"><div class="flinks"><a href="index.html">Diago</a><a href="breakouts.html">Breakout Signals</a><a href="supports.html">Support Signals</a><a href="watchlist.html">Watchlist</a><a href="pricing.html">Pricing</a></div><div>Market data as of 2026-08-17 · scanning 2,200+ stocks every trading day</div><div class="disc"><b>Disclaimer:</b> All content on this site — including signals, stock lists and performance figures — is provided for informational and research purposes only and does not constitute investment advice, a recommendation, or an offer to buy or sell any security. Performance shown is based on historical simulations; simulated results have inherent limitations and past performance is not indicative of future results. Trading securities involves substantial risk of loss. Always do your own research and consult a licensed professional.</div></div></footer>
+<script>
+function isSub(){try{const t=localStorage.getItem('tl_trial_until');return t&&Date.now()<+t;}catch(e){return false;}}
+function applySub(){document.body.classList.toggle('subbed', isSub());}
+function startTrial(){try{localStorage.setItem('tl_trial_until', String(Date.now()+7*864e5));}catch(e){}
+  applySub(); alert('Your 7-day free trial is active (demo mode). All lists are now unlocked.');}
+function endTrial(){try{localStorage.removeItem('tl_trial_until');}catch(e){} applySub();}
+function setChartView(v){
+  document.querySelectorAll('.chart-view').forEach(d=>d.classList.toggle('on', d.dataset.view===v));
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.view===v));
+  try{localStorage.setItem('tl_chart_view', v);}catch(e){}}
+function setPxPeriod(p){
+  const pill=document.getElementById('chg-pill'); if(!pill) return;
+  const v=parseFloat(pill.dataset[p]);
+  if(isNaN(v)){ pill.textContent='—'; pill.className='chg-pill'; }
+  else{ pill.textContent=(v>=0?'+':'')+v.toFixed(2)+'%';
+        pill.className='chg-pill '+(v>=0?'up':'dn'); }
+  document.querySelectorAll('.pb-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+}
+document.addEventListener('DOMContentLoaded', ()=>{ if(document.getElementById('chg-pill')) setPxPeriod('d'); });
+function getWL(){try{return JSON.parse(localStorage.getItem('tl_wl')||'[]');}catch(e){return [];}}
+function saveWL(a){try{localStorage.setItem('tl_wl', JSON.stringify(a));}catch(e){}}
+function toggleWatch(t){let a=getWL(); a=a.includes(t)?a.filter(x=>x!==t):a.concat([t]);
+  saveWL(a); paintHearts(); if(typeof renderMyWL==='function') renderMyWL();}
+function paintHearts(){const a=getWL();
+  document.querySelectorAll('.heart').forEach(b=>{const on=a.includes(b.dataset.t);
+    b.classList.toggle('on',on); b.textContent=on?'\u2665':'\u2661';
+    b.title=on?'Remove from my watchlist':'Add to my watchlist';});}
+function scoreOf(c){if(c==null||isNaN(c))return null;
+  const x=Math.min(1,Math.max(0,(c-35)/35)); return Math.round((6+4*x)*10)/10;}
+function scoreColor(s){const l=62-(s-6)/4*38; return 'hsl(158,52%,'+l.toFixed(0)+'%)';}
+document.addEventListener('DOMContentLoaded', ()=>{ paintHearts();
+  if(typeof renderMyWL==='function') renderMyWL(); });
+function runCounter(el){
+  const target=parseFloat(el.dataset.count), pre=el.dataset.prefix||'', suf=el.dataset.suffix||'';
+  const fmt=v=>pre+Math.round(v).toLocaleString('en-US')+suf;
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){
+    el.textContent=fmt(target); return;}
+  const dur=2000; let start=null, done=false;
+  const step=ts=>{ if(done) return; if(start===null) start=ts;
+    const p=Math.min(1,(ts-start)/dur);
+    el.textContent=fmt(target*(1-Math.pow(1-p,4)));
+    if(p<1) requestAnimationFrame(step); else done=true; };
+  requestAnimationFrame(step);
+  setTimeout(()=>{ done=true; el.textContent=fmt(target); }, dur+200);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('[data-count]').forEach(runCounter);
+});
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(document.querySelector('.chart-view')){
+    let v='candles'; try{v=localStorage.getItem('tl_chart_view')||'candles';}catch(e){}
+    setChartView(v);}});
+document.addEventListener('DOMContentLoaded', applySub);
+</script>
+</body></html>

@@ -387,7 +387,7 @@ def build_stock_page(row, ov, page_fn, stamp):
                    f'{ticker} trendline analysis: {side_name.lower()}, confidence score, and company fundamentals.')
 
 
-BRAND_TITLE = 'Trendlines'
+BRAND_TITLE = 'Diago'
 
 
 def build_all(cand, page_fn, stamp, out_dir):
@@ -399,6 +399,12 @@ def build_all(cand, page_fn, stamp, out_dir):
     cand['is_event'] = cand['status'] != 'APPROACHING'
     cand = (cand.sort_values(['is_event', 'confidence'], ascending=[False, False])
                 .drop_duplicates(subset=['ticker'], keep='first'))
+    # remove orphan pages for tickers no longer in the current set,
+    # so stale navs/data never linger after a signal is purged
+    keep = {f'{t}.html' for t in cand['ticker']}
+    for f in os.listdir(f'{out_dir}/stock'):
+        if f.endswith('.html') and f not in keep:
+            os.remove(f'{out_dir}/stock/{f}')
     built = 0
     for _, row in cand.iterrows():
         try:

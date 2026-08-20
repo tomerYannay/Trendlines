@@ -97,6 +97,20 @@ def walk_frame(df, ticker):
     atr14, vol20, ath, runup20 = precompute(df)
     events = []
 
+    def suspect_print(t):
+        """Unconfirmed extreme one-day move: >3x either way vs the previous
+        close with no next bar yet to confirm, or a confirmed next-day full
+        reversal that survived the DB gate. Such bars fabricate signals."""
+        if t == 0:
+            return False
+        r1 = c[t] / c[t - 1] if c[t - 1] > 0 else 1.0
+        if not (r1 > 3.0 or r1 < 1 / 3.0):
+            return False
+        if t + 1 >= n:
+            return True          # today's bar, unconfirmed -> quarantine
+        r2 = c[t + 1] / c[t] if c[t] > 0 else 1.0
+        return r2 < 0.4 or r2 > 2.5
+
     def feats(t, side, line_t, slope, i2, extra):
         return {
             'ticker': ticker, 'side': side, 'event_date': dates[t],
@@ -128,8 +142,9 @@ def walk_frame(df, ticker):
             s = seq + 1 if bt else 0
             if bt and seq == 0 and c[t] >= 2.0:
                 attempt += 1
-                events.append(feats(t, 'upper_breakout', line_t, slope, i2,
-                                    {'attempt_no': attempt, 'anchor1': dates[i1], 'anchor2': dates[i2]}))
+                if not suspect_print(t):
+                    events.append(feats(t, 'upper_breakout', line_t, slope, i2,
+                                        {'attempt_no': attempt, 'anchor1': dates[i1], 'anchor2': dates[i2]}))
             # deep failure: after ANY breakout on this line, a close >FAIL_PCT below it
             # (at any later point, not only the day after) resets the diagonal
             flag = (s > SEQ_DAYS) or (had_breakout and dist > FAIL_PCT) or (dist < -EXTREME_PCT)
@@ -156,7 +171,7 @@ def walk_frame(df, ticker):
             bt = c[t] < line_t
             dist = (line_t - c[t]) / c[t] * 100
             s = seq + 1 if bt else 0
-            if l[t] <= line_t and c[t] >= 2.0 and t - last_touch > 3:
+            if l[t] <= line_t and c[t] >= 2.0 and t - last_touch > 3 and not suspect_print(t):
                 touch += 1
                 ev = feats(t, 'under_touch', line_t, slope_u, j2, {
                     'touch_no': touch,
@@ -614,8 +629,10 @@ def run():
         upper.to_csv(f'dashboard/data/table_upper_{key}.csv', index=False)
         under.to_csv(f'dashboard/data/table_under_{key}.csv', index=False)
 
-        # recent scored events (last ~45 calendar days) for the product site's history view
-        rec = ev_df[pd.to_datetime(ev_df['event_date']) >= pd.Timestamp(u_last) - pd.Timedelta(days=45)].copy()
+        # scored events since Jan 1 of the current year, for the product site's
+        # history / performance views (rolls forward automatically each new year)
+        since = pd.Timestamp(u_last).replace(month=1, day=1)
+        rec = ev_df[pd.to_datetime(ev_df['event_date']) >= since].copy()
         if len(rec):
             rec['status'] = rec.apply(
                 lambda r: 'BREAKOUT' if r['side'] == 'upper_breakout'

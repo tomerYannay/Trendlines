@@ -1,0 +1,444 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 26 26%27%3E%3Cdefs%3E%3ClinearGradient id=%27fw%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E%3Cstop offset=%270%27 stop-color=%27%230E9382%27/%3E%3Cstop offset=%271%27 stop-color=%27%2314B4A0%27/%3E%3C/linearGradient%3E%3ClinearGradient id=%27fb%27 x1=%270%27 y1=%271%27 x2=%271%27 y2=%270%27%3E%3Cstop offset=%270%27 stop-color=%27%23C05C1D%27/%3E%3Cstop offset=%271%27 stop-color=%27%23F0A868%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d=%27M6 22.5 L22.5 22.5 L22.5 6 Z%27 fill=%27url(%23fw)%27 stroke=%27url(%23fw)%27 stroke-width=%273.4%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M3.5 16.5 L16.5 3.5%27 stroke=%27url(%23fb)%27 stroke-width=%273.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E"><meta name="description" content="FENC trendline analysis: resistance breakout, confidence score, and company fundamentals."><title>FENC — Fennec Pharmaceuticals Inc · Diago</title><style>
+  :root {
+    --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0F1726; --ink2:#49556A; --ink3:#8A94A6;
+    --line:#E4E8EF; --navy:#0D1B2E; --navy2:#13253D;
+    --accent:#0E9382; --accent-ink:#0A6E62; --accent-soft:#E4F3F0;
+    --rust:#C05C1D; --rust-soft:#F8ECE1; --danger:#A8323C;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(13,27,46,.05), 0 10px 28px -14px rgba(13,27,46,.14);
+  }
+  * { box-sizing:border-box; margin:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--ink); line-height:1.6;
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color:inherit; text-decoration:none; }
+  .num { font-variant-numeric:tabular-nums; }
+  .wrap { max-width:1140px; margin:0 auto; padding:0 24px; }
+
+  header.nav { position:sticky; top:0; z-index:50; background:rgba(246,247,249,.85);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .nav-in { display:flex; align-items:center; gap:26px; height:64px; }
+  .logo { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .logo .wm b { font-weight:700; color:var(--accent-ink); }
+  .nav-links { display:flex; gap:4px; font-size:14px; font-weight:600; color:var(--ink2); }
+  .nav-links a { padding:8px 13px; border-radius:8px; }
+  .nav-links a:hover { background:var(--surface); color:var(--ink); }
+  .nav-links a.on { background:var(--navy); color:#fff; }
+  .nav-cta { margin-inline-start:auto; display:flex; gap:10px; align-items:center; }
+  .btn { display:inline-block; font-weight:700; font-size:14.5px; border-radius:10px;
+         padding:10px 20px; border:1px solid transparent; cursor:pointer; transition:all .15s; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary:hover { background:var(--accent-ink); }
+  .btn.ghost { border-color:var(--line); background:var(--surface); color:var(--ink); }
+  .btn.ghost:hover { border-color:var(--ink3); }
+  .btn.big { padding:14px 30px; font-size:16px; }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .sub-badge { font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft);
+               padding:4px 10px; border-radius:99px; display:none; }
+  body.subbed .sub-badge { display:inline-block; }
+  body.subbed .hide-when-subbed { display:none; }
+
+  .hero { background:var(--navy); color:#EAF0F7; position:relative; overflow:hidden; }
+  .hero.warm { background:linear-gradient(118deg, #0D1B2E 0%, #241A1B 30%, #3C2212 56%, #59300F 78%, #2A1508 100%);
+    background-size:260% 260%; animation:heroShift 16s ease-in-out infinite alternate; }
+  @keyframes heroShift { from { background-position:0% 30%; } to { background-position:100% 70%; } }
+  .hero .glow { position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none;
+    background:radial-gradient(circle, rgba(224,138,60,.30), rgba(224,138,60,0) 65%); }
+  .hero .glow.g1 { width:560px; height:560px; top:-130px; right:-60px;
+    animation:glowDrift 13s ease-in-out infinite alternate; }
+  .hero .glow.g2 { width:380px; height:380px; bottom:-140px; left:16%;
+    background:radial-gradient(circle, rgba(192,92,29,.22), rgba(192,92,29,0) 65%);
+    animation:glowDrift 17s ease-in-out infinite alternate-reverse; }
+  @keyframes glowDrift { from { transform:translate(0,0) scale(1); }
+    to { transform:translate(-170px,120px) scale(1.3); } }
+  .hero-lines { animation:floaty 12s ease-in-out infinite alternate; }
+  @keyframes floaty { from { transform:translateY(0); } to { transform:translateY(-16px); } }
+  .hero-lines path { stroke-dasharray:1700; stroke-dashoffset:1700; animation:drawLine 3.4s ease-out forwards; }
+  .hero-lines path:nth-of-type(2) { animation-delay:.55s; }
+  .hero-lines path:nth-of-type(3) { animation-delay:1.1s; }
+  @keyframes drawLine { to { stroke-dashoffset:0; } }
+  .hero-lines circle { transform-box:fill-box; transform-origin:center;
+    animation:pulse 2.8s ease-in-out infinite; }
+  .hero-lines circle:last-of-type { animation-delay:1.2s; }
+  @keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.8); opacity:.5; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero.warm, .cta-banner.warm, .hero-lines, .hero-lines path, .hero-lines circle, .hero .glow {
+      animation:none; }
+    .hero-lines path { stroke-dashoffset:0; }
+  }
+  .hero.warm .eyebrow { color:#F0A868; }
+  .hero.warm h1 em { background:linear-gradient(90deg, #F0A868, #E07B2B);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero.warm .btn.primary { background:linear-gradient(90deg, #C05C1D, #E08A3C); border:none; }
+  .hero.warm .btn.primary:hover { filter:brightness(1.08); }
+  .hero.warm .btn.ghost { border-color:#5A4232; color:#E3CDB8; }
+  .stats.warm { background:linear-gradient(90deg, #16233A, #3A2415); }
+  .stats.warm .v.up { color:#F0A868; }
+  .stats.warm .stat { border-inline-start:1px solid rgba(240,168,104,.14); }
+  .kicker.warm { color:var(--rust); }
+  .steps.warm .step::before { background:linear-gradient(135deg, #C05C1D, #E08A3C); }
+  .block.warm-wash { background:linear-gradient(180deg, #FCF2E7, #FFFFFF);
+    border-block:1px solid #F2E2D2; }
+  .cta-banner.warm { background:linear-gradient(120deg, #2A1508, #7A3D14 62%, #C05C1D 125%); }
+  .cta-banner.warm p { color:#E3C8AE; }
+  .cta-banner.warm .btn.primary { background:#fff; color:#9A4A16; }
+  .cta-banner.warm .btn.primary:hover { background:#FDEFE2; }
+  .hero-in { padding:88px 0 96px; position:relative; z-index:1; max-width:680px; }
+  .hero .eyebrow { color:#7FD6C9; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; }
+  .hero h1 { font-size:clamp(34px, 5.4vw, 56px); line-height:1.1; font-weight:800;
+             letter-spacing:-.028em; margin:14px 0 18px; text-wrap:balance; }
+  .hero h1 em { font-style:normal; color:#5BC8B8; }
+  .hero p.sub { font-size:18px; color:#A9B7C9; max-width:56ch; margin-bottom:30px; }
+  .hero-cta { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hero .fine { font-size:12.5px; color:#7788A0; margin-top:14px; }
+  .hero-lines { position:absolute; inset:0; opacity:.5; pointer-events:none; }
+
+  .stats { background:var(--navy2); color:#fff; border-top:1px solid rgba(255,255,255,.06); }
+  .stats-in { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+  .stat { padding:22px 26px; border-inline-start:1px solid rgba(255,255,255,.07); }
+  .stat .v { font-size:27px; font-weight:800; letter-spacing:-.02em; }
+  .stat .v.up { color:#5BC8B8; }
+  .stat .t { font-size:12.5px; color:#8FA0B5; margin-top:2px; }
+
+  section.block { padding:76px 0; }
+  .kicker { color:var(--accent-ink); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+  h2.title { font-size:clamp(26px,3.4vw,36px); font-weight:800; letter-spacing:-.022em;
+             margin:10px 0 12px; text-wrap:balance; }
+  p.lede { color:var(--ink2); font-size:16.5px; max-width:64ch; }
+  .cols3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+          padding:26px; box-shadow:var(--shadow); }
+  .card .ic { width:44px; height:44px; border-radius:10px; display:flex; align-items:center;
+              justify-content:center; margin-bottom:16px; font-size:20px; }
+  .card h3 { font-size:17.5px; margin-bottom:8px; }
+  .card p { font-size:14.5px; color:var(--ink2); }
+
+  .tablecard { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+               box-shadow:var(--shadow); overflow:hidden; margin-top:30px; }
+  .tablecard .thead { display:flex; align-items:center; gap:12px; padding:18px 22px;
+                      border-bottom:1px solid var(--line); }
+  .tablecard .thead h3 { font-size:16.5px; }
+  .tablecard .thead .cnt { font-size:12.5px; font-weight:700; color:var(--accent-ink);
+                           background:var(--accent-soft); border-radius:99px; padding:3px 11px; }
+  .twrap { overflow-x:auto; }
+  table.sig { border-collapse:collapse; width:100%; font-size:13.6px; min-width:840px; }
+  table.sig th { text-align:left; font-size:11.5px; color:var(--ink3); font-weight:650;
+                 letter-spacing:.04em; text-transform:uppercase; padding:10px 16px;
+                 border-bottom:1px solid var(--line); background:var(--bg); white-space:nowrap; }
+  table.sig td { padding:11px 16px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.sig tr:last-child td { border-bottom:none; }
+  table.sig.side-brk thead th { background:#FBF2E9; color:#8A5A32; }
+  table.sig.side-sup thead th { background:#E7F4F1; color:#256A5F; }
+  td.tick { font-weight:800; font-size:14.5px; }
+  .pill { font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; display:inline-block; }
+  .pill.brk { background:var(--rust-soft); color:var(--rust); }
+  .pill.sup { background:var(--accent-soft); color:var(--accent-ink); }
+  .pill.q { background:var(--navy); color:#7FD6C9; }
+  .conf-b { display:flex; align-items:center; gap:8px; }
+  .conf-b i { display:block; height:6px; border-radius:3px; background:var(--accent); }
+  .conf-b b { font-size:13px; }
+
+  tr.locked td { filter:blur(7px); user-select:none; pointer-events:none; }
+  body.subbed tr.locked td { filter:none; user-select:auto; pointer-events:auto; }
+  .paywall { position:relative; }
+  .paywall-overlay { position:absolute; inset:0; display:flex; flex-direction:column; gap:12px;
+    align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(246,247,249,0) 0%, rgba(246,247,249,.88) 34%, rgba(246,247,249,.97) 100%); }
+  body.subbed .paywall-overlay { display:none; }
+  .paywall-overlay h4 { font-size:19px; font-weight:800; }
+  .paywall-overlay p { font-size:14px; color:var(--ink2); max-width:44ch; }
+
+  .plans { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:20px; margin-top:40px; }
+  .plan { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:30px;
+          box-shadow:var(--shadow); position:relative; display:flex; flex-direction:column; text-align:left; }
+  .plan.hot { border:2px solid var(--accent); padding:36px 30px;
+    box-shadow:0 2px 4px rgba(13,27,46,.06), 0 26px 52px -20px rgba(14,147,130,.35); }
+  .plans { align-items:center; }
+  .plan.hot .price { font-size:50px; }
+  @media (min-width:960px) { .plan.hot { transform:scale(1.03); } }
+  .plan.hot .btn.primary { position:relative; overflow:hidden;
+    transition:transform .15s, box-shadow .15s; }
+  .plan.hot .btn.primary:hover { transform:translateY(-1px);
+    box-shadow:0 8px 20px -8px rgba(14,147,130,.5); }
+  .plan.hot .btn.primary::after { content:''; position:absolute; inset:0;
+    background:linear-gradient(105deg, transparent 40%, rgba(255,255,255,.3) 50%, transparent 60%);
+    transform:translateX(-130%); animation:sheen 7s ease-in-out infinite; }
+  @keyframes sheen { 0%,72% { transform:translateX(-130%); } 88%,100% { transform:translateX(130%); } }
+  @keyframes riseIn { from { opacity:0; transform:translateY(14px); } }
+  .plan { animation:riseIn .5s ease-out backwards; }
+  .plan:nth-child(2) { animation-delay:.08s; }
+  .plan:nth-child(3) { animation-delay:.16s; }
+  .save-pill { font-size:11px; font-weight:800; color:var(--accent-ink);
+    background:var(--accent-soft); border-radius:99px; padding:2px 9px;
+    vertical-align:1px; margin-inline-start:2px; }
+  .btn-note { font-size:11.5px; color:var(--ink3); font-weight:600; margin-top:8px; text-align:center; }
+  .perf-stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+  .pstat { background:var(--surface); border:1px solid var(--line); border-radius:12px;
+           padding:12px 20px; font-size:12.5px; color:var(--ink3); font-weight:600;
+           box-shadow:var(--shadow); }
+  .pstat b { display:block; font-size:22px; letter-spacing:-.02em; margin-bottom:1px; color:var(--ink); }
+  .proof-strip { margin-top:26px; font-size:13.5px; color:var(--ink2); font-weight:600; }
+  .proof-strip .mark { color:var(--rust); }
+  .proof-link { display:inline-block; margin-top:6px; font-size:12.5px; font-weight:700;
+    color:var(--accent-ink); border-bottom:1.5px dashed var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    .plan, .plan.hot .btn.primary::after { animation:none; }
+  }
+  .plan .flag { position:absolute; top:-13px; inset-inline-start:24px; background:var(--accent);
+                color:#fff; font-size:12px; font-weight:800; padding:3px 13px; border-radius:99px; }
+  .plan h3 { font-size:17px; }
+  .plan .price { font-size:42px; font-weight:800; letter-spacing:-.03em; margin:10px 0 2px; }
+  .plan .price span { font-size:15px; font-weight:600; color:var(--ink2); }
+  .plan .per { color:var(--ink3); font-size:13px; margin-bottom:20px; }
+  .plan ul { list-style:none; padding:0; margin:0 0 26px; display:grid; gap:10px; font-size:14.5px; }
+  .plan li { padding-inline-start:26px; position:relative; }
+  .plan li::before { content:'✓'; position:absolute; inset-inline-start:0; color:var(--accent); font-weight:800; }
+  .plan li.soon { color:var(--ink3); }
+  .plan li.soon::before { content:'◷'; color:var(--ink3); }
+  .plan .btn { margin-top:auto; text-align:center; }
+
+  .steps { counter-reset:s; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+           gap:18px; margin-top:38px; }
+  .step { counter-increment:s; background:var(--surface); border:1px solid var(--line);
+          border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); }
+  .step::before { content:counter(s); display:flex; width:38px; height:38px; align-items:center;
+    justify-content:center; background:var(--navy); color:#fff; font-weight:800; border-radius:10px;
+    margin-bottom:14px; font-size:16px; }
+  details.faq { background:var(--surface); border:1px solid var(--line); border-radius:10px;
+                padding:16px 20px; margin-top:10px; text-align:left; }
+  details.faq summary { font-weight:700; cursor:pointer; font-size:15px;
+    list-style:none; position:relative; padding-inline-end:30px; }
+  details.faq summary::-webkit-details-marker { display:none; }
+  details.faq summary::after { content:'+'; position:absolute; inset-inline-end:2px; top:50%;
+    transform:translateY(-50%); font-size:19px; font-weight:800; color:var(--ink3);
+    transition:transform .18s, color .18s; }
+  details.faq[open] summary::after { content:'−'; color:var(--accent-ink); }
+  details.faq:hover { border-color:var(--ink3); }
+  details.faq[open] { border-color:var(--accent); }
+  details.faq p { margin-top:10px; color:var(--ink2); font-size:14.5px; }
+  footer { background:var(--navy); color:#8FA0B5; padding:46px 0 40px; margin-top:80px; font-size:13px; }
+  footer .flinks { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:18px; color:#C6D2E0; font-weight:600; }
+  footer .disc { max-width:92ch; line-height:1.7; font-size:12px; border-top:1px solid rgba(255,255,255,.08);
+                 padding-top:18px; margin-top:18px; }
+  .notice { background:var(--rust-soft); border:1px solid var(--rust); color:var(--rust);
+            border-radius:10px; padding:12px 18px; font-size:13.5px; font-weight:600; margin-top:26px; }
+  .diago { color:var(--accent); font-weight:800; }
+  .hero .diago { color:#5BC8B8; }
+  .mark { display:inline-block; transform:translateY(-1px); }
+  .cta-banner { background:var(--navy); color:#EAF0F7; border-radius:18px; padding:44px 40px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    box-shadow:var(--shadow); }
+  .cta-banner h2 { font-size:clamp(22px,3vw,30px); font-weight:800; letter-spacing:-.02em; max-width:34ch; }
+  .cta-banner p { color:#A9B7C9; font-size:14.5px; margin-top:6px; }
+  .pain { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin-top:38px; }
+  .pain .card b.no { color:var(--danger); }
+  .view-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+    border-radius:9px; padding:3px; margin-bottom:10px; }
+  .view-toggle button { font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+    background:transparent; border:none; border-radius:7px; padding:6px 16px; cursor:pointer; }
+  .view-toggle button.on { background:var(--surface); color:var(--ink);
+    box-shadow:0 1px 3px rgba(13,27,46,.12); }
+  .chart-view { display:none; }
+  .chart-view.on { display:block; }
+  .cap .chart-view.on { display:contents; }
+  .chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .chart-head .view-toggle { margin-bottom:0; }
+  .price-block { margin-left:auto; text-align:right; }
+  .pb-price { font-size:30px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+  .chg-pill { font-size:15px; font-weight:800; padding:4px 12px; border-radius:99px; }
+  .chg-pill.up { background:var(--accent-soft); color:var(--accent-ink); }
+  .chg-pill.dn { background:#FBE9E9; color:var(--danger); }
+  .pb-cap { font-size:11.5px; color:var(--ink3); font-weight:600; }
+  .pb-toggle { display:inline-flex; gap:2px; background:var(--bg); border:1px solid var(--line);
+               border-radius:8px; padding:2px; }
+  .pb-toggle button { font:inherit; font-size:11px; font-weight:800; color:var(--ink2);
+    background:transparent; border:none; border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .pb-toggle button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(13,27,46,.12); }
+  .tf-badge { font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--navy); background:var(--bg); border:1.5px solid var(--line); border-radius:9px;
+    padding:7px 16px; }
+  .tlink { border-bottom:1.5px dashed var(--accent); }
+  .tlink:hover { color:var(--accent-ink); }
+
+  .heart { font:inherit; background:none; border:none; cursor:pointer; font-size:17px; line-height:1;
+           color:var(--ink3); padding:2px 4px; border-radius:6px; transition:transform .12s, color .12s; }
+  .heart:hover { transform:scale(1.25); color:#D33A52; }
+  .heart.on { color:#D33A52; }
+  .heart.big { font-size:27px; padding:4px 8px; align-self:center; }
+  td.hcell { width:34px; padding-inline:10px 0 !important; }
+  .date-strip { display:flex; gap:6px; overflow-x:auto; padding:4px 2px 12px; margin-top:24px;
+                scrollbar-width:thin; }
+  .dchip { flex:none; font:inherit; font-size:12.5px; font-weight:700; color:var(--ink2);
+           background:var(--surface); border:1px solid var(--line); border-radius:99px;
+           padding:6px 14px; cursor:pointer; transition:all .12s; }
+  .dchip:hover { border-color:var(--ink3); }
+  .dchip.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .dchip .dow { font-weight:600; color:inherit; opacity:.6; font-size:11px; margin-inline-start:4px; }
+  .filter-bar { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px 18px; margin-bottom:16px; display:flex; flex-wrap:wrap;
+    gap:14px 18px; align-items:flex-end; }
+  .filter-bar[hidden] { display:none; }
+  .filter-bar label { display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:700;
+    color:var(--ink3); text-transform:uppercase; letter-spacing:.05em; }
+  .filter-bar input, .filter-bar select { font:inherit; font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); width:118px; }
+  .filter-bar input:focus, .filter-bar select:focus { outline:2px solid var(--accent); border-color:transparent; }
+  .filter-bar .fpair { display:flex; gap:6px; align-items:center; }
+  .filter-bar .fpair input { width:84px; }
+  .filter-bar .btn { padding:8px 16px; font-size:13px; }
+
+  /* ---------- stock detail ---------- */
+  .stock-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:44px 0 6px; }
+  .stock-head h1 { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .stock-head .co { color:var(--ink2); font-size:16px; }
+  .stock-grid { display:grid; grid-template-columns:320px 1fr; gap:22px; margin-top:22px; align-items:start; }
+  @media (max-width:900px) { .stock-grid { grid-template-columns:1fr; } }
+  .info-panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:22px; }
+  .info-panel h3 { font-size:13px; color:var(--ink3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line);
+        font-size:13.8px; }
+  .kv:last-child { border-bottom:none; }
+  .kv b { font-weight:700; }
+  .kv span { color:var(--ink2); }
+  .about { font-size:13.5px; color:var(--ink2); line-height:1.65; margin-top:14px; }
+  .conf-card { border-radius:var(--radius); padding:22px 26px; display:flex; align-items:center; gap:22px;
+               box-shadow:var(--shadow); margin-bottom:18px; }
+  .conf-card .score { font-size:52px; font-weight:800; letter-spacing:-.03em; line-height:1; white-space:nowrap; flex:none; }
+  .conf-card .score small { font-size:20px; font-weight:700; opacity:.75; }
+  .conf-card .lbl { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+  .conf-card .sub2 { font-size:13px; opacity:.85; margin-top:3px; }
+  .chart-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                box-shadow:var(--shadow); padding:20px; }
+  .chart-card .cap { display:flex; gap:12px; align-items:center; font-size:12.5px; color:var(--ink3);
+                     margin-top:10px; flex-wrap:wrap; }
+  .legend-dot { display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:-1px; }
+  @media (max-width:720px) { .nav-links { display:none; } }
+</style></head><body><header class="nav"><div class="wrap nav-in"><a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+<defs>
+<linearGradient id="lg-w" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#0E9382"/><stop offset="1" stop-color="#14B4A0"/></linearGradient>
+<linearGradient id="lg-b" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0" stop-color="#C05C1D"/><stop offset="1" stop-color="#F0A868"/></linearGradient>
+</defs>
+<path d="M6 22.5 L22.5 22.5 L22.5 6 Z" fill="url(#lg-w)" stroke="url(#lg-w)" stroke-width="3.4" stroke-linejoin="round"/>
+<path d="M3.5 16.5 L16.5 3.5" stroke="url(#lg-b)" stroke-width="3.4" stroke-linecap="round"/></svg><span class="wm">Diago</span></a><nav class="nav-links"><a href="index.html" class="">Home</a><a href="breakouts.html" class="">Breakout Signals</a><a href="supports.html" class="">Support Signals</a><a href="watchlist.html" class="">Watchlist</a><a href="performance.html" class="">Performance</a><a href="pricing.html" class="">Pricing</a></nav><div class="nav-cta"><span class="sub-badge">Subscriber · demo</span><a class="btn ghost hide-when-subbed" href="pricing.html">Sign in</a><a class="btn primary hide-when-subbed" href="pricing.html">Start free trial</a></div></div></header>
+<section style="padding-bottom:76px"><div class="wrap">
+  <div class="stock-head">
+    <a href="breakouts.html" style="color:var(--ink3);font-size:13px">← Back to signals</a>
+  </div>
+  <div class="stock-head" style="margin-top:6px">
+    <h1>FENC</h1>
+    <button class="heart big" data-t="FENC" onclick="toggleWatch('FENC')">♡</button>
+    <span class="co">Fennec Pharmaceuticals Inc</span>
+    <span class="pill brk">Breakout signal</span>
+    <div class="price-block">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+        <span class="pb-price num">$11.83</span>
+        <span id="chg-pill" class="chg-pill" data-d="0.94"
+              data-w="8.14" data-m="12.67">—</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:6px">
+        <span class="pb-cap">last close · 2026-08-17</span>
+        <span class="pb-toggle">
+          <button data-p="d" onclick="setPxPeriod('d')">1D</button><button data-p="w" onclick="setPxPeriod('w')">1W</button><button data-p="m" onclick="setPxPeriod('m')">1M</button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="stock-grid">
+    <div>
+      <div class="info-panel">
+        <h3>Company overview</h3>
+        <div class="kv"><span>Market cap</span><b class="num">$410.99M</b></div><div class="kv"><span>Sector</span><b class="num">HEALTHCARE</b></div><div class="kv"><span>Industry</span><b class="num">BIOTECHNOLOGY</b></div><div class="kv"><span>P/E ratio</span><b class="num">—</b></div><div class="kv"><span>EPS</span><b class="num">-0.12</b></div><div class="kv"><span>Beta</span><b class="num">1.07</b></div><div class="kv"><span>Dividend yield</span><b class="num">—</b></div><div class="kv"><span>52-week high</span><b class="num">13.25</b></div><div class="kv"><span>52-week low</span><b class="num">5.65</b></div><div class="kv"><span>Avg $ volume</span><b class="num">$3.39M</b></div><div class="kv"><span>Volatility (ATR)</span><b class="num">4.7%</b></div>
+        <p class="about">Fennec Pharmaceuticals Inc., a biopharmaceutical company, develops candidate products for use in the treatment of cancer in the United States. The company is headquartered in Research Triangle Park, North Carolina.</p>
+      </div>
+      <div class="info-panel" style="margin-top:18px">
+        <h3>Signal details</h3>
+        <div class="kv"><span>Signal type</span><b class="num">Resistance breakout</b></div><div class="kv"><span>Status</span><b class="num">Breakout signal</b></div><div class="kv"><span>Trendline price</span><b class="num">10.79</b></div><div class="kv"><span>Distance to line</span><b class="num">-2.1%</b></div><div class="kv"><span>Anchor 1</span><b class="num">2018-04-09</b></div><div class="kv"><span>Anchor 2</span><b class="num">2023-12-28</b></div><div class="kv"><span>Line age</span><b class="num">624 trading days</b></div><div class="kv"><span>Line slope</span><b class="num">-3.9% / yr</b></div>
+      </div>
+    </div>
+    <div>
+      <div class="conf-card" style="background:hsl(158, 52%, 54%);color:#0F1726"><div class="score num">6.8<small> / 10</small></div><div><div class="lbl">Diago confidence</div><div class="sub2">Calibrated from 42% historical hit-rate on similar setups (20-trading-day horizon). Statistics — not a guarantee.</div></div></div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="view-toggle" role="tablist" aria-label="Chart style">
+            <button data-view="candles" onclick="setChartView('candles')">Candles</button>
+            <button data-view="line" onclick="setChartView('line')">Line</button>
+          </div>
+          <div class="tf-badge">Monthly chart</div>
+        </div>
+        <div class="chart-view" data-view="candles"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="FENC candlestick chart with trendline"><line x1="14" x2="898" y1="337.8" y2="337.8" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="285.5" y2="285.5" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="242.8" y2="242.8" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="175.4" y2="175.4" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="123.2" y2="123.2" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="28.2" y2="28.2" stroke="#EAEDF3" stroke-width="1"/><line x1="18.3" x2="18.3" y1="131.3" y2="189.0" stroke="#0E9382" stroke-width="1"/><rect x="15.6" y="137.7" width="5.4" height="23.6" fill="#0E9382" rx="0.8"/><line x1="27.0" x2="27.0" y1="28.4" y2="147.3" stroke="#0E9382" stroke-width="1"/><rect x="24.3" y="52.9" width="5.4" height="82.0" fill="#0E9382" rx="0.8"/><line x1="35.7" x2="35.7" y1="39.4" y2="91.7" stroke="#C25B5B" stroke-width="1"/><rect x="33.0" y="54.7" width="5.4" height="32.4" fill="#C25B5B" rx="0.8"/><line x1="44.3" x2="44.3" y1="70.7" y2="115.4" stroke="#C25B5B" stroke-width="1"/><rect x="41.6" y="89.4" width="5.4" height="16.4" fill="#C25B5B" rx="0.8"/><line x1="53.0" x2="53.0" y1="84.2" y2="128.9" stroke="#C25B5B" stroke-width="1"/><rect x="50.3" y="105.6" width="5.4" height="20.2" fill="#C25B5B" rx="0.8"/><line x1="61.7" x2="61.7" y1="123.0" y2="153.7" stroke="#C25B5B" stroke-width="1"/><rect x="59.0" y="127.4" width="5.4" height="7.0" fill="#C25B5B" rx="0.8"/><line x1="70.3" x2="70.3" y1="109.3" y2="158.5" stroke="#C25B5B" stroke-width="1"/><rect x="67.6" y="135.0" width="5.4" height="18.4" fill="#C25B5B" rx="0.8"/><line x1="79.0" x2="79.0" y1="151.5" y2="184.7" stroke="#C25B5B" stroke-width="1"/><rect x="76.3" y="151.5" width="5.4" height="28.9" fill="#C25B5B" rx="0.8"/><line x1="87.7" x2="87.7" y1="168.2" y2="232.1" stroke="#C25B5B" stroke-width="1"/><rect x="85.0" y="179.3" width="5.4" height="16.0" fill="#C25B5B" rx="0.8"/><line x1="96.3" x2="96.3" y1="168.8" y2="245.2" stroke="#C25B5B" stroke-width="1"/><rect x="93.6" y="195.3" width="5.4" height="40.2" fill="#C25B5B" rx="0.8"/><line x1="105.0" x2="105.0" y1="192.4" y2="270.5" stroke="#0E9382" stroke-width="1"/><rect x="102.3" y="202.7" width="5.4" height="33.5" fill="#0E9382" rx="0.8"/><line x1="113.7" x2="113.7" y1="195.9" y2="234.0" stroke="#0E9382" stroke-width="1"/><rect x="111.0" y="207.0" width="5.4" height="1.0" fill="#0E9382" rx="0.8"/><line x1="122.3" x2="122.3" y1="185.9" y2="231.4" stroke="#C25B5B" stroke-width="1"/><rect x="119.6" y="202.7" width="5.4" height="9.1" fill="#C25B5B" rx="0.8"/><line x1="131.0" x2="131.0" y1="219.1" y2="304.5" stroke="#C25B5B" stroke-width="1"/><rect x="128.3" y="219.1" width="5.4" height="69.7" fill="#C25B5B" rx="0.8"/><line x1="139.7" x2="139.7" y1="279.0" y2="332.5" stroke="#C25B5B" stroke-width="1"/><rect x="137.0" y="287.9" width="5.4" height="40.2" fill="#C25B5B" rx="0.8"/><line x1="148.3" x2="148.3" y1="312.8" y2="371.0" stroke="#C25B5B" stroke-width="1"/><rect x="145.6" y="334.8" width="5.4" height="32.2" fill="#C25B5B" rx="0.8"/><line x1="157.0" x2="157.0" y1="308.6" y2="385.7" stroke="#0E9382" stroke-width="1"/><rect x="154.3" y="329.7" width="5.4" height="37.3" fill="#0E9382" rx="0.8"/><line x1="165.7" x2="165.7" y1="288.3" y2="352.9" stroke="#0E9382" stroke-width="1"/><rect x="163.0" y="300.0" width="5.4" height="26.9" fill="#0E9382" rx="0.8"/><line x1="174.3" x2="174.3" y1="291.2" y2="343.1" stroke="#C25B5B" stroke-width="1"/><rect x="171.6" y="291.2" width="5.4" height="8.3" fill="#C25B5B" rx="0.8"/><line x1="183.0" x2="183.0" y1="285.0" y2="326.3" stroke="#C25B5B" stroke-width="1"/><rect x="180.3" y="305.0" width="5.4" height="18.0" fill="#C25B5B" rx="0.8"/><line x1="191.7" x2="191.7" y1="246.0" y2="326.3" stroke="#0E9382" stroke-width="1"/><rect x="189.0" y="283.2" width="5.4" height="39.3" fill="#0E9382" rx="0.8"/><line x1="200.3" x2="200.3" y1="217.7" y2="290.2" stroke="#0E9382" stroke-width="1"/><rect x="197.6" y="234.0" width="5.4" height="55.8" fill="#0E9382" rx="0.8"/><line x1="209.0" x2="209.0" y1="213.8" y2="252.0" stroke="#0E9382" stroke-width="1"/><rect x="206.3" y="224.8" width="5.4" height="9.6" fill="#0E9382" rx="0.8"/><line x1="217.7" x2="217.7" y1="164.0" y2="252.4" stroke="#C25B5B" stroke-width="1"/><rect x="215.0" y="212.8" width="5.4" height="5.9" fill="#C25B5B" rx="0.8"/><line x1="226.3" x2="226.3" y1="169.7" y2="237.0" stroke="#C25B5B" stroke-width="1"/><rect x="223.6" y="198.2" width="5.4" height="21.3" fill="#C25B5B" rx="0.8"/><line x1="235.0" x2="235.0" y1="198.5" y2="302.5" stroke="#0E9382" stroke-width="1"/><rect x="232.3" y="225.5" width="5.4" height="8.1" fill="#0E9382" rx="0.8"/><line x1="243.7" x2="243.7" y1="175.7" y2="244.8" stroke="#0E9382" stroke-width="1"/><rect x="241.0" y="200.1" width="5.4" height="11.7" fill="#0E9382" rx="0.8"/><line x1="252.3" x2="252.3" y1="151.5" y2="218.4" stroke="#0E9382" stroke-width="1"/><rect x="249.6" y="175.2" width="5.4" height="23.7" fill="#0E9382" rx="0.8"/><line x1="261.0" x2="261.0" y1="129.1" y2="187.5" stroke="#0E9382" stroke-width="1"/><rect x="258.3" y="167.7" width="5.4" height="14.0" fill="#0E9382" rx="0.8"/><line x1="269.7" x2="269.7" y1="108.0" y2="177.2" stroke="#0E9382" stroke-width="1"/><rect x="267.0" y="119.2" width="5.4" height="45.6" fill="#0E9382" rx="0.8"/><line x1="278.3" x2="278.3" y1="207.0" y2="295.1" stroke="#C25B5B" stroke-width="1"/><rect x="275.6" y="224.1" width="5.4" height="25.1" fill="#C25B5B" rx="0.8"/><line x1="287.0" x2="287.0" y1="170.2" y2="273.6" stroke="#0E9382" stroke-width="1"/><rect x="284.3" y="172.8" width="5.4" height="76.7" fill="#0E9382" rx="0.8"/><line x1="295.7" x2="295.7" y1="169.7" y2="211.4" stroke="#C25B5B" stroke-width="1"/><rect x="293.0" y="172.5" width="5.4" height="19.0" fill="#C25B5B" rx="0.8"/><line x1="304.3" x2="304.3" y1="154.5" y2="190.6" stroke="#0E9382" stroke-width="1"/><rect x="301.6" y="169.9" width="5.4" height="16.6" fill="#0E9382" rx="0.8"/><line x1="313.0" x2="313.0" y1="166.5" y2="223.3" stroke="#C25B5B" stroke-width="1"/><rect x="310.3" y="166.5" width="5.4" height="24.3" fill="#C25B5B" rx="0.8"/><line x1="321.7" x2="321.7" y1="152.6" y2="205.0" stroke="#0E9382" stroke-width="1"/><rect x="319.0" y="156.3" width="5.4" height="43.1" fill="#0E9382" rx="0.8"/><line x1="330.3" x2="330.3" y1="152.1" y2="215.9" stroke="#C25B5B" stroke-width="1"/><rect x="327.6" y="158.2" width="5.4" height="29.2" fill="#C25B5B" rx="0.8"/><line x1="339.0" x2="339.0" y1="179.6" y2="246.7" stroke="#C25B5B" stroke-width="1"/><rect x="336.3" y="188.4" width="5.4" height="50.2" fill="#C25B5B" rx="0.8"/><line x1="347.7" x2="347.7" y1="202.4" y2="250.7" stroke="#C25B5B" stroke-width="1"/><rect x="345.0" y="238.9" width="5.4" height="1.2" fill="#C25B5B" rx="0.8"/><line x1="356.3" x2="356.3" y1="182.0" y2="247.1" stroke="#0E9382" stroke-width="1"/><rect x="353.6" y="210.8" width="5.4" height="29.3" fill="#0E9382" rx="0.8"/><line x1="365.0" x2="365.0" y1="177.2" y2="230.6" stroke="#C25B5B" stroke-width="1"/><rect x="362.3" y="211.1" width="5.4" height="12.2" fill="#C25B5B" rx="0.8"/><line x1="373.7" x2="373.7" y1="204.1" y2="227.7" stroke="#0E9382" stroke-width="1"/><rect x="371.0" y="207.0" width="5.4" height="15.2" fill="#0E9382" rx="0.8"/><line x1="382.3" x2="382.3" y1="169.1" y2="215.2" stroke="#0E9382" stroke-width="1"/><rect x="379.6" y="177.5" width="5.4" height="27.5" fill="#0E9382" rx="0.8"/><line x1="391.0" x2="391.0" y1="127.2" y2="179.3" stroke="#0E9382" stroke-width="1"/><rect x="388.3" y="140.7" width="5.4" height="36.8" fill="#0E9382" rx="0.8"/><line x1="399.7" x2="399.7" y1="129.1" y2="161.2" stroke="#C25B5B" stroke-width="1"/><rect x="397.0" y="139.7" width="5.4" height="1.0" fill="#C25B5B" rx="0.8"/><line x1="408.3" x2="408.3" y1="121.3" y2="348.5" stroke="#C25B5B" stroke-width="1"/><rect x="405.6" y="137.7" width="5.4" height="185.3" fill="#C25B5B" rx="0.8"/><line x1="417.0" x2="417.0" y1="305.0" y2="340.1" stroke="#0E9382" stroke-width="1"/><rect x="414.3" y="309.1" width="5.4" height="15.0" fill="#0E9382" rx="0.8"/><line x1="425.7" x2="425.7" y1="287.9" y2="331.4" stroke="#0E9382" stroke-width="1"/><rect x="423.0" y="291.7" width="5.4" height="26.4" fill="#0E9382" rx="0.8"/><line x1="434.3" x2="434.3" y1="251.6" y2="303.0" stroke="#0E9382" stroke-width="1"/><rect x="431.6" y="272.3" width="5.4" height="19.4" fill="#0E9382" rx="0.8"/><line x1="443.0" x2="443.0" y1="222.3" y2="290.7" stroke="#0E9382" stroke-width="1"/><rect x="440.3" y="230.3" width="5.4" height="42.0" fill="#0E9382" rx="0.8"/><line x1="451.7" x2="451.7" y1="227.7" y2="267.0" stroke="#C25B5B" stroke-width="1"/><rect x="449.0" y="228.4" width="5.4" height="32.6" fill="#C25B5B" rx="0.8"/><line x1="460.3" x2="460.3" y1="240.9" y2="285.5" stroke="#C25B5B" stroke-width="1"/><rect x="457.6" y="258.1" width="5.4" height="5.9" fill="#C25B5B" rx="0.8"/><line x1="469.0" x2="469.0" y1="224.1" y2="273.6" stroke="#0E9382" stroke-width="1"/><rect x="466.3" y="227.7" width="5.4" height="34.2" fill="#0E9382" rx="0.8"/><line x1="477.7" x2="477.7" y1="187.8" y2="232.9" stroke="#0E9382" stroke-width="1"/><rect x="475.0" y="204.1" width="5.4" height="28.5" fill="#0E9382" rx="0.8"/><line x1="486.3" x2="486.3" y1="187.5" y2="234.0" stroke="#C25B5B" stroke-width="1"/><rect x="483.6" y="201.7" width="5.4" height="28.2" fill="#C25B5B" rx="0.8"/><line x1="495.0" x2="495.0" y1="154.5" y2="226.6" stroke="#0E9382" stroke-width="1"/><rect x="492.3" y="186.5" width="5.4" height="34.7" fill="#0E9382" rx="0.8"/><line x1="503.7" x2="503.7" y1="151.0" y2="195.3" stroke="#0E9382" stroke-width="1"/><rect x="501.0" y="159.9" width="5.4" height="26.0" fill="#0E9382" rx="0.8"/><line x1="512.3" x2="512.3" y1="121.8" y2="184.7" stroke="#0E9382" stroke-width="1"/><rect x="509.6" y="126.0" width="5.4" height="36.6" fill="#0E9382" rx="0.8"/><line x1="521.0" x2="521.0" y1="112.9" y2="140.4" stroke="#0E9382" stroke-width="1"/><rect x="518.3" y="118.8" width="5.4" height="7.2" fill="#0E9382" rx="0.8"/><line x1="529.7" x2="529.7" y1="104.1" y2="145.3" stroke="#C25B5B" stroke-width="1"/><rect x="527.0" y="116.7" width="5.4" height="8.1" fill="#C25B5B" rx="0.8"/><line x1="538.3" x2="538.3" y1="125.8" y2="173.1" stroke="#C25B5B" stroke-width="1"/><rect x="535.6" y="127.0" width="5.4" height="41.0" fill="#C25B5B" rx="0.8"/><line x1="547.0" x2="547.0" y1="144.0" y2="206.0" stroke="#0E9382" stroke-width="1"/><rect x="544.3" y="158.5" width="5.4" height="8.6" fill="#0E9382" rx="0.8"/><line x1="555.7" x2="555.7" y1="152.3" y2="191.2" stroke="#C25B5B" stroke-width="1"/><rect x="553.0" y="152.3" width="5.4" height="27.0" fill="#C25B5B" rx="0.8"/><line x1="564.3" x2="564.3" y1="150.7" y2="203.4" stroke="#0E9382" stroke-width="1"/><rect x="561.6" y="153.7" width="5.4" height="23.0" fill="#0E9382" rx="0.8"/><line x1="573.0" x2="573.0" y1="123.2" y2="171.7" stroke="#0E9382" stroke-width="1"/><rect x="570.3" y="151.8" width="5.4" height="2.7" fill="#0E9382" rx="0.8"/><line x1="581.7" x2="581.7" y1="148.4" y2="182.6" stroke="#C25B5B" stroke-width="1"/><rect x="579.0" y="153.1" width="5.4" height="8.4" fill="#C25B5B" rx="0.8"/><line x1="590.3" x2="590.3" y1="160.1" y2="186.2" stroke="#C25B5B" stroke-width="1"/><rect x="587.6" y="163.7" width="5.4" height="10.5" fill="#C25B5B" rx="0.8"/><line x1="599.0" x2="599.0" y1="166.3" y2="231.4" stroke="#C25B5B" stroke-width="1"/><rect x="596.3" y="186.2" width="5.4" height="15.2" fill="#C25B5B" rx="0.8"/><line x1="607.7" x2="607.7" y1="168.5" y2="222.3" stroke="#0E9382" stroke-width="1"/><rect x="605.0" y="182.9" width="5.4" height="19.9" fill="#0E9382" rx="0.8"/><line x1="616.3" x2="616.3" y1="133.0" y2="193.7" stroke="#0E9382" stroke-width="1"/><rect x="613.6" y="140.4" width="5.4" height="47.0" fill="#0E9382" rx="0.8"/><line x1="625.0" x2="625.0" y1="82.1" y2="143.5" stroke="#0E9382" stroke-width="1"/><rect x="622.3" y="118.8" width="5.4" height="22.2" fill="#0E9382" rx="0.8"/><line x1="633.7" x2="633.7" y1="110.9" y2="134.0" stroke="#C25B5B" stroke-width="1"/><rect x="631.0" y="115.8" width="5.4" height="3.4" fill="#C25B5B" rx="0.8"/><line x1="642.3" x2="642.3" y1="121.8" y2="158.8" stroke="#C25B5B" stroke-width="1"/><rect x="639.6" y="123.4" width="5.4" height="2.1" fill="#C25B5B" rx="0.8"/><line x1="651.0" x2="651.0" y1="90.7" y2="131.5" stroke="#0E9382" stroke-width="1"/><rect x="648.3" y="112.0" width="5.4" height="13.6" fill="#0E9382" rx="0.8"/><line x1="659.7" x2="659.7" y1="110.0" y2="152.3" stroke="#C25B5B" stroke-width="1"/><rect x="657.0" y="112.9" width="5.4" height="9.8" fill="#C25B5B" rx="0.8"/><line x1="668.3" x2="668.3" y1="140.9" y2="223.7" stroke="#C25B5B" stroke-width="1"/><rect x="665.6" y="147.3" width="5.4" height="63.8" fill="#C25B5B" rx="0.8"/><line x1="677.0" x2="677.0" y1="207.4" y2="256.5" stroke="#C25B5B" stroke-width="1"/><rect x="674.3" y="209.7" width="5.4" height="12.9" fill="#C25B5B" rx="0.8"/><line x1="685.7" x2="685.7" y1="209.7" y2="271.9" stroke="#C25B5B" stroke-width="1"/><rect x="683.0" y="223.3" width="5.4" height="25.4" fill="#C25B5B" rx="0.8"/><line x1="694.3" x2="694.3" y1="246.3" y2="285.5" stroke="#C25B5B" stroke-width="1"/><rect x="691.6" y="246.3" width="5.4" height="21.6" fill="#C25B5B" rx="0.8"/><line x1="703.0" x2="703.0" y1="262.3" y2="332.5" stroke="#C25B5B" stroke-width="1"/><rect x="700.3" y="265.8" width="5.4" height="48.6" fill="#C25B5B" rx="0.8"/><line x1="711.7" x2="711.7" y1="283.6" y2="338.9" stroke="#C25B5B" stroke-width="1"/><rect x="709.0" y="317.0" width="5.4" height="6.0" fill="#C25B5B" rx="0.8"/><line x1="720.3" x2="720.3" y1="222.3" y2="340.1" stroke="#0E9382" stroke-width="1"/><rect x="717.6" y="237.4" width="5.4" height="86.7" fill="#0E9382" rx="0.8"/><line x1="729.0" x2="729.0" y1="221.9" y2="262.8" stroke="#C25B5B" stroke-width="1"/><rect x="726.3" y="238.6" width="5.4" height="18.7" fill="#C25B5B" rx="0.8"/><line x1="737.7" x2="737.7" y1="211.4" y2="265.3" stroke="#0E9382" stroke-width="1"/><rect x="735.0" y="215.6" width="5.4" height="36.0" fill="#0E9382" rx="0.8"/><line x1="746.3" x2="746.3" y1="204.7" y2="252.8" stroke="#C25B5B" stroke-width="1"/><rect x="743.6" y="212.8" width="5.4" height="17.8" fill="#C25B5B" rx="0.8"/><line x1="755.0" x2="755.0" y1="210.1" y2="301.0" stroke="#C25B5B" stroke-width="1"/><rect x="752.3" y="227.7" width="5.4" height="46.4" fill="#C25B5B" rx="0.8"/><line x1="763.7" x2="763.7" y1="220.1" y2="284.6" stroke="#0E9382" stroke-width="1"/><rect x="761.0" y="222.3" width="5.4" height="60.9" fill="#0E9382" rx="0.8"/><line x1="772.3" x2="772.3" y1="155.3" y2="223.7" stroke="#0E9382" stroke-width="1"/><rect x="769.6" y="170.5" width="5.4" height="51.8" fill="#0E9382" rx="0.8"/><line x1="781.0" x2="781.0" y1="140.2" y2="189.6" stroke="#0E9382" stroke-width="1"/><rect x="778.3" y="154.5" width="5.4" height="17.8" fill="#0E9382" rx="0.8"/><line x1="789.7" x2="789.7" y1="137.2" y2="201.1" stroke="#C25B5B" stroke-width="1"/><rect x="787.0" y="151.8" width="5.4" height="13.3" fill="#C25B5B" rx="0.8"/><line x1="798.3" x2="798.3" y1="140.4" y2="188.4" stroke="#0E9382" stroke-width="1"/><rect x="795.6" y="151.8" width="5.4" height="12.8" fill="#0E9382" rx="0.8"/><line x1="807.0" x2="807.0" y1="125.1" y2="175.2" stroke="#C25B5B" stroke-width="1"/><rect x="804.3" y="151.3" width="5.4" height="2.9" fill="#C25B5B" rx="0.8"/><line x1="815.7" x2="815.7" y1="143.7" y2="189.6" stroke="#C25B5B" stroke-width="1"/><rect x="813.0" y="154.5" width="5.4" height="30.2" fill="#C25B5B" rx="0.8"/><line x1="824.3" x2="824.3" y1="147.9" y2="195.3" stroke="#C25B5B" stroke-width="1"/><rect x="821.6" y="154.5" width="5.4" height="22.2" fill="#C25B5B" rx="0.8"/><line x1="833.0" x2="833.0" y1="170.9" y2="195.3" stroke="#C25B5B" stroke-width="1"/><rect x="830.3" y="175.7" width="5.4" height="16.1" fill="#C25B5B" rx="0.8"/><line x1="841.7" x2="841.7" y1="148.6" y2="195.3" stroke="#0E9382" stroke-width="1"/><rect x="839.0" y="156.3" width="5.4" height="35.5" fill="#0E9382" rx="0.8"/><line x1="850.3" x2="850.3" y1="143.1" y2="197.0" stroke="#C25B5B" stroke-width="1"/><rect x="847.6" y="155.5" width="5.4" height="36.0" fill="#C25B5B" rx="0.8"/><line x1="859.0" x2="859.0" y1="183.3" y2="256.9" stroke="#C25B5B" stroke-width="1"/><rect x="856.3" y="191.8" width="5.4" height="22.0" fill="#C25B5B" rx="0.8"/><line x1="867.7" x2="867.7" y1="117.0" y2="237.8" stroke="#0E9382" stroke-width="1"/><rect x="865.0" y="132.7" width="5.4" height="78.7" fill="#0E9382" rx="0.8"/><line x1="876.3" x2="876.3" y1="112.9" y2="160.8" stroke="#C25B5B" stroke-width="1"/><rect x="873.6" y="134.7" width="5.4" height="13.7" fill="#C25B5B" rx="0.8"/><line x1="885.0" x2="885.0" y1="94.4" y2="151.8" stroke="#0E9382" stroke-width="1"/><rect x="882.3" y="125.5" width="5.4" height="17.2" fill="#0E9382" rx="0.8"/><line x1="893.7" x2="893.7" y1="57.3" y2="137.8" stroke="#0E9382" stroke-width="1"/><rect x="891.0" y="83.8" width="5.4" height="42.2" fill="#0E9382" rx="0.8"/><polyline points="18.3,28.1 27.0,28.8 35.7,29.6 44.3,30.4 53.0,31.2 61.7,31.9 70.3,32.7 79.0,33.5 87.7,34.3 96.3,35.0 105.0,35.8 113.7,36.6 122.3,37.4 131.0,38.1 139.7,38.9 148.3,39.7 157.0,40.5 165.7,41.3 174.3,42.0 183.0,42.8 191.7,43.6 200.3,44.4 209.0,45.1 217.7,45.9 226.3,46.7 235.0,47.5 243.7,48.2 252.3,49.0 261.0,49.8 269.7,50.6 278.3,51.3 287.0,52.1 295.7,52.9 304.3,53.7 313.0,54.4 321.7,55.2 330.3,56.0 339.0,56.8 347.7,57.6 356.3,58.3 365.0,59.1 373.7,59.9 382.3,60.7 391.0,61.4 399.7,62.2 408.3,63.0 417.0,63.8 425.7,64.5 434.3,65.3 443.0,66.1 451.7,66.9 460.3,67.6 469.0,68.4 477.7,69.2 486.3,70.0 495.0,70.8 503.7,71.5 512.3,72.3 521.0,73.1 529.7,73.9 538.3,74.6 547.0,75.4 555.7,76.2 564.3,77.0 573.0,77.7 581.7,78.5 590.3,79.3 599.0,80.1 607.7,80.8 616.3,81.6 625.0,82.4 633.7,83.2 642.3,83.9 651.0,84.7 659.7,85.5 668.3,86.3 677.0,87.1 685.7,87.8 694.3,88.6 703.0,89.4 711.7,90.2 720.3,90.9 729.0,91.7 737.7,92.5 746.3,93.3 755.0,94.0 763.7,94.8 772.3,95.6 781.0,96.4 789.7,97.1 798.3,97.9 807.0,98.7 815.7,99.5 824.3,100.2 833.0,101.0 841.7,101.8 850.3,102.6 859.0,103.4 867.7,104.1 876.3,104.9 885.0,105.7 893.7,106.4" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.3,28.1 27.0,28.8 35.7,29.6 44.3,30.4 53.0,31.2 61.7,31.9 70.3,32.7 79.0,33.5 87.7,34.3 96.3,35.0 105.0,35.8 113.7,36.6 122.3,37.4 131.0,38.1 139.7,38.9 148.3,39.7 157.0,40.5 165.7,41.3 174.3,42.0 183.0,42.8 191.7,43.6 200.3,44.4 209.0,45.1 217.7,45.9 226.3,46.7 235.0,47.5 243.7,48.2 252.3,49.0 261.0,49.8 269.7,50.6 278.3,51.3 287.0,52.1 295.7,52.9 304.3,53.7 313.0,54.4 321.7,55.2 330.3,56.0 339.0,56.8 347.7,57.6 356.3,58.3 365.0,59.1 373.7,59.9 382.3,60.7 391.0,61.4 399.7,62.2 408.3,63.0 417.0,63.8 425.7,64.5 434.3,65.3 443.0,66.1 451.7,66.9 460.3,67.6 469.0,68.4 477.7,69.2 486.3,70.0 495.0,70.8 503.7,71.5 512.3,72.3 521.0,73.1 529.7,73.9 538.3,74.6 547.0,75.4 555.7,76.2 564.3,77.0 573.0,77.7 581.7,78.5 590.3,79.3 599.0,80.1 607.7,80.8 616.3,81.6 625.0,82.4 633.7,83.2 642.3,83.9 651.0,84.7 659.7,85.5 668.3,86.3 677.0,87.1 685.7,87.8 694.3,88.6 703.0,89.4 711.7,90.2 720.3,90.9 729.0,91.7 737.7,92.5 746.3,93.3 755.0,94.0 763.7,94.8 772.3,95.6 781.0,96.4 789.7,97.1 798.3,97.9 807.0,98.7 815.7,99.5 824.3,100.2 833.0,101.0 841.7,101.8 850.3,102.6 859.0,103.4 867.7,104.1 876.3,104.9 885.0,105.7 893.7,106.4" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="27.0" cy="28.4" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="27.0" y="17.4" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="625.0" cy="82.1" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="625.0" y="71.1" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="73.8" width="58" height="20" rx="4" fill="#0E9382"/><text x="929.0" y="87.8" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">11.83</text><text x="906" y="341.8" font-size="11" fill="#8A94A6" class="num">4.00</text><text x="906" y="289.5" font-size="11" fill="#8A94A6" class="num">5.00</text><text x="906" y="246.8" font-size="11" fill="#8A94A6" class="num">6.00</text><text x="906" y="179.4" font-size="11" fill="#8A94A6" class="num">8.00</text><text x="906" y="127.2" font-size="11" fill="#8A94A6" class="num">10</text><text x="906" y="32.2" font-size="11" fill="#8A94A6" class="num">15</text><text x="35.7" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2018-05-09</text><text x="313.0" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2021-01-08</text><text x="590.3" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2023-09-12</text><text x="867.7" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-05-18</text></svg></div>
+        <div class="chart-view" data-view="line"><svg viewBox="0 0 960 430" style="width:100%;height:auto" role="img" aria-label="FENC candlestick chart with trendline"><line x1="14" x2="898" y1="337.8" y2="337.8" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="285.5" y2="285.5" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="242.8" y2="242.8" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="175.4" y2="175.4" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="123.2" y2="123.2" stroke="#EAEDF3" stroke-width="1"/><line x1="14" x2="898" y1="28.2" y2="28.2" stroke="#EAEDF3" stroke-width="1"/><path d="M 18.3,131.3 L 27.0,28.4 L 35.7,39.4 L 44.3,70.7 L 53.0,84.2 L 61.7,123.0 L 70.3,109.3 L 79.0,151.5 L 87.7,168.2 L 96.3,168.8 L 105.0,192.4 L 113.7,195.9 L 122.3,185.9 L 131.0,219.1 L 139.7,279.0 L 148.3,312.8 L 157.0,308.6 L 165.7,288.3 L 174.3,291.2 L 183.0,285.0 L 191.7,246.0 L 200.3,217.7 L 209.0,213.8 L 217.7,164.0 L 226.3,169.7 L 235.0,198.5 L 243.7,175.7 L 252.3,151.5 L 261.0,129.1 L 269.7,108.0 L 278.3,207.0 L 287.0,170.2 L 295.7,169.7 L 304.3,154.5 L 313.0,166.5 L 321.7,152.6 L 330.3,152.1 L 339.0,179.6 L 347.7,202.4 L 356.3,182.0 L 365.0,177.2 L 373.7,204.1 L 382.3,169.1 L 391.0,127.2 L 399.7,129.1 L 408.3,121.3 L 417.0,305.0 L 425.7,287.9 L 434.3,251.6 L 443.0,222.3 L 451.7,227.7 L 460.3,240.9 L 469.0,224.1 L 477.7,187.8 L 486.3,187.5 L 495.0,154.5 L 503.7,151.0 L 512.3,121.8 L 521.0,112.9 L 529.7,104.1 L 538.3,125.8 L 547.0,144.0 L 555.7,152.3 L 564.3,150.7 L 573.0,123.2 L 581.7,148.4 L 590.3,160.1 L 599.0,166.3 L 607.7,168.5 L 616.3,133.0 L 625.0,82.1 L 633.7,110.9 L 642.3,121.8 L 651.0,90.7 L 659.7,110.0 L 668.3,140.9 L 677.0,207.4 L 685.7,209.7 L 694.3,246.3 L 703.0,262.3 L 711.7,283.6 L 720.3,222.3 L 729.0,221.9 L 737.7,211.4 L 746.3,204.7 L 755.0,210.1 L 763.7,220.1 L 772.3,155.3 L 781.0,140.2 L 789.7,137.2 L 798.3,140.4 L 807.0,125.1 L 815.7,143.7 L 824.3,147.9 L 833.0,170.9 L 841.7,148.6 L 850.3,143.1 L 859.0,183.3 L 867.7,117.0 L 876.3,112.9 L 885.0,94.4 L 893.7,57.3 L 893.7,137.8 L 885.0,151.8 L 876.3,160.8 L 867.7,237.8 L 859.0,256.9 L 850.3,197.0 L 841.7,195.3 L 833.0,195.3 L 824.3,195.3 L 815.7,189.6 L 807.0,175.2 L 798.3,188.4 L 789.7,201.1 L 781.0,189.6 L 772.3,223.7 L 763.7,284.6 L 755.0,301.0 L 746.3,252.8 L 737.7,265.3 L 729.0,262.8 L 720.3,340.1 L 711.7,338.9 L 703.0,332.5 L 694.3,285.5 L 685.7,271.9 L 677.0,256.5 L 668.3,223.7 L 659.7,152.3 L 651.0,131.5 L 642.3,158.8 L 633.7,134.0 L 625.0,143.5 L 616.3,193.7 L 607.7,222.3 L 599.0,231.4 L 590.3,186.2 L 581.7,182.6 L 573.0,171.7 L 564.3,203.4 L 555.7,191.2 L 547.0,206.0 L 538.3,173.1 L 529.7,145.3 L 521.0,140.4 L 512.3,184.7 L 503.7,195.3 L 495.0,226.6 L 486.3,234.0 L 477.7,232.9 L 469.0,273.6 L 460.3,285.5 L 451.7,267.0 L 443.0,290.7 L 434.3,303.0 L 425.7,331.4 L 417.0,340.1 L 408.3,348.5 L 399.7,161.2 L 391.0,179.3 L 382.3,215.2 L 373.7,227.7 L 365.0,230.6 L 356.3,247.1 L 347.7,250.7 L 339.0,246.7 L 330.3,215.9 L 321.7,205.0 L 313.0,223.3 L 304.3,190.6 L 295.7,211.4 L 287.0,273.6 L 278.3,295.1 L 269.7,177.2 L 261.0,187.5 L 252.3,218.4 L 243.7,244.8 L 235.0,302.5 L 226.3,237.0 L 217.7,252.4 L 209.0,252.0 L 200.3,290.2 L 191.7,326.3 L 183.0,326.3 L 174.3,343.1 L 165.7,352.9 L 157.0,385.7 L 148.3,371.0 L 139.7,332.5 L 131.0,304.5 L 122.3,231.4 L 113.7,234.0 L 105.0,270.5 L 96.3,245.2 L 87.7,232.1 L 79.0,184.7 L 70.3,158.5 L 61.7,153.7 L 53.0,128.9 L 44.3,115.4 L 35.7,91.7 L 27.0,147.3 L 18.3,189.0 Z" fill="#49556A" opacity="0.12"/><polyline points="18.3,137.7 27.0,52.9 35.7,87.0 44.3,105.8 53.0,125.8 61.7,134.5 70.3,153.4 79.0,180.5 87.7,195.3 96.3,235.5 105.0,202.7 113.7,207.0 122.3,211.8 131.0,288.8 139.7,328.0 148.3,367.0 157.0,329.7 165.7,300.0 174.3,299.5 183.0,323.0 191.7,283.2 200.3,234.0 209.0,224.8 217.7,218.7 226.3,219.4 235.0,225.5 243.7,200.1 252.3,175.2 261.0,167.7 269.7,119.2 278.3,249.1 287.0,172.8 295.7,191.5 304.3,169.9 313.0,190.9 321.7,156.3 330.3,187.5 339.0,238.6 347.7,240.1 356.3,210.8 365.0,223.3 373.7,207.0 382.3,177.5 391.0,140.7 399.7,139.9 408.3,323.0 417.0,309.1 425.7,291.7 434.3,272.3 443.0,230.3 451.7,261.1 460.3,264.0 469.0,227.7 477.7,204.1 486.3,229.9 495.0,186.5 503.7,159.9 512.3,126.0 521.0,118.8 529.7,124.8 538.3,168.0 547.0,158.5 555.7,179.3 564.3,153.7 573.0,151.8 581.7,161.5 590.3,174.3 599.0,201.4 607.7,182.9 616.3,140.4 625.0,118.8 633.7,119.2 642.3,125.5 651.0,112.0 659.7,122.7 668.3,211.1 677.0,222.6 685.7,248.7 694.3,267.9 703.0,314.4 711.7,323.0 720.3,237.4 729.0,257.3 737.7,215.6 746.3,230.6 755.0,274.1 763.7,222.3 772.3,170.5 781.0,154.5 789.7,165.1 798.3,151.8 807.0,154.2 815.7,184.7 824.3,176.6 833.0,191.8 841.7,156.3 850.3,191.5 859.0,213.8 867.7,132.7 876.3,148.4 885.0,125.5 893.7,83.8" fill="none" stroke="#0F1726" stroke-width="1.7"/><polyline points="18.3,28.1 27.0,28.8 35.7,29.6 44.3,30.4 53.0,31.2 61.7,31.9 70.3,32.7 79.0,33.5 87.7,34.3 96.3,35.0 105.0,35.8 113.7,36.6 122.3,37.4 131.0,38.1 139.7,38.9 148.3,39.7 157.0,40.5 165.7,41.3 174.3,42.0 183.0,42.8 191.7,43.6 200.3,44.4 209.0,45.1 217.7,45.9 226.3,46.7 235.0,47.5 243.7,48.2 252.3,49.0 261.0,49.8 269.7,50.6 278.3,51.3 287.0,52.1 295.7,52.9 304.3,53.7 313.0,54.4 321.7,55.2 330.3,56.0 339.0,56.8 347.7,57.6 356.3,58.3 365.0,59.1 373.7,59.9 382.3,60.7 391.0,61.4 399.7,62.2 408.3,63.0 417.0,63.8 425.7,64.5 434.3,65.3 443.0,66.1 451.7,66.9 460.3,67.6 469.0,68.4 477.7,69.2 486.3,70.0 495.0,70.8 503.7,71.5 512.3,72.3 521.0,73.1 529.7,73.9 538.3,74.6 547.0,75.4 555.7,76.2 564.3,77.0 573.0,77.7 581.7,78.5 590.3,79.3 599.0,80.1 607.7,80.8 616.3,81.6 625.0,82.4 633.7,83.2 642.3,83.9 651.0,84.7 659.7,85.5 668.3,86.3 677.0,87.1 685.7,87.8 694.3,88.6 703.0,89.4 711.7,90.2 720.3,90.9 729.0,91.7 737.7,92.5 746.3,93.3 755.0,94.0 763.7,94.8 772.3,95.6 781.0,96.4 789.7,97.1 798.3,97.9 807.0,98.7 815.7,99.5 824.3,100.2 833.0,101.0 841.7,101.8 850.3,102.6 859.0,103.4 867.7,104.1 876.3,104.9 885.0,105.7 893.7,106.4" fill="none" stroke="#B45309" stroke-width="4" opacity="0.18"/><polyline points="18.3,28.1 27.0,28.8 35.7,29.6 44.3,30.4 53.0,31.2 61.7,31.9 70.3,32.7 79.0,33.5 87.7,34.3 96.3,35.0 105.0,35.8 113.7,36.6 122.3,37.4 131.0,38.1 139.7,38.9 148.3,39.7 157.0,40.5 165.7,41.3 174.3,42.0 183.0,42.8 191.7,43.6 200.3,44.4 209.0,45.1 217.7,45.9 226.3,46.7 235.0,47.5 243.7,48.2 252.3,49.0 261.0,49.8 269.7,50.6 278.3,51.3 287.0,52.1 295.7,52.9 304.3,53.7 313.0,54.4 321.7,55.2 330.3,56.0 339.0,56.8 347.7,57.6 356.3,58.3 365.0,59.1 373.7,59.9 382.3,60.7 391.0,61.4 399.7,62.2 408.3,63.0 417.0,63.8 425.7,64.5 434.3,65.3 443.0,66.1 451.7,66.9 460.3,67.6 469.0,68.4 477.7,69.2 486.3,70.0 495.0,70.8 503.7,71.5 512.3,72.3 521.0,73.1 529.7,73.9 538.3,74.6 547.0,75.4 555.7,76.2 564.3,77.0 573.0,77.7 581.7,78.5 590.3,79.3 599.0,80.1 607.7,80.8 616.3,81.6 625.0,82.4 633.7,83.2 642.3,83.9 651.0,84.7 659.7,85.5 668.3,86.3 677.0,87.1 685.7,87.8 694.3,88.6 703.0,89.4 711.7,90.2 720.3,90.9 729.0,91.7 737.7,92.5 746.3,93.3 755.0,94.0 763.7,94.8 772.3,95.6 781.0,96.4 789.7,97.1 798.3,97.9 807.0,98.7 815.7,99.5 824.3,100.2 833.0,101.0 841.7,101.8 850.3,102.6 859.0,103.4 867.7,104.1 876.3,104.9 885.0,105.7 893.7,106.4" fill="none" stroke="#B45309" stroke-width="2"/><circle cx="27.0" cy="28.4" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="27.0" y="17.4" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H1</text><circle cx="625.0" cy="82.1" r="5.5" fill="#B45309" stroke="#fff" stroke-width="2"/><text x="625.0" y="71.1" text-anchor="middle" font-size="10.5" font-weight="700" fill="#B45309">H2</text><rect x="900" y="73.8" width="58" height="20" rx="4" fill="#0E9382"/><text x="929.0" y="87.8" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" class="num">11.83</text><text x="906" y="341.8" font-size="11" fill="#8A94A6" class="num">4.00</text><text x="906" y="289.5" font-size="11" fill="#8A94A6" class="num">5.00</text><text x="906" y="246.8" font-size="11" fill="#8A94A6" class="num">6.00</text><text x="906" y="179.4" font-size="11" fill="#8A94A6" class="num">8.00</text><text x="906" y="127.2" font-size="11" fill="#8A94A6" class="num">10</text><text x="906" y="32.2" font-size="11" fill="#8A94A6" class="num">15</text><text x="35.7" y="420" text-anchor="start" font-size="11" fill="#8A94A6">2018-05-09</text><text x="313.0" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2021-01-08</text><text x="590.3" y="420" text-anchor="middle" font-size="11" fill="#8A94A6">2023-09-12</text><text x="867.7" y="420" text-anchor="end" font-size="11" fill="#8A94A6">2026-05-18</text></svg></div>
+        <div class="cap">
+          <span class="chart-view" data-view="candles">
+            <span><span class="legend-dot" style="background:#0E9382"></span> Up candle</span>
+            <span><span class="legend-dot" style="background:#C25B5B"></span> Down candle</span></span>
+          <span class="chart-view" data-view="line">
+            <span><span class="legend-dot" style="background:#49556A;opacity:.35"></span> High–Low range</span>
+            <span><span class="legend-dot" style="background:#0F1726"></span> Close price</span></span>
+          <span><span class="legend-dot" style="background:#C05C1D"></span> Resistance diagonal (log scale)</span>
+          <span><span class="legend-dot" style="background:#C05C1D;border-radius:50%"></span> Line anchors</span>
+          <span style="margin-left:auto">data through 2026-08-17</span>
+        </div>
+      </div>
+      <div class="notice" style="margin-top:16px">⚠️ Algorithmic output for research purposes — not investment advice.</div>
+    </div>
+  </div>
+</div></section>
+<footer><div class="wrap"><div class="flinks"><a href="index.html">Diago</a><a href="breakouts.html">Breakout Signals</a><a href="supports.html">Support Signals</a><a href="watchlist.html">Watchlist</a><a href="pricing.html">Pricing</a></div><div>Market data as of 2026-08-17 · scanning 2,200+ stocks every trading day</div><div class="disc"><b>Disclaimer:</b> All content on this site — including signals, stock lists and performance figures — is provided for informational and research purposes only and does not constitute investment advice, a recommendation, or an offer to buy or sell any security. Performance shown is based on historical simulations; simulated results have inherent limitations and past performance is not indicative of future results. Trading securities involves substantial risk of loss. Always do your own research and consult a licensed professional.</div></div></footer>
+<script>
+function isSub(){try{const t=localStorage.getItem('tl_trial_until');return t&&Date.now()<+t;}catch(e){return false;}}
+function applySub(){document.body.classList.toggle('subbed', isSub());}
+function startTrial(){try{localStorage.setItem('tl_trial_until', String(Date.now()+7*864e5));}catch(e){}
+  applySub(); alert('Your 7-day free trial is active (demo mode). All lists are now unlocked.');}
+function endTrial(){try{localStorage.removeItem('tl_trial_until');}catch(e){} applySub();}
+function setChartView(v){
+  document.querySelectorAll('.chart-view').forEach(d=>d.classList.toggle('on', d.dataset.view===v));
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.view===v));
+  try{localStorage.setItem('tl_chart_view', v);}catch(e){}}
+function setPxPeriod(p){
+  const pill=document.getElementById('chg-pill'); if(!pill) return;
+  const v=parseFloat(pill.dataset[p]);
+  if(isNaN(v)){ pill.textContent='—'; pill.className='chg-pill'; }
+  else{ pill.textContent=(v>=0?'+':'')+v.toFixed(2)+'%';
+        pill.className='chg-pill '+(v>=0?'up':'dn'); }
+  document.querySelectorAll('.pb-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+}
+document.addEventListener('DOMContentLoaded', ()=>{ if(document.getElementById('chg-pill')) setPxPeriod('d'); });
+function getWL(){try{return JSON.parse(localStorage.getItem('tl_wl')||'[]');}catch(e){return [];}}
+function saveWL(a){try{localStorage.setItem('tl_wl', JSON.stringify(a));}catch(e){}}
+function toggleWatch(t){let a=getWL(); a=a.includes(t)?a.filter(x=>x!==t):a.concat([t]);
+  saveWL(a); paintHearts(); if(typeof renderMyWL==='function') renderMyWL();}
+function paintHearts(){const a=getWL();
+  document.querySelectorAll('.heart').forEach(b=>{const on=a.includes(b.dataset.t);
+    b.classList.toggle('on',on); b.textContent=on?'\u2665':'\u2661';
+    b.title=on?'Remove from my watchlist':'Add to my watchlist';});}
+function scoreOf(c){if(c==null||isNaN(c))return null;
+  const x=Math.min(1,Math.max(0,(c-35)/35)); return Math.round((6+4*x)*10)/10;}
+function scoreColor(s){const l=62-(s-6)/4*38; return 'hsl(158,52%,'+l.toFixed(0)+'%)';}
+document.addEventListener('DOMContentLoaded', ()=>{ paintHearts();
+  if(typeof renderMyWL==='function') renderMyWL(); });
+function runCounter(el){
+  const target=parseFloat(el.dataset.count), pre=el.dataset.prefix||'', suf=el.dataset.suffix||'';
+  const fmt=v=>pre+Math.round(v).toLocaleString('en-US')+suf;
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){
+    el.textContent=fmt(target); return;}
+  const dur=2000; let start=null, done=false;
+  const step=ts=>{ if(done) return; if(start===null) start=ts;
+    const p=Math.min(1,(ts-start)/dur);
+    el.textContent=fmt(target*(1-Math.pow(1-p,4)));
+    if(p<1) requestAnimationFrame(step); else done=true; };
+  requestAnimationFrame(step);
+  setTimeout(()=>{ done=true; el.textContent=fmt(target); }, dur+200);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('[data-count]').forEach(runCounter);
+});
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(document.querySelector('.chart-view')){
+    let v='candles'; try{v=localStorage.getItem('tl_chart_view')||'candles';}catch(e){}
+    setChartView(v);}});
+document.addEventListener('DOMContentLoaded', applySub);
+</script>
+</body></html>
