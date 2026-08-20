@@ -19,8 +19,11 @@ import tempfile
 from PIL import Image
 import imageio_ffmpeg
 
+import sys as _sys
 FPS = 15
-D = 88.0
+D = float(_sys.argv[2]) if len(_sys.argv) > 2 else 88.0
+FILM = _sys.argv[1] if len(_sys.argv) > 1 else 'film.html'
+OUT_NAME = _sys.argv[3] if len(_sys.argv) > 3 else 'diago_promo.mp4'
 W, H = 1280, 720
 BATCH = 15                     # frames per screenshot page (15*720 = 10800px tall)
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -28,7 +31,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def main():
-    film = open(os.path.join(HERE, 'film.html'), encoding='utf-8').read()
+    film = open(os.path.join(HERE, FILM), encoding='utf-8').read()
     m = re.search(r'<body>(.*)</body>', film, re.S)
     stage_html = m.group(1)
     head = film[:film.index('<body>')]
@@ -71,7 +74,7 @@ def main():
         if p % 10 == 0 or p == n_pages - 1:
             print(f'  page {p + 1}/{n_pages} done', flush=True)
 
-    out = os.path.join(HERE, 'diago_promo.mp4')
+    out = os.path.join(HERE, OUT_NAME)
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     subprocess.run([ffmpeg, '-y', '-framerate', str(FPS),
                     '-i', os.path.join(frames_dir, 'f_%05d.png'),

@@ -19,75 +19,43 @@ client = ElevenLabs(api_key=API_KEY)
 
 
 SCENES = [
-    # texts sized for the 60-second cut at a NATURAL speaking pace (~2.4 w/s):
-    # no atempo compression needed. Windows match the 60s film timeline.
+    # v2 — "The Loss We Published" (creative_v2.md). 45s continuous timeline.
+    # Delivery notes are in creative_v2.md; punctuation carries the pacing.
     {
         "file": "scene_01.mp3",
         "start": "00:00",
-        "end": "00:07",
-        "text": """
-Every chart hides a line — a diagonal.
-
-And when price breaks it... things happen.
-""".strip(),
+        "end": "00:06",
+        "text": "This is one of our losses. We published it. On purpose.",
     },
     {
         "file": "scene_02.mp3",
-        "start": "00:07",
-        "end": "00:15",
-        "text": """
-More than two thousand stocks are worth watching.
-
-You can't watch them all. Nobody can.
-""".strip(),
+        "start": "00:06",
+        "end": "00:12",
+        "text": "Because the wins mean nothing… unless you see everything.",
     },
     {
         "file": "scene_03.mp3",
-        "start": "00:15",
-        "end": "00:28",
-        "text": """
-This is Diago. Every night, it redraws the trendlines of over two thousand stocks.
-
-And when one closes above its diagonal —
-
-you get the alert. With a score.
-""".strip(),
+        "start": "00:12",
+        "end": "00:22",
+        "text": "Every night, Diago redraws the trendlines on two thousand, two hundred and fifty-nine stocks. When a price breaks its diagonal — Diago catches it.",
     },
     {
         "file": "scene_04.mp3",
-        "start": "00:28",
-        "end": "00:38",
-        "text": """
-It works the other way too.
-
-A stock falls back to its rising support line... holds, and bounces.
-
-Diago's strongest setup.
-""".strip(),
+        "start": "00:22",
+        "end": "00:31",
+        "text": "You get one alert. One score — built from seventy-two thousand historical setups. Six means decent. Ten means rare.",
     },
     {
         "file": "scene_05.mp3",
-        "start": "00:38",
-        "end": "00:49",
-        "text": """
-Every signal gets a calibrated confidence score.
-
-And every signal is tracked publicly — winners and losers.
-
-Nothing deleted. Ever.
-""".strip(),
+        "start": "00:31",
+        "end": "00:38",
+        "text": "It works on support too. Price falls to its rising line, holds — and bounces. Diago's strongest setup.",
     },
     {
         "file": "scene_06.mp3",
-        "start": "00:49",
-        "end": "01:00",
-        "text": """
-Diago. Your ranked shortlist, ready before the market opens.
-
-Seven days free, then five dollars a month.
-
-Statistics — not promises. Never investment advice.
-""".strip(),
+        "start": "00:38",
+        "end": "00:45",
+        "text": "Diago. Seven days free — no card. Then five dollars a month. Every signal public. Even the losses.",
     },
 ]
 
