@@ -1,0 +1,78 @@
+1
+00:00:00,200 --> 00:00:03,200
+Every stock chart hides a line.
+
+2
+00:00:03,300 --> 00:00:06,200
+Connect the highs, or the lows —
+and you get a diagonal.
+
+3
+00:00:06,300 --> 00:00:09,500
+When price breaks it… things happen.
+
+4
+00:00:10,200 --> 00:00:13,000
+There are more than two thousand
+stocks worth watching.
+
+5
+00:00:13,200 --> 00:00:16,200
+You can't watch them all. Nobody can.
+
+6
+00:00:22,200 --> 00:00:27,500
+This is Diago. Every night it redraws
+the trendlines of 2,259 stocks.
+
+7
+00:00:28,000 --> 00:00:31,500
+And the moment a stock closes
+above its diagonal —
+
+8
+00:00:32,000 --> 00:00:36,200
+you get the alert. With a score.
+
+9
+00:00:41,200 --> 00:00:43,500
+It works the other way too.
+
+10
+00:00:43,800 --> 00:00:48,000
+A stock falls hard — all the way back
+to its rising support line…
+
+11
+00:00:48,400 --> 00:00:52,000
+holds it, and bounces.
+That's Diago's strongest setup.
+
+12
+00:00:56,200 --> 00:01:00,500
+Every signal gets a confidence score —
+calibrated on 72,000 historical setups.
+
+13
+00:01:01,000 --> 00:01:05,000
+And every signal is tracked, publicly,
+from the day it prints.
+
+14
+00:01:05,500 --> 00:01:11,000
+Winners… and losers.
+Nothing deleted. Ever.
+
+15
+00:01:12,300 --> 00:01:17,000
+Diago. Your ranked shortlist, ready
+every morning before the market opens.
+
+16
+00:01:17,500 --> 00:01:21,500
+Seven days free. Then five dollars a month.
+
+17
+00:01:22,000 --> 00:01:27,200
+Simulated results. Statistics, not promises.
+Never investment advice.
