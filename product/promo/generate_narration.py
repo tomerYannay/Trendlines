@@ -6,7 +6,7 @@ from elevenlabs.client import ElevenLabs
 
 
 load_dotenv()
-
+# ELEVENLABS_API_KEY="sk_47f202f32b7ff3ffb05cce82291a8e89516ab2c0c83678bc"
 API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 # תחליף לזה את ה-Voice ID שתבחר ב-ElevenLabs
